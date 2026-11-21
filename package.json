@@ -11,7 +11,8 @@
     "preview": "astro preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "node --test src/i18n/t.test.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
     "eslint": "^10.15.0",
     "eslint-plugin-astro": "^3.2.1",
     "prettier": "^3.10.1",
