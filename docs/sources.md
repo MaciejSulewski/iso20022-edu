@@ -31,9 +31,9 @@ Retrieved 2026-11-21. Plain statement of limits: every iso20022.org page above a
 **Decision: fetch in CI. XSDs and generated schema JSON built from them are not committed.** Reason: the terms are ambiguous and unread, and [[Project Plan]] section 6 names fetching the XSD in CI as the fallback. Re-check once the pages can be read in a browser (task T-104, `#me`); if they clearly allow redistribution with attribution, switch to "commit". Recorded in [[ADR-012 XSD not committed]], which refines [[ADR-006 Licences]].
 
 **Version**
-- Latest found: pacs.008.001.14 (FIToFICustomerCreditTransfer V14), catalogue "last updated 19 March 2026" per one search snippet. Older snapshots showed .13 (27 February 2025). Single-source and unverified: confirm in the catalogue before T-031.
+- **Confirmed by the project owner in a browser (2026-11-21): the latest version is pacs.008.001.14.** (Earlier note: found via a search snippet, catalogue "last updated 19 March 2026"; older snapshots showed .13.)
 - Namespace pattern: `urn:iso:std:iso:20022:tech:xsd:pacs.008.001.NN`, so `urn:iso:std:iso:20022:tech:xsd:pacs.008.001.14`.
-- XSD download URL: not confirmed. The catalogue offers an XSD download per message, but no direct link was seen. Do not hard-code a URL pattern; find the link in the browser and record it here.
+- XSD download: there is no single link for pacs.008.001.14. The project owner found one zip with all pacs messages: https://www.iso20022.org/message-set/1250/download (the importer needs `pacs.008.001.14.xsd` extracted from it). An automated GET of this URL returned HTTP 403 from the site's CDN (checked 2026-11-21), the same as the other pages, so a plain script or CI job may not be able to download it. Not worked around.
 - Keep .08? Search results show national and CBPR+-style usage guidelines for .08 (and .10, .06), so it is widely used in practice. Suggestion: build the importer for any version id, import .14 first, and add .08 only if cheap. The project owner decides ([[Project Plan]] section 6).
 
 **Second-hand input from the project owner (2026-11-21)**
