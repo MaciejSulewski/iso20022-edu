@@ -67,7 +67,7 @@ byPath:
       - "2026-11-23"
   CdtTrfTxInf/ChrgBr:
     explanation:
-      en: "Says who pays the fees for processing the payment. The sample uses SHAR (shared): the debtor pays the fees on the sending side and the creditor pays those on the receiving side. The other codes put all fees on the debtor (DEBT), all on the creditor (CRED), or follow the rules of the payment scheme in use (SLEV)."
+      en: "Says who pays the fees for processing the payment. The sample uses SHAR (shared): the debtor pays the fees on the sending side and the creditor pays those on the receiving side. The other codes put all fees on the debtor (DEBT), all on the creditor (CRED), or follow the rules agreed for the service level or payment scheme in use (SLEV)."
     examples:
       - SHAR
   CdtTrfTxInf/Dbtr:
@@ -83,7 +83,7 @@ byPath:
       en: The debtor's account, the one to be debited because of this payment. The block holds the account identification. It is optional.
   CdtTrfTxInf/DbtrAcct/Id:
     explanation:
-      en: The identification of the debtor's account, as agreed between the account owner and the bank that services it. It is either an IBAN or another identifier issued under a named scheme (Othr). This sample uses an IBAN.
+      en: The identification of the debtor's account, used by the account owner and the bank that services it. It is either an IBAN or another identifier that the bank assigns (Othr), which can name the scheme it follows. This sample uses an IBAN.
   CdtTrfTxInf/DbtrAcct/Id/IBAN:
     explanation:
       en: The International Bank Account Number of the debtor's account, an account identifier used internationally and defined in the standard ISO 13616. It identifies the account to debit.
@@ -94,7 +94,7 @@ byPath:
       en: "The debtor's agent: the bank that services the debtor's account, so the bank the payer uses to send the payment. The bank is identified inside the block."
   CdtTrfTxInf/DbtrAgt/FinInstnId:
     explanation:
-      en: The block that names the debtor's bank by an identifier. It can be a BIC, a clearing-system member identifier, a legal entity identifier (LEI) or another scheme-specific code. This sample uses a BIC.
+      en: The block that identifies the debtor's bank. It can hold one or more identifiers (a BIC, a clearing-system member identifier, a legal entity identifier (LEI) or another scheme-specific code) and also the bank's name and address. This sample uses only a BIC.
   CdtTrfTxInf/DbtrAgt/FinInstnId/BICFI:
     explanation:
       en: The BIC (business identifier code, ISO 9362) of the debtor's bank. A BIC is a code allocated to a financial institution to identify it in messages between banks. The sample's BIC is fictional.
@@ -105,7 +105,7 @@ byPath:
       en: "The creditor's agent: the bank that services the creditor's account, so the bank where the money should arrive. The bank is identified inside the block."
   CdtTrfTxInf/CdtrAgt/FinInstnId:
     explanation:
-      en: The block that names the creditor's bank by an identifier. It can be a BIC, a clearing-system member identifier, a legal entity identifier (LEI) or another scheme-specific code. This sample uses a BIC.
+      en: The block that identifies the creditor's bank. It can hold one or more identifiers (a BIC, a clearing-system member identifier, a legal entity identifier (LEI) or another scheme-specific code) and also the bank's name and address. This sample uses only a BIC.
   CdtTrfTxInf/CdtrAgt/FinInstnId/BICFI:
     explanation:
       en: The BIC (business identifier code, ISO 9362) of the creditor's bank. It identifies the institution that services the creditor's account. The sample's BIC is fictional.
@@ -124,7 +124,7 @@ byPath:
       en: The creditor's account, the one to be credited because of this payment. The block holds the account identification. It is optional.
   CdtTrfTxInf/CdtrAcct/Id:
     explanation:
-      en: The identification of the creditor's account, as agreed between the account owner and the bank that services it. It is either an IBAN or another identifier issued under a named scheme (Othr). This sample uses an IBAN.
+      en: The identification of the creditor's account, used by the account owner and the bank that services it. It is either an IBAN or another identifier that the bank assigns (Othr), which can name the scheme it follows. This sample uses an IBAN.
   CdtTrfTxInf/CdtrAcct/Id/IBAN:
     explanation:
       en: The International Bank Account Number of the creditor's account, an account identifier used internationally and defined in the standard ISO 13616. It identifies the account to credit.
