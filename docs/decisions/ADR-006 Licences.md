@@ -10,4 +10,4 @@ date: 2026-11-21
 
 See [[Project Plan]].
 
-Update: XSDs and generated schema JSON are not committed, see [[ADR-012 XSD not committed]].
+Update: the XSDs and generated schema JSON are committed as third-party material, see [[ADR-013 Commit the XSDs]] and `THIRD-PARTY-NOTICES.md`.
