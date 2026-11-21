@@ -17,6 +17,7 @@
   "dependencies": {
     "@astrojs/check": "^0.9.12",
     "@astrojs/preact": "^6.1.6",
+    "@astrojs/sitemap": "^3.7.6",
     "@tailwindcss/vite": "^4.3.5",
     "astro": "^7.4.13",
     "preact": "^11.2.0",
