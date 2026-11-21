@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test src/i18n/t.test.ts",
+    "test": "node --test src/i18n/t.test.ts scripts/import-xsd.test.ts",
+    "import-xsd": "node scripts/import-xsd.ts",
     "check:a11y": "node scripts/check-a11y.ts",
     "check:size": "node scripts/check-js-size.ts"
   },
@@ -32,12 +33,14 @@
     "@types/node": "^26.6.6",
     "eslint": "^10.15.0",
     "eslint-plugin-astro": "^3.2.1",
+    "fast-xml-parser": "^5.12.1",
     "playwright": "^1.65.1",
     "prettier": "^3.10.1",
     "prettier-plugin-astro": "^1.1.2",
-    "typescript-eslint": "^8.73.0"
+    "typescript-eslint": "^8.73.0",
+    "zod": "^4.6.7"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=24.2"
   }
 }
