@@ -1,7 +1,7 @@
-# ISO 20022 Learning Site — Design & Plan (this session: plan only)
+# ISO 20022 Learning Site — Design & Plan
 
 ## Context
-Personal, public, non-affiliated project: a static interactive site teaching ISO 20022 (bank payments) to new bank staff/analysts who know payments but not MX messages. Built over multiple sessions; this session only produces the plan.
+Personal, public, non-affiliated project: a static interactive site teaching ISO 20022 (bank payments) to new bank staff/analysts who know payments but not MX messages. Built over multiple sessions.
 
 Decisions made:
 - **Stage 1 scope: pacs.008 only.** Other messages come in Stage 2.
@@ -12,10 +12,9 @@ Decisions made:
 - **Licences:** code MIT, own content CC BY 4.0, disclaimer "educational, not affiliated with ISO/Swift".
 - **Reviewer:** the user does the subject-matter review.
 
-Project folder: `C:\Users\Maciej\Projects\iso20022-edu`. The GitHub remote doesn't exist yet; Phase 0 creates it.
-Plans and docs are managed in **Obsidian**, with `iso20022-edu/docs/` as the vault.
+Repo: `MaciejSulewski/iso20022-edu` on GitHub (Phase 0 is done). Plans and docs are managed in **Obsidian**, with `iso20022-edu/docs/` as the vault.
 
-**What happens in this session once the plan is approved:** I create only the planning notes. That means `docs/Home.md`, `docs/plan/Project Plan.md` (this plan), `docs/plan/Ledger.md` and `docs/decisions/ADR-*.md`. No code, no `git init`, no GitHub; those are Phase 0 in the next session.
+**Process:** complex tasks get brainstorm, spec and plan first; simple ones go straight to build ([[ADR-011 Process per task]]). Tasks are tracked in [[Ledger]], each with a "done when" criterion.
 
 ## 1. Tech stack
 | Piece | Choice | Why |
@@ -174,7 +173,7 @@ With scope cut to pacs.008, the effort goes into depth and experience. See [[ADR
 ## 6. Questions still open
 1. **Exact version:** confirm the latest pacs.008 on iso20022.org at Phase 2, and decide whether to also keep .08 because it is widely used in practice.
 2. **XSD redistribution:** check iso20022.org terms before committing XSDs to the repo. The fallback is fetching them in CI.
-3. **Repo and URL name:** `<user>.github.io/iso20022-edu` or a custom domain. No analytics proposed.
+3. ~~Repo and URL name~~ Settled: `maciejsulewski.github.io/iso20022-edu`, no custom domain, no analytics.
 
 ## 7. Risks
 | Risk | Mitigation |
@@ -183,6 +182,8 @@ With scope cut to pacs.008, the effort goes into depth and experience. See [[ADR
 | Full tree is large (hundreds of elements, deep nesting, recursion) | Generated from XSD, overlay by type, lazy expansion in the tree view. |
 | XSD quirks (choices, `xs:any` in SupplementaryData, extensions) | The import test covers each construct; unknown constructs fail loudly. |
 | Copyright | ISO definitions shown with attribution; nothing copied from MyStandards or Swift; `docs/sources.md` lists every source. |
+| Generated JSON embeds ISO definitions in a repo under MIT and CC BY | T-030 runs first. If redistribution is not allowed, definitions and XSDs are fetched in CI and not committed. |
+| One reviewer (the user) for all accuracy | Official definition always shown next to own text, `lastReviewed`, the error-report template. Seek one outside reader before wider sharing. |
 | XML hard to read on mobile | Collapsible view and bottom sheet, tested in Phase 3. |
 | Version drift | Versioned file ids plus the annual routine below. |
 | Island hydration cost, JS size | Hydrate only where needed, lazy-load the tree, keep to the ~100 KB budget, check in Phase 9. |
@@ -223,6 +224,11 @@ Initial tasks:
 - `#agent`:
   - Phase 0 files (git init, .gitignore, CLAUDE.md, CONTRIBUTING.md, vault notes, ledger, ADRs);
   - Phases 1–9 broken into tasks of about half a session each.
+
+## Test and CI strategy
+- Every PR runs `npm run build`, `astro check` and check-content (T-029); T-026 makes it required.
+- xmllint on samples (T-040), axe and a JS-size check (T-037) run in CI from Phase 1. Unit tests cover `import-xsd` (T-031) and the `lib/` resolver (T-038).
+- Phase 9 is a final pass, not the first check.
 
 ## Verification (when built)
 - `npm run build` passes (includes `astro check`). Breaking a path in a sample or overlay makes the build fail.

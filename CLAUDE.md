@@ -20,6 +20,13 @@ Rules for Claude Code in this repository. Project description, design and status
 - `#me` tasks (accounts, tokens, review, merging PRs) are the user's, not yours.
 - New decisions go in a new `docs/decisions/ADR-NNN *.md`. Use Obsidian `[[wikilinks]]` between notes.
 
+## Skills
+
+- Start of every session: invoke `superpowers:using-superpowers` and follow it (check for a matching skill before any task, including clarifying questions).
+- Writing code: use `ponytail:ponytail` in `full` mode (never `ultra`; switch with `/ponytail full`).
+- Complex tasks (e.g. T-042, T-051, T-070): brainstorm, spec, plan, then build. Simple tasks go straight to build ([[ADR-011 Process per task]]).
+- UI / UX tasks: use `frontend-design:frontend-design`.
+
 ## Git rules
 
 - Branches `feat/…`, `fix/…`, `docs/…`. Conventional Commits (`feat:`, `fix:`, `docs:`, `content:`, `chore:`), small commits.
