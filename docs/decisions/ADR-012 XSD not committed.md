@@ -10,4 +10,6 @@ date: 2026-11-21
 
 **Alternatives:** commit them under attribution (rejected until the terms are read and clearly allow it).
 
-**Consequences:** Refines [[ADR-006 Licences]]. Own content stays CC BY 4.0; ISO definitions shown on pages keep attribution and the "not the official site" notice. Reopen when the user has read the terms in a browser. See [[Project Plan]] sections 6 and 7.
+**Consequences:** Refines [[ADR-006 Licences]]. Own content stays CC BY 4.0; ISO definitions shown on pages keep attribution and the "not the official site" notice. Reopen when the project owner has read the terms in a browser (T-104). See [[Project Plan]] sections 6 and 7.
+
+Follow-ups: a fetch script for the XSD (T-105), a fetch and generate step in `npm run build` and CI, and `.gitignore` entries for the XSD and `src/data/schema/*.json`. Showing single definitions on pages with attribution is judged lower risk than committing the whole XSD or JSON (a quotation of a few definitions beside own text, not a redistribution of the schema); this is covered by the same re-check in T-104.
