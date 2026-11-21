@@ -91,3 +91,4 @@ Rules:
 - [[ADR-009 TypeScript and Tailwind]]
 - [[ADR-010 UX direction]]
 - [[ADR-011 Process per task]]
+- [[ADR-012 XSD not committed]]

@@ -171,8 +171,8 @@ With scope cut to pacs.008, the effort goes into depth and experience. See [[ADR
 - Polish locale.
 
 ## 6. Questions still open
-1. **Exact version:** confirm the latest pacs.008 on iso20022.org at Phase 2, and decide whether to also keep .08 because it is widely used in practice.
-2. **XSD redistribution:** check iso20022.org terms before committing XSDs to the repo. The fallback is fetching them in CI.
+1. **Exact version:** answered in [[sources]] (T-030): .14 found, unverified, whether to keep .08 is your call. Original question: confirm the latest pacs.008 on iso20022.org at Phase 2, and decide whether to also keep .08 because it is widely used in practice.
+2. **XSD redistribution:** answered, fetch in CI ([[ADR-012 XSD not committed]], [[sources]]). Original question: check iso20022.org terms before committing XSDs to the repo. The fallback is fetching them in CI.
 3. ~~Repo and URL name~~ Settled: `maciejsulewski.github.io/iso20022-edu`, no custom domain, no analytics.
 
 ## 7. Risks

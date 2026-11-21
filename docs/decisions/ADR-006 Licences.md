@@ -9,3 +9,5 @@ date: 2026-11-21
 **Why:** Public personal project; ISO definitions are shown with attribution.
 
 See [[Project Plan]].
+
+Update: XSDs and generated schema JSON are not committed, see [[ADR-012 XSD not committed]].
