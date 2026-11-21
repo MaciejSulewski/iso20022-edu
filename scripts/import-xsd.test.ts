@@ -2,6 +2,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { importXsd } from "./import-xsd.ts";
+import { existsSync, readFileSync } from "node:fs";
+import { DefsModel, SchemaModel, type Defs } from "./schema-model.ts";
 
 const NS = "urn:example:fake:xsd:fake.001.001.01";
 const AUTO = `<xs:annotation><xs:documentation><Nm>N</Nm><Dfn>D</Dfn></xs:documentation></xs:annotation>`;
@@ -221,16 +223,16 @@ const noDoc = (inner: string, extra = "") =>
     false,
   );
 
-test("missing annotation on a complexType or element fails loudly", () => {
-  assert.throws(
-    () => importXsd(noDoc(`<xs:element name="B" type="Text35"/>`, TEXT)),
-    /missing.*annotation.*B.*MsgV01/,
-  );
-  const ct = wrap(
-    `<xs:complexType name="MsgV01"><xs:sequence/></xs:complexType>`,
-    false,
-  );
-  assert.throws(() => importXsd(ct), /missing.*annotation.*MsgV01/);
+test("documentation is optional: names fall back, definitions stay empty", () => {
+  const s = importXsd(noDoc(`<xs:element name="B" type="Text35"/>`, TEXT));
+  assert.deepEqual(s.complexTypes["MsgV01"]!.elements[0], {
+    tag: "B",
+    isoName: "B",
+    definition: "",
+    type: "Text35",
+    min: 1,
+    max: 1,
+  });
 });
 
 test("id attributes are accepted", () => {
@@ -337,3 +339,129 @@ test("xs:union and xs:list fail loudly", () => {
     assert.throws(() => importXsd(xml), new RegExp(`xs:${u}.*U`));
   }
 });
+
+// --- eRepository defs (T-032) ---
+const defs = (over: Partial<Defs> = {}): Defs => ({
+  id: "fake.001.001.01",
+  message: { name: "MsgV01", definition: "Msg def." },
+  constraints: [{ name: "RuleA", definition: "If A then B." }],
+  types: {
+    MsgV01: {
+      definition: "Type def.",
+      elements: { A: { name: "Alpha", definition: "Alpha def." } },
+    },
+  },
+  simpleTypes: { Text35: { definition: "Text def." } },
+  codeSets: {
+    ChargeCode: {
+      definition: "Charge def.",
+      codes: { DEBT: { name: "Debtor", definition: "Debtor pays." } },
+    },
+  },
+  ...over,
+});
+const withDefs = (extra = "", d = defs()) =>
+  importXsd(noDoc(`<xs:element name="A" type="Text35"/>`, TEXT + extra), d);
+
+test("defs fill names, definitions and constraints", () => {
+  const s = withDefs();
+  assert.deepEqual(s.constraints, [
+    { name: "RuleA", definition: "If A then B." },
+  ]);
+  assert.equal(s.complexTypes["MsgV01"]!.definition, "Type def.");
+  assert.deepEqual(s.complexTypes["MsgV01"]!.elements[0], {
+    tag: "A",
+    isoName: "Alpha",
+    definition: "Alpha def.",
+    type: "Text35",
+    min: 1,
+    max: 1,
+  });
+  assert.equal(s.simpleTypes["Text35"]!.definition, "Text def.");
+});
+
+test("defs: enumeration codes carry name and definition from the code set", () => {
+  const s = withDefs(
+    `<xs:simpleType name="ChargeCode"><xs:restriction base="xs:string"><xs:enumeration value="DEBT"/></xs:restriction></xs:simpleType>`,
+  );
+  assert.deepEqual(s.simpleTypes["ChargeCode"]!.codes, [
+    { code: "DEBT", name: "Debtor", definition: "Debtor pays." },
+  ]);
+  assert.equal(s.simpleTypes["ChargeCode"]!.definition, "Charge def.");
+});
+
+test("defs: a code missing from the code set fails loudly", () => {
+  assert.throws(
+    () =>
+      withDefs(
+        `<xs:simpleType name="ChargeCode"><xs:restriction base="xs:string"><xs:enumeration value="NOPE"/></xs:restriction></xs:simpleType>`,
+      ),
+    /NOPE.*ChargeCode/,
+  );
+});
+
+test("defs: missing type, element or simpleType entry fails loudly", () => {
+  assert.throws(
+    () => withDefs("", defs({ types: {} })),
+    /no eRepository entry.*MsgV01/,
+  );
+  assert.throws(
+    () =>
+      withDefs(
+        "",
+        defs({ types: { MsgV01: { definition: "d", elements: {} } } }),
+      ),
+    /no eRepository entry.*A.*MsgV01/,
+  );
+  assert.throws(
+    () => withDefs("", defs({ simpleTypes: {} })),
+    /no eRepository entry.*Text35/,
+  );
+});
+
+test("defs: XSD-synthesised helper types are exempt, others are not", () => {
+  const helper = `<xs:simpleType name="Foo_SimpleType"><xs:restriction base="xs:decimal"/></xs:simpleType><xs:simpleType name="ActiveCurrencyCode"><xs:restriction base="xs:string"/></xs:simpleType>`;
+  const s = withDefs(helper);
+  assert.equal(s.simpleTypes["Foo_SimpleType"]!.definition, undefined);
+  assert.throws(
+    () => withDefs(helper.replace("Foo_SimpleType", "Foo")),
+    /no eRepository entry.*Foo/,
+  );
+});
+
+test("defs: a complexType described by defs.simpleTypes (amount) is found", () => {
+  const amt = `<xs:complexType name="Amt"><xs:simpleContent><xs:extension base="Text35"><xs:attribute name="Ccy" type="Text35" use="required"/></xs:extension></xs:simpleContent></xs:complexType>`;
+  const s = withDefs(
+    amt,
+    defs({
+      simpleTypes: {
+        Text35: { definition: "T" },
+        Amt: { definition: "Amt def." },
+      },
+    }),
+  );
+  assert.equal(s.complexTypes["Amt"]!.definition, "Amt def.");
+});
+
+test(
+  "real pacs.008.001.14 imports with the committed defs",
+  {
+    skip:
+      !existsSync("schemas/pacs.008.001.14.xsd") ||
+      !existsSync("src/data/erepository/pacs.008.001.14.defs.json"),
+  },
+  () => {
+    const d = DefsModel.parse(
+      JSON.parse(
+        readFileSync("src/data/erepository/pacs.008.001.14.defs.json", "utf8"),
+      ),
+    );
+    const s = importXsd(readFileSync("schemas/pacs.008.001.14.xsd", "utf8"), d);
+    SchemaModel.parse(s);
+    assert.equal(s.id, "pacs.008.001.14");
+    assert.ok(s.constraints!.length > 0);
+    for (const t of Object.values(s.complexTypes))
+      for (const e of t.elements)
+        if ("tag" in e) assert.ok(e.definition, e.tag);
+  },
+);

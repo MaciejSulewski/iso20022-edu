@@ -3,3 +3,7 @@ dist
 .astro
 docs/.obsidian/workspace*.json
 
+
+# ISO eRepository and ecore metamodel: downloaded locally, too big to commit (113 MB)
+*_eRepository/
+*_ecore_metamodel/
