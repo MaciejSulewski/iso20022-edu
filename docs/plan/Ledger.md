@@ -57,7 +57,7 @@ Rules:
 - [x] T-000 Project plan, ledger and ADRs created ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-001 Install GitHub CLI and log in with `gh auth login` (keyring, no token pasted) ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-002 Repo `iso20022-edu`, URL `maciejsulewski.github.io/iso20022-edu` (no custom domain) ✅ 2026-11-21 [[2026-11-21]]
-- [x] T-003 Install Obsidian and open `iso20022-edu/docs` as a vault #me #phase/0  ✅ 2026-11-21
+- [x] T-003 Install Obsidian and open `iso20022-edu/docs` as a vault #me #phase/0 ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-010 `git init`, default branch `main`, `.gitignore` (node_modules, dist, `docs/.obsidian/workspace*.json`) #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-011 Write `CLAUDE.md` (working rules for agents) and a short `CONTRIBUTING.md` #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-012 Add `LICENSE` (MIT) and `CONTENT-LICENSE` (CC BY 4.0) #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
