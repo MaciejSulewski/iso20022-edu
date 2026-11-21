@@ -62,10 +62,7 @@ test("dead byPath key fails", () => {
 test("unresolved sample element fails", () => {
   const i = base();
   i.samples[0]!.xml = `<Document><${schema.root}><Bogus/></${schema.root}></Document>`;
-  assert.match(
-    checkContent(i).errors.join(),
-    /element "Bogus"/,
-  );
+  assert.match(checkContent(i).errors.join(), /element "Bogus"/);
 });
 
 test("unknown message id fails", () => {
