@@ -86,6 +86,8 @@ try {
     "Esc clears the selection with focus in the aside",
   );
   await d.click(el(MSGID));
+  await d.locator("[role=tooltip]").waitFor({ state: "visible" });
+  await d.keyboard.press("Escape"); // the first Esc dismisses the tooltip
   await d.keyboard.press("Escape");
   check(
     (await d.locator("[aria-current='true']").count()) === 0,
@@ -170,10 +172,14 @@ try {
       tipText.includes("The reference the sending bank gives"),
     "hover shows ISO name, state and plain-English first sentence",
   );
+  const describedBy = (await l
+    .locator(el(MSGID))
+    .getAttribute("aria-describedby"))!.split(" ");
   check(
-    (await l.locator(el(MSGID)).getAttribute("aria-describedby")) ===
-      (await tip.getAttribute("id")),
-    "tooltip is linked with aria-describedby",
+    describedBy.includes((await tip.getAttribute("id"))!) &&
+      (await l.locator(`[id="${describedBy[0]}"]`).textContent()) ===
+        "Required",
+    "tooltip and the state text are linked with aria-describedby",
   );
   const [tb, rb] = [
     (await tip.boundingBox())!,
@@ -189,14 +195,44 @@ try {
   check(await tip.isVisible(), "tooltip stays while the pointer is over it");
   await l.keyboard.press("Escape");
   check((await tip.count()) === 0, "Esc hides the tooltip");
+  await l.mouse.move(0, 0);
+  await l.click(el(MSGID));
+  await l.hover(el(MSGID));
+  await tip.waitFor({ state: "visible", timeout: 2000 });
+  await l.keyboard.press("Escape");
+  check(
+    (await tip.count()) === 0 && (await l.locator(sel(MSGID)).count()) === 1,
+    "Esc on a tooltip hides it but keeps the selection",
+  );
+  await l.keyboard.press("Escape");
   check(
     (await l.locator("[aria-current='true']").count()) === 0,
-    "Esc on a tooltip does not also clear the selection",
+    "a second Esc clears the selection",
+  );
+  // Esc during the show delay dismisses the pending tooltip and keeps the selection
+  await l.click(el(MSGID));
+  await l.mouse.move(0, 0);
+  await l.waitForTimeout(400);
+  await l.hover(el("GrpHdr/CreDtTm"));
+  await l.keyboard.press("Escape");
+  await l.waitForTimeout(600);
+  check(
+    (await tip.count()) === 0 && (await l.locator(sel(MSGID)).count()) === 1,
+    "Esc during the show delay: no tooltip appears and the selection stays",
+  );
+  await l.locator("header button").first().focus();
+  await l.keyboard.press("Escape");
+  check(
+    (await l.locator(sel(MSGID)).count()) === 1,
+    "Esc with focus on the theme toggle leaves the selection",
   );
   await l.mouse.move(0, 0);
-  await l.focus(el(MSGID));
+  await l.focus(el("GrpHdr/CreDtTm"));
   await tip.waitFor({ state: "visible", timeout: 2000 });
-  check(true, "keyboard focus shows the tooltip");
+  check(
+    (await tip.innerText()).includes("CreationDateTime"),
+    "keyboard focus shows the tooltip for the focused element",
+  );
   await l.keyboard.press("Escape");
   check((await tip.count()) === 0, "Esc hides the focus tooltip");
 

@@ -98,3 +98,7 @@ test("isHidden looks at every ancestor", () => {
   assert.equal(isHidden("A/B/C", byId), true);
   assert.equal(isHidden("A/D", byId), false);
 });
+
+test("a single optional leaf counts as one hidden element", () => {
+  assert.equal(visibleRows([row(E, 0)], true).hidden, 1);
+});

@@ -103,6 +103,8 @@ export default function AnnotatedXml({
   const [beginner, setBeginner] = useState(false); // full by default, so server and first client render match
   const [tip, setTip] = useState<Tip | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const pending = useRef(false); // a tooltip is waiting for its show delay
+  const root = useRef<HTMLDivElement>(null);
   const tipId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -125,6 +127,13 @@ export default function AnnotatedXml({
   useEffect(() => {
     setBeginner(store.get() === "beginner");
   }, []);
+
+  useEffect(() => {
+    if (!sheet) return;
+    clearTimeout(timer.current); // no tooltip behind or after the sheet
+    pending.current = false;
+    setTip(null);
+  }, [sheet]);
 
   useEffect(() => {
     if (!tip) return;
@@ -187,8 +196,12 @@ export default function AnnotatedXml({
 
   function showTip(id: string, el: HTMLElement) {
     clearTimeout(timer.current);
+    pending.current = false;
     if (matchMedia("(hover: none)").matches) return; // touch: the tap opens the sheet
+    pending.current = true;
     timer.current = setTimeout(() => {
+      pending.current = false;
+      if (dialog.current?.open) return; // never behind the modal sheet
       const r = el.getBoundingClientRect();
       const left = Math.max(8, Math.min(r.left, innerWidth - TIP_W - 8));
       setTip(
@@ -200,6 +213,7 @@ export default function AnnotatedXml({
   }
   const hideTip = (delay = 0) => {
     clearTimeout(timer.current);
+    pending.current = false;
     timer.current = setTimeout(() => setTip(null), delay);
   };
 
@@ -225,11 +239,16 @@ export default function AnnotatedXml({
   // handles Esc). Listening on the window: focus can sit on body after a breadcrumb click.
   function onEsc(e: KeyboardEvent) {
     if (e.key !== "Escape") return;
-    if (tip) {
-      clearTimeout(timer.current);
-      setTip(null);
-      return;
-    }
+    if (e.defaultPrevented) return;
+    // a pending or visible tooltip is dismissed first; the selection stays
+    const had = tip || pending.current;
+    clearTimeout(timer.current);
+    pending.current = false;
+    setTip(null);
+    if (had) return;
+    // only when focus is on body (e.g. after a breadcrumb click) or in this component
+    const a = document.activeElement;
+    if (a !== document.body && !root.current?.contains(a)) return;
     if (!desktop || !cur.current) return;
     setSelected(null);
     history.replaceState(null, "", location.pathname + location.search);
@@ -270,7 +289,7 @@ export default function AnnotatedXml({
   }
 
   return (
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <div ref={root} class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div class="min-w-0">
         <dl
           aria-label={labels.legend}
@@ -363,7 +382,7 @@ export default function AnnotatedXml({
                 <button
                   type="button"
                   data-id={id}
-                  aria-describedby={tip?.id === id ? tipId : undefined}
+                  aria-describedby={`${tipId}-${id}${tip?.id === id ? ` ${tipId}` : ""}`}
                   onPointerEnter={(e) =>
                     e.pointerType !== "touch" &&
                     showTip(id, e.currentTarget as HTMLElement)
@@ -403,7 +422,7 @@ export default function AnnotatedXml({
                   <span aria-hidden="true" class={`w-4 ${TONE.repeats}`}>
                     {st.repeats ? GLYPH.repeats : ""}
                   </span>
-                  <span class="sr-only">
+                  <span class="sr-only" id={`${tipId}-${id}`}>
                     {labels.states[st.presence]}
                     {st.repeats ? `, ${labels.states.repeats}` : ""}
                   </span>
