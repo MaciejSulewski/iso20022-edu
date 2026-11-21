@@ -1,0 +1,74 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import AnnotatedXml from "../../components/AnnotatedXml";
+import { buildTree } from "../../lib/xml-tree";
+import { t } from "../../i18n/t";
+import type { Schema } from "../../../scripts/schema-model";
+
+export async function getStaticPaths() {
+  const samples = await getCollection("samples");
+  return (await getCollection("messages"))
+    .filter((m) => samples.some((s) => s.data.message === m.id))
+    .map((message) => ({ params: { id: message.id }, props: { message } }));
+}
+
+const { message } = Astro.props;
+const sample = (await getCollection("samples")).find(
+  (s) => s.data.message === message.id,
+)!;
+// Vite ?raw keeps paths independent of the working directory.
+const xmls = import.meta.glob("../../content/samples/*.xml", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const schemas = import.meta.glob("../../data/schema/*.json", {
+  import: "default",
+  eager: true,
+}) as unknown as Record<string, Schema>;
+const overlay = (await getEntry("annotations", message.id))?.data;
+const file = `../../content/samples/${sample.data.file}`;
+const xml = xmls[file];
+const schema = schemas[`../../data/schema/${message.id}.json`];
+if (!xml) throw new Error(`Sample file missing for ${message.id}: ${file}`);
+if (!schema) throw new Error(`Schema JSON missing for ${message.id}`);
+const nodes = buildTree(xml, schema, overlay);
+const labels = {
+  tree: t("xml.tree"),
+  panel: t("xml.panel"),
+  close: t("xml.panel.close"),
+  empty: t("xml.panel.empty"),
+  path: t("xml.panel.path"),
+  explanation: t("xml.panel.explanation"),
+  none: t("xml.panel.none"),
+  iso: t("xml.panel.iso"),
+  facts: t("xml.panel.facts"),
+  type: t("xml.fact.type"),
+  use: t("xml.fact.use"),
+  reqOnce: t("xml.occ.reqOnce"),
+  optOnce: t("xml.occ.optOnce"),
+  reqMany: t("xml.occ.reqMany"),
+  optMany: t("xml.occ.optMany"),
+  upTo: t("xml.occ.upTo"),
+  atLeast: t("xml.occ.atLeast"),
+  choiceMember: t("xml.panel.choiceMember"),
+  choice: t("xml.panel.choice"),
+  codes: t("xml.panel.codes"),
+  examples: t("xml.panel.examples"),
+  notes: t("xml.panel.notes"),
+  collapse: t("xml.collapse"),
+  expand: t("xml.expand"),
+  count: t("xml.count"),
+};
+---
+
+<Base title={`${message.data.name} · ${t("xml.title")}`}>
+  <div class="mx-auto max-w-5xl px-4">
+    <h1 class="text-3xl font-bold break-words">{message.data.name}</h1>
+    <p class="mt-1 font-mono text-sm text-muted">{message.id}</p>
+    <p class="mt-4">{sample.data.scenario}</p>
+    <p class="mt-2 mb-6 text-muted">{t("xml.lead")}</p>
+    <AnnotatedXml client:load nodes={nodes} labels={labels} />
+  </div>
+</Base>

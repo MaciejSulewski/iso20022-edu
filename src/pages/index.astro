@@ -10,7 +10,12 @@ const path: { id: string; titleKey: UiKey; descKey: UiKey; href?: string }[] = [
     titleKey: "home.step.lesson.title",
     descKey: "home.step.lesson.desc",
   },
-  { id: "xml", titleKey: "home.step.xml.title", descKey: "home.step.xml.desc" },
+  {
+    id: "xml",
+    titleKey: "home.step.xml.title",
+    descKey: "home.step.xml.desc",
+    href: `${import.meta.env.BASE_URL}messages/pacs.008.001.14/`,
+  },
   {
     id: "tree",
     titleKey: "home.step.tree.title",
