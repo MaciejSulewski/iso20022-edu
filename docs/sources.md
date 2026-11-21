@@ -17,7 +17,7 @@ Public sources used for content and planning. Every source used must be listed h
 ## Notes
 
 - The terms of use, IP policy and Swift licence were read from the primary pages on 2026-11-21 (T-104); see "Primary reading (T-104)" below.
-- Plain-English explanations in `src/content/annotations/pacs.008.001.14.yaml` (T-044) paraphrase the ISO definitions already cited above, plus general public ISO 20022 knowledge. They were drafted by an AI and are not yet reviewed by a person (T-045, T-093).
+- Plain-English explanations in `src/content/annotations/pacs.008.001.14.yaml` (T-044) paraphrase the ISO definitions already cited above and the code lists in the generated schema. The UETR statement (a version 4 UUID is generated at random) rests on the UUID specification, RFC 4122 (replaced by RFC 9562). Statements beyond these (for example on how the receiving bank uses the number of transactions, or that a settled amount can differ from the ordered amount) have no named source and stay unsourced until the human review (T-045, T-093). The text was drafted by an AI and is not yet reviewed by a person.
 - Licence and disclaimer: [[ADR-006 Licences]]. Educational, not affiliated with ISO or Swift.
 
 ## Redistribution terms and decision (T-030)
