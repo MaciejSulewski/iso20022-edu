@@ -9,16 +9,16 @@ Rules:
 
 ## Now
 (max 3 open tasks)
-- [ ] T-032 Generate `src/data/schema/pacs.008.001.NN.json`. Done when: the file validates against its zod schema and is not hand-edited #agent #phase/2 #blocked T-104 (terms) and the fetch problem in [[ADR-012 XSD not committed]]
+- [ ] T-032 Generate `src/data/schema/pacs.008.001.NN.json`. Done when: the file validates against its zod schema and is not hand-edited. Note: the real XSDs carry no `xs:documentation` (checked 2026-11-21), so `import-xsd.ts` fails on them; decide where ISO names and definitions come from first #agent #phase/2
 
 ## Waiting on me
-- [ ] T-104 Version (.14) and zip URL are done (2026-11-21, see [[sources]]). Still open: in a browser read the iso20022.org terms and record them in docs/sources.md; reopen [[ADR-012 XSD not committed]] if redistribution is clearly allowed #me #phase/2
+- [ ] T-104 Version (.14) and zip URL are done (2026-11-21, see [[sources]]). Still open: in a browser read the iso20022.org terms and record them in docs/sources.md; if it says redistribution is not allowed, reverse [[ADR-013 Commit the XSDs]] #me #phase/2
 
 ## Next
 ### Phase 0: repo, GitHub, working rules
 ### Phase 1: scaffold
 ### Phase 2: XSD import
-- [ ] T-105 Fetch script for the pacs.008 XSD (URL from T-104) + gitignore + run fetch and import-xsd in npm run build and CI, per [[ADR-012 XSD not committed]]. Done when: a clean clone builds with no committed XSD or schema JSON #agent #phase/2 #blocked T-104 (terms) and the fetch problem in [[ADR-012 XSD not committed]]
+- [x] T-105 Fetch script for the pacs.008 XSD (URL from T-104) + gitignore + run fetch and import-xsd in npm run build and CI, per [[ADR-012 XSD not committed]]. Done when: a clean clone builds with no committed XSD or schema JSON #agent #phase/2 Cancelled 2026-11-21: superseded by [[ADR-013 Commit the XSDs]] (no fetch needed)
 ### Phase 3: annotated XML prototype
 - [ ] T-040 Synthetic pacs.008 sample, valid under xmllint; xmllint step in CI. Done when: CI fails on an invalid sample #agent #phase/3
 - [ ] T-041 Zod schemas in `content.config.ts` (message, annotations, sample). Done when: a malformed content file fails the build #agent #phase/3
@@ -93,4 +93,5 @@ Rules:
 - [[ADR-009 TypeScript and Tailwind]]
 - [[ADR-010 UX direction]]
 - [[ADR-011 Process per task]]
-- [[ADR-012 XSD not committed]]
+- [[ADR-012 XSD not committed]] (superseded)
+- [[ADR-013 Commit the XSDs]]

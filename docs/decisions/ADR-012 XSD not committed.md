@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by [[ADR-013 Commit the XSDs]]
 date: 2026-11-21
 ---
 # ADR-012 XSD not committed
