@@ -9,19 +9,16 @@ Rules:
 
 ## Now
 (max 3 open tasks)
+- [ ] T-030 Confirm the latest pacs.008 version on iso20022.org and check XSD and definition redistribution terms. Done when: `docs/sources.md` records the terms and the decision "commit" or "fetch in CI", with an ADR if it changes [[ADR-006 Licences]]. Runs first: the answer decides whether definitions go in the repo #agent #phase/2
+- [ ] T-031 `import-xsd.ts` + test on an XSD snippet (sequence, choice, multiplicity, codes, documentation). Done when: the test covers each construct and unknown constructs fail loudly #agent #phase/2
+- [ ] T-032 Generate `src/data/schema/pacs.008.001.NN.json`. Done when: the file validates against its zod schema and is not hand-edited #agent #phase/2
 
 ## Waiting on me
-- T-026 can be done now (T-022 and T-029 have run).
 
 ## Next
 ### Phase 0: repo, GitHub, working rules
 ### Phase 1: scaffold
-- [ ] T-025 Review the look and landing page (light and dark, mobile) #me #phase/1
-- [ ] T-026 Add the build check as a required status check in the `protect-main` ruleset, once T-022 and T-029 have run once #me #phase/1
 ### Phase 2: XSD import
-- [ ] T-030 Confirm the latest pacs.008 version on iso20022.org and check XSD and definition redistribution terms. Done when: `docs/sources.md` records the terms and the decision "commit" or "fetch in CI", with an ADR if it changes [[ADR-006 Licences]]. Runs first: the answer decides whether definitions go in the repo #agent #phase/2
-- [ ] T-031 `import-xsd.ts` + test on an XSD snippet (sequence, choice, multiplicity, codes, documentation). Done when: the test covers each construct and unknown constructs fail loudly #agent #phase/2
-- [ ] T-032 Generate `src/data/schema/pacs.008.001.NN.json`. Done when: the file validates against its zod schema and is not hand-edited #agent #phase/2
 - [ ] T-035 Write `docs/maintenance.md` (yearly update routine). Done when: it follows section 8 of [[Project Plan]] #agent #phase/2
 ### Phase 3: annotated XML prototype
 - [ ] T-040 Synthetic pacs.008 sample, valid under xmllint; xmllint step in CI. Done when: CI fails on an invalid sample #agent #phase/3
@@ -55,6 +52,8 @@ Rules:
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-025 Review the look and landing page (light and dark, mobile) #me #phase/1 ✅ 2026-11-21 [[2026-11-21]]
+- [x] T-026 Add the build check as a required status check in the `protect-main` ruleset, once T-022 and T-029 have run once #me #phase/1 ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-029 PR CI workflow: `npm run build`, `astro check`, check-content on every PR. Done when: a PR shows the check and a broken build turns it red. #agent #phase/1 ✅ 2026-11-21 [PR #17](https://github.com/MaciejSulewski/iso20022-edu/pull/17)
 - [x] T-022 Deploy workflow (`withastro/action`). Done when: the landing page is live on Pages #agent #phase/1 ✅ 2026-11-21 [PR #18](https://github.com/MaciejSulewski/iso20022-edu/pull/18)
 - [x] T-037 Accessibility (axe) and JS-size checks in CI. Done when: CI fails on an axe error or a page over about 100 KB JS #agent #phase/1 ✅ 2026-11-21 [PR #19](https://github.com/MaciejSulewski/iso20022-edu/pull/19)
