@@ -46,7 +46,19 @@ export const SimpleTypeSchema = z.strictObject({
   minLength: z.number().int().optional(),
   maxLength: z.number().int().optional(),
   pattern: z.string().optional(),
-  codes: z.array(z.string()).optional(),
+  // Plain enumeration values, or code + name + definition when a code set is known.
+  codes: z
+    .array(
+      z.union([
+        z.string(),
+        z.strictObject({
+          code: z.string(),
+          name: z.string(),
+          definition: z.string(),
+        }),
+      ]),
+    )
+    .optional(),
   totalDigits: z.number().int().optional(),
   fractionDigits: z.number().int().optional(),
   minInclusive: z.string().optional(),
@@ -55,8 +67,36 @@ export const SimpleTypeSchema = z.strictObject({
 export const SchemaModel = z.strictObject({
   id: z.string(),
   root: z.string(),
+  // Business rules from the eRepository (name and definition only).
+  constraints: z
+    .array(z.strictObject({ name: z.string(), definition: z.string() }))
+    .optional(),
   complexTypes: z.record(z.string(), ComplexTypeSchema),
   simpleTypes: z.record(z.string(), SimpleTypeSchema),
 });
 
 export type Schema = z.infer<typeof SchemaModel>;
+
+// Input shape of src/data/erepository/<id>.defs.json (written by extract-erepository).
+const named = z.object({ name: z.string(), definition: z.string() });
+export const DefsModel = z.object({
+  id: z.string(),
+  message: named,
+  constraints: z.array(named),
+  types: z.record(
+    z.string(),
+    z.object({
+      definition: z.string(),
+      elements: z.record(z.string(), named),
+    }),
+  ),
+  simpleTypes: z.record(z.string(), z.object({ definition: z.string() })),
+  codeSets: z.record(
+    z.string(),
+    z.object({
+      definition: z.string(),
+      codes: z.record(z.string(), named),
+    }),
+  ),
+});
+export type Defs = z.infer<typeof DefsModel>;

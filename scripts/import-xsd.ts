@@ -3,7 +3,12 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { XMLParser } from "fast-xml-parser";
-import { SchemaModel, type Schema } from "./schema-model.ts";
+import {
+  DefsModel,
+  SchemaModel,
+  type Defs,
+  type Schema,
+} from "./schema-model.ts";
 
 interface Node {
   name: string;
@@ -41,7 +46,15 @@ const fail = (msg: string): never => {
 
 type ElementEntry = Schema["complexTypes"][string]["elements"][number];
 
-export function importXsd(xsdText: string): Schema {
+// The XSD synthesises these helper types next to the eRepository's amount and
+// currency types, so the eRepository has no entry for them.
+const NO_DEFS_ENTRY = new Set(["ActiveCurrencyCode"]);
+const noDefsEntry = (name: string) =>
+  name.endsWith("_SimpleType") || NO_DEFS_ENTRY.has(name);
+
+// With a defs file (eRepository), names, definitions, code names and constraints
+// come from it, and every complexType, element and simpleType must have an entry.
+export function importXsd(xsdText: string, defs?: Defs): Schema {
   const parsed = new XMLParser({
     preserveOrder: true,
     ignoreAttributes: false,
@@ -83,13 +96,10 @@ export function importXsd(xsdText: string): Schema {
 
   // xs:annotation/xs:documentation -> { isoName, definition }. Accepts
   // <Nm>..</Nm><Dfn>..</Dfn> and "Name = ... Definition = ..." text.
-  // No annotation: undefined when optional, a failure when required.
-  function docOf(n: Node, label: string, ctx: string, required: boolean) {
+  // No annotation: undefined (real XSDs have none; the defs file supplies the text).
+  function docOf(n: Node, label: string, ctx: string) {
     const ann = one(n, "annotation", ctx);
-    if (!ann) {
-      if (required) fail(`missing ${x("annotation")} on ${label} in ${ctx}`);
-      return undefined;
-    }
+    if (!ann) return undefined;
     check(ann, ctx, [], ["documentation"]);
     const d = one(ann, "documentation", ctx);
     if (!d) return fail(`empty ${x("annotation")} on ${label} in ${ctx}`);
@@ -133,8 +143,15 @@ export function importXsd(xsdText: string): Schema {
       ["name"],
       ["annotation", "sequence", "choice", "simpleContent"],
     );
-    const doc = docOf(n, name, name, !exempt);
-    const { isoName, definition } = doc ?? { isoName: name, definition: "" };
+    const d =
+      defs && !exempt
+        ? (defs.types[name] ?? defs.simpleTypes[name])
+        : undefined;
+    if (defs && !exempt && !d)
+      fail(`no eRepository entry for complexType ${name}`);
+    const doc = docOf(n, name, name);
+    const isoName = doc?.isoName ?? name;
+    const definition = d?.definition ?? doc?.definition ?? "";
     const body = n.kids.filter((k) => k.name !== x("annotation"));
     if (body.length !== 1)
       return fail(
@@ -188,9 +205,14 @@ export function importXsd(xsdText: string): Schema {
         ["annotation"],
       );
       const tag = need(k, "name", name);
+      const e = d && "elements" in d ? d.elements[tag] : undefined;
+      if (defs && !exempt && !e)
+        fail(`no eRepository entry for element ${tag} in ${name}`);
+      const xd = docOf(k, tag, name);
       return {
         tag,
-        ...(docOf(k, tag, name, !exempt) ?? { isoName: tag, definition: "" }),
+        isoName: e?.name ?? xd?.isoName ?? tag,
+        definition: e?.definition ?? xd?.definition ?? "",
         type: typeRef(need(k, "type", name), `element ${tag} in ${name}`),
         ...occurs(k),
       };
@@ -216,9 +238,14 @@ export function importXsd(xsdText: string): Schema {
         "minInclusive",
       ],
     );
-    const doc = docOf(n, name, name, false);
+    const doc = docOf(n, name, name);
+    const set = defs?.codeSets[name];
+    const sd = defs?.simpleTypes[name] ?? set;
+    if (defs && !sd && !noDefsEntry(name))
+      fail(`no eRepository entry for simpleType ${name}`);
+    const definition = sd?.definition ?? doc?.definition;
     const out: Schema["simpleTypes"][string] = {
-      ...(doc && { definition: doc.definition }),
+      ...(definition !== undefined && { definition }),
       base: typeRef(need(r, "base", name), `restriction in ${name}`),
     };
     const seen = new Set<string>();
@@ -227,7 +254,10 @@ export function importXsd(xsdText: string): Schema {
       const v = need(f, "value", name);
       const facet = f.name.slice(p.length);
       if (facet === "enumeration") {
-        (out.codes ??= []).push(v);
+        const c = set?.codes[v];
+        if (set && !c)
+          fail(`code "${v}" of ${name} is not in its eRepository code set`);
+        (out.codes ??= []).push(c ? { code: v, ...c } : v);
         continue;
       }
       if (seen.has(facet)) fail(`repeated ${f.name} in ${name}`);
@@ -288,16 +318,27 @@ export function importXsd(xsdText: string): Schema {
     if (!(r.type in complexTypes) && !(r.type in simpleTypes))
       fail(`unknown type "${r.type}" referenced by ${r.where}`);
   }
-  return SchemaModel.parse({ id, root, complexTypes, simpleTypes });
+  return SchemaModel.parse({
+    id,
+    root,
+    ...(defs && { constraints: defs.constraints }),
+    complexTypes,
+    simpleTypes,
+  });
 }
 
 if (import.meta.main) {
-  const [xsdPath, outDir = "src/data/schema"] = process.argv.slice(2);
+  const [xsdPath, outDir = "src/data/schema", defsPath] = process.argv.slice(2);
   if (!xsdPath) {
-    console.error("usage: node scripts/import-xsd.ts <xsd-path> [out-dir]");
+    console.error(
+      "usage: node scripts/import-xsd.ts <xsd-path> [out-dir] [defs-json]",
+    );
     process.exit(1);
   }
-  const schema = importXsd(readFileSync(xsdPath, "utf8"));
+  const defs = defsPath
+    ? DefsModel.parse(JSON.parse(readFileSync(defsPath, "utf8")))
+    : undefined;
+  const schema = importXsd(readFileSync(xsdPath, "utf8"), defs);
   mkdirSync(outDir, { recursive: true });
   const out = join(outDir, `${schema.id}.json`);
   writeFileSync(out, JSON.stringify(schema, null, 2) + "\n");
