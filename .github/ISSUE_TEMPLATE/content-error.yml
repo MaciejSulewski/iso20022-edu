@@ -1,0 +1,26 @@
+name: Report a content error
+description: Something on the site is wrong, unclear or out of date.
+labels: ["content"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping. This is an educational project, not affiliated with ISO or Swift. Please do not paste confidential or real client data, and do not paste non-public material (for example CBPR+ documents).
+  - type: input
+    id: page
+    attributes:
+      label: Page or element
+      description: URL, or the element path (for example `GrpHdr/MsgId`).
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Public source
+      description: Link to a public source (for example the ISO 20022 message definition) that supports the correction.
