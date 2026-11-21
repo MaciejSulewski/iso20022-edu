@@ -28,7 +28,7 @@ Retrieved 2026-11-21. Plain statement of limits: every iso20022.org page above a
 - Each definition has a submitting organisation (Swift, ISO TC68/SC9, and others), so terms may reportedly differ per submitting organisation.
 - No named licence (CC, MIT, etc.) was found for the XSD files themselves.
 
-**Decision: fetch in CI. XSDs and generated schema JSON built from them are not committed.** Reason: the terms are ambiguous and unread, and the plan says to take the conservative option then. Re-check once the pages can be read in a browser (task T-104, `#me`); if they clearly allow redistribution with attribution, switch to "commit". Recorded in [[ADR-012 XSD not committed]], which refines [[ADR-006 Licences]].
+**Decision: fetch in CI. XSDs and generated schema JSON built from them are not committed.** Reason: the terms are ambiguous and unread, and [[Project Plan]] section 6 names fetching the XSD in CI as the fallback. Re-check once the pages can be read in a browser (task T-104, `#me`); if they clearly allow redistribution with attribution, switch to "commit". Recorded in [[ADR-012 XSD not committed]], which refines [[ADR-006 Licences]].
 
 **Version**
 - Latest found: pacs.008.001.14 (FIToFICustomerCreditTransfer V14), catalogue "last updated 19 March 2026" per one search snippet. Older snapshots showed .13 (27 February 2025). Single-source and unverified: confirm in the catalogue before T-031.

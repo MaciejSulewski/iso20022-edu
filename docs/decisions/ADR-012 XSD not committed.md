@@ -6,7 +6,7 @@ date: 2026-11-21
 
 **Decision:** The ISO XSDs and the generated `src/data/schema/*.json` (which embed ISO definitions) are not committed. They are fetched and generated in CI and locally.
 
-**Why:** The iso20022.org terms could not be read (HTTP 403), and search summaries show no explicit licence for the XSD files. The plan says to take the conservative option when terms are unclear. See [[sources]].
+**Why:** The iso20022.org terms could not be read (HTTP 403), and search summaries show no explicit licence for the XSD files. [[Project Plan]] section 6 names fetching the XSD in CI as the fallback if the terms do not allow committing it. See [[sources]].
 
 **Alternatives:** commit them under attribution (rejected until the terms are read and clearly allow it).
 
