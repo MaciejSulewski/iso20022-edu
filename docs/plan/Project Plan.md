@@ -21,7 +21,10 @@ Plans and docs are managed in **Obsidian**, with `iso20022-edu/docs/` as the vau
 | Piece | Choice | Why |
 |---|---|---|
 | Site generator | **Astro** (`output: 'static'`) | Content collections with zod schemas make the build fail on broken content; built-in i18n routing for later. |
-| Interactivity | Astro components + small vanilla TS scripts, no UI framework | The XML viewer, flow stepper and quiz are small. |
+| Language | **TypeScript, strict** (components, scripts, content config); `astro check` runs in the build | Typed schema and overlay shapes shared by the site and the content checks. See [[ADR-009 TypeScript and Tailwind]]. |
+| Styling | **Tailwind CSS v4** (`@tailwindcss/vite`), design tokens in CSS, `dark:` variant, `@tailwindcss/typography` for lessons | Consistent look, light/dark with little code. |
+| Interactivity | **Preact islands** (`@astrojs/preact`, TSX), hydrated only where needed (`client:visible` / `client:load`); shared state with `@preact/signals` (selected element, view mode) | The XML viewer, tree, panel, flow and quiz share state; vanilla scripts would not scale. About 4 KB runtime. |
+| Search | **Pagefind** for lessons and glossary, plus a build-time element index for the Ctrl+K palette | Search is core to a 1000-element tree, not optional. |
 | Structure data | **Generated from the official XSD** by an import script | A full tree has hundreds of elements; hand-typing them is error-prone and must be redone every version. |
 | Explanations | **YAML overlay** written by hand, plus Markdown lessons | Plain-English teaching layer on top of the generated structure. |
 | XML parsing | `fast-xml-parser` (`preserveOrder`) at build time, used both to read the XSD and to render samples | One dependency; nothing parsed in the browser. |
@@ -45,7 +48,10 @@ iso20022-edu/
       quizzes/pacs008-basics.yaml
       lessons/en/*.md
     i18n/ui.en.json, i18n/t.ts
-    components/ AnnotatedXml, ElementPanel, SchemaTree, FlowPlayer, MappingTable, Quiz, GlossaryTerm
+    styles/global.css         # Tailwind import, design tokens (colours, type scale), dark mode
+    lib/                      # typed schema resolver shared by islands and check-content.ts
+    components/ AnnotatedXml, ElementPanel, SchemaTree, Workspace, CommandPalette, FlowPlayer, MappingTable, Quiz, GlossaryTerm   # .tsx islands + .astro shells
+    components/ui/ Button, Badge, Tabs, Sheet, ThemeToggle
     pages/ index, messages/[id], messages/[id]/tree, flows/[id], mappings/[id], glossary, quizzes/[id]
   scripts/
     import-xsd.ts             # XSD → data/schema/<id>.json
@@ -114,6 +120,7 @@ How a click resolves an element: the generated structure (ISO name, definition, 
 - It reports annotation coverage (the share of elements in the samples that have an overlay).
 
 ## 4. UI (key screens)
+Visual and UX principles are in section 4a ([[ADR-010 UX direction]]).
 - **Annotated XML:** each element is a `<button>`. Click or tap opens ElementPanel, showing:
   - ISO name, definition and plain-English explanation;
   - type and constraints, multiplicity, and a mandatory/optional badge;
@@ -124,6 +131,17 @@ How a click resolves an element: the generated structure (ISO name, definition, 
 - **Flow player:** an SVG sequence diagram you step through with Next/Prev; it becomes a vertical step list on mobile.
 - **Mapping table:** MT tag ↔ MX path; each path links into the tree.
 - **Quiz:** scored in the browser, with an explanation after each answer.
+
+## 4a. UX and visual design
+With scope cut to pacs.008, the effort goes into depth and experience. See [[ADR-010 UX direction]].
+- **Style:** clean docs-style, content first. Sans body, mono XML, one accent colour. Light and dark follow the system, with a toggle. WCAG AA contrast.
+- **XML colour system:** mandatory, optional, choice and repeating elements have distinct badges. A legend is always visible. Never colour alone: each state also has an icon and a label.
+- **Landing page:** what pacs.008 is and a "Start here" guided path of 5 to 6 steps (lesson, annotated XML, tree, flow, mapping, quiz). Progress is kept in `localStorage`.
+- **Workspace (desktop):** resizable split panes XML | tree | details. On mobile: one pane with tabs plus the bottom sheet. Beginner mode hides optional, unannotated branches; full mode shows everything.
+- **Hover previews:** desktop hover (mobile tap) shows name, mandatory badge and a one-line explanation. A click opens the full ElementPanel. Deep links stay.
+- **Ctrl+K palette:** jump to elements (tag or ISO name), glossary terms and lessons. Keyboard first.
+- **Flow player:** animated SVG sequence diagram that respects `prefers-reduced-motion`; a vertical step list on mobile.
+- **Budget:** pages stay under about 100 KB of JS; the tree loads lazily.
 
 ## 5. Phased plan (each phase is roughly one session)
 0. **Repo, GitHub and working rules.**
@@ -138,15 +156,15 @@ How a click resolves an element: the generated structure (ISO name, definition, 
      - Content rules: only public sources, everything recorded in `sources.md`, own wording, synthetic data only, never secrets or real client data.
      - `npm run build` (including the content checks) must pass before a PR.
    - **Obsidian:** open `docs/` as a vault. Move this plan into `docs/plan/Project Plan.md`, create `Home.md`, the Ledger, and ADR notes for the decisions already made (Astro, base ISO, English first, full tree, licences, Pages). Optional: install the community plugin **Tasks** for ledger queries; the ledger stays plain Markdown so it works without it.
-1. **Scaffold.** Astro project, Base layout, i18n helper, licences, disclaimer, deploy workflow. A hello page goes live on Pages.
+1. **Scaffold.** Astro project with strict TypeScript, Tailwind v4 and Preact; Base layout, i18n helper, design tokens, dark mode, UI primitives, landing page with guided path, licences, disclaimer, deploy workflow. The landing page goes live on Pages. **You review the look.**
 2. **XSD import.** Download the latest pacs.008 XSD, then write `import-xsd.ts` with a small test on a snippet of the XSD (sequence, choice, multiplicity, codes, documentation). Generate the JSON.
-3. **Prototype: annotated XML.** One synthetic, xmllint-valid pacs.008 sample (single transaction, SHAR, debtor agent → creditor agent). Build AnnotatedXml and ElementPanel for desktop and mobile, plus `check-content.ts`. Annotate the key path (about 30 elements); everything else falls back to the ISO definition. **You review.**
-4. **Full tree explorer.** SchemaTree page, mandatory filter, search, deep links.
+3. **Prototype: annotated XML.** One synthetic, xmllint-valid pacs.008 sample (single transaction, SHAR, debtor agent → creditor agent). Build AnnotatedXml (Preact island) and ElementPanel for desktop and mobile, with colour legend, hover previews and beginner/full mode, plus `check-content.ts`. Annotate the key path (about 30 elements); everything else falls back to the ISO definition. **You review.**
+4. **Full tree explorer and workspace.** SchemaTree page, mandatory filter, search, deep links; split-pane workspace; Ctrl+K command palette with element index and Pagefind.
 5. **More pacs.008 depth.** Overlay by type for shared components, explanations for codes, a second sample (intermediary agent, structured remittance).
-6. **Flow:** the pacs.008 agent chain (debtor → debtor agent → intermediary → creditor agent → creditor), with serial and cover variants described.
+6. **Flow:** the animated pacs.008 agent chain (debtor → debtor agent → intermediary → creditor agent → creditor), with serial and cover variants described.
 7. **MT103 → pacs.008 mapping.**
 8. **Glossary and quiz** for pacs.008.
-9. **Hardening.** Accessibility pass, mobile QA, Pagefind search (optional).
+9. **Hardening.** Accessibility pass, mobile QA, Lighthouse and bundle-size check.
 
 **Stage 2 (later):**
 - Add messages: pacs.002, pacs.004, camt.056 (+ camt.029), pain.001, camt.053, camt.054. Each one is new XSD import + overlay + sample.
@@ -167,6 +185,8 @@ How a click resolves an element: the generated structure (ISO name, definition, 
 | Copyright | ISO definitions shown with attribution; nothing copied from MyStandards or Swift; `docs/sources.md` lists every source. |
 | XML hard to read on mobile | Collapsible view and bottom sheet, tested in Phase 3. |
 | Version drift | Versioned file ids plus the annual routine below. |
+| Island hydration cost, JS size | Hydrate only where needed, lazy-load the tree, keep to the ~100 KB budget, check in Phase 9. |
+| Inconsistent look as pages grow | Design tokens plus shared UI primitives; you review the look in Phases 1 and 3. |
 
 ## 8. Maintenance through yearly ISO/Swift releases
 `docs/maintenance.md` checklist:
@@ -205,7 +225,8 @@ Initial tasks:
   - Phases 1–9 broken into tasks of about half a session each.
 
 ## Verification (when built)
-- `npm run build` passes. Breaking a path in a sample or overlay makes the build fail.
+- `npm run build` passes (includes `astro check`). Breaking a path in a sample or overlay makes the build fail.
+- Lighthouse accessibility and performance are checked; dark mode and `prefers-reduced-motion` are tested.
 - The `import-xsd` test passes; CI xmllint validates samples.
 - `npm run preview`: click mandatory and optional elements in a desktop and a mobile viewport. Check the panel contents, keyboard navigation, deep links, and tree filter and search.
 - The Pages URL works with the correct base path.
