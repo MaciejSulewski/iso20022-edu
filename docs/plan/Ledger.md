@@ -19,13 +19,6 @@ Rules:
 ### Phase 2: XSD import
 - [x] T-105 Fetch script for the pacs.008 XSD (URL from T-104) + gitignore + run fetch and import-xsd in npm run build and CI, per [[ADR-012 XSD not committed]]. Done when: a clean clone builds with no committed XSD or schema JSON #agent #phase/2 Cancelled 2026-11-21: superseded by [[ADR-013 Commit the XSDs]] (no fetch needed)
 ### Phase 3: annotated XML prototype
-- [ ] T-040 Synthetic pacs.008 sample, valid under xmllint; xmllint step in CI. Done when: CI fails on an invalid sample #agent #phase/3
-- [ ] T-041 Zod schemas in `content.config.ts` (message, annotations, sample). Done when: a malformed content file fails the build #agent #phase/3
-- [ ] T-038 Unit tests for the schema resolver in `lib/`. Done when: they cover path lookup, type fallback and choice elements #agent #phase/3
-- [ ] T-042 AnnotatedXml (Preact island) + ElementPanel (side panel on desktop, bottom sheet on mobile, keyboard, deep links). Complex: spec first ([[ADR-011 Process per task]]). Done when: clicking an element opens the panel, `#GrpHdr/MsgId` deep-links, and it works by keyboard #agent #phase/3
-- [ ] T-043 `check-content.ts` (unresolved elements, dead overlay paths, coverage report). Done when: breaking a path fails the build #agent #phase/3
-- [ ] T-044 Overlay for about 30 key elements. Done when: coverage report shows them annotated #agent #phase/3
-- [ ] T-046 XML colour legend, hover previews, beginner/full mode. Done when: no state relies on colour alone #agent #phase/3
 - [ ] T-045 Review the prototype for accuracy and usability #me #phase/3
 ### Phase 4: full tree explorer
 - [ ] T-050 SchemaTree page with lazy expansion, mandatory-only filter, search, deep links. Done when: the full tree loads lazily and filters work #agent #phase/4
@@ -50,6 +43,13 @@ Rules:
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-040 Synthetic pacs.008 sample, valid under xmllint; xmllint step in CI. Done when: CI fails on an invalid sample #agent #phase/3 ✅ 2026-11-21 [PR #33](https://github.com/MaciejSulewski/iso20022-edu/pull/33)
+- [x] T-041 Zod schemas in `content.config.ts` (message, annotations, sample). Done when: a malformed content file fails the build #agent #phase/3 ✅ 2026-11-21 [PR #34](https://github.com/MaciejSulewski/iso20022-edu/pull/34)
+- [x] T-038 Unit tests for the schema resolver in `lib/`. Done when: they cover path lookup, type fallback and choice elements #agent #phase/3 ✅ 2026-11-21 [PR #35](https://github.com/MaciejSulewski/iso20022-edu/pull/35)
+- [x] T-042 AnnotatedXml (Preact island) + ElementPanel (side panel on desktop, bottom sheet on mobile, keyboard, deep links). Complex: spec first ([[ADR-011 Process per task]]). Done when: clicking an element opens the panel, `#GrpHdr/MsgId` deep-links, and it works by keyboard #agent #phase/3 ✅ 2026-11-21 [PR #37](https://github.com/MaciejSulewski/iso20022-edu/pull/37)
+- [x] T-043 `check-content.ts` (unresolved elements, dead overlay paths, coverage report). Done when: breaking a path fails the build #agent #phase/3 ✅ 2026-11-21 [PR #36](https://github.com/MaciejSulewski/iso20022-edu/pull/36)
+- [x] T-044 Overlay for about 30 key elements. Done when: coverage report shows them annotated #agent #phase/3 ✅ 2026-11-22 [PR #38](https://github.com/MaciejSulewski/iso20022-edu/pull/38)
+- [x] T-046 XML colour legend, hover previews, beginner/full mode. Done when: no state relies on colour alone #agent #phase/3 ✅ 2026-11-22 [PR #39](https://github.com/MaciejSulewski/iso20022-edu/pull/39)
 - [x] T-032 Generate `src/data/schema/pacs.008.001.NN.json`. Done when: the file validates against its zod schema and is not hand-edited #agent #phase/2 ✅ 2026-11-21 [PR #30](https://github.com/MaciejSulewski/iso20022-edu/pull/30) (pacs.008.001.14, definitions from the eRepository)
 - [x] T-106 `extract-erepository.ts`: pull the definitions the pacs.008.001.14 message reaches out of the local eRepository into a small committed defs JSON #agent #phase/2 ✅ 2026-11-21 [PR #30](https://github.com/MaciejSulewski/iso20022-edu/pull/30)
 - [x] T-030 Confirm the latest pacs.008 version on iso20022.org and check XSD and definition redistribution terms. Done when: `docs/sources.md` records the terms and the decision "commit" or "fetch in CI", with an ADR if it changes [[ADR-006 Licences]]. Runs first: the answer decides whether definitions go in the repo #agent #phase/2 ✅ 2026-11-21 [PR #24](https://github.com/MaciejSulewski/iso20022-edu/pull/24) (decision: fetch in CI, terms unread: 403, see T-104)
