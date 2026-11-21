@@ -1,10 +1,58 @@
 ---
 import Base from "../layouts/Base.astro";
-import Counter from "../components/Counter";
-import { t } from "../i18n/t";
+import StartHere from "../components/StartHere";
+import { t, type UiKey } from "../i18n/t";
+
+// Set `href` on a step once its page exists; until then it shows "coming soon".
+const path: { id: string; titleKey: UiKey; descKey: UiKey; href?: string }[] = [
+  {
+    id: "lesson",
+    titleKey: "home.step.lesson.title",
+    descKey: "home.step.lesson.desc",
+  },
+  { id: "xml", titleKey: "home.step.xml.title", descKey: "home.step.xml.desc" },
+  {
+    id: "tree",
+    titleKey: "home.step.tree.title",
+    descKey: "home.step.tree.desc",
+  },
+  {
+    id: "flow",
+    titleKey: "home.step.flow.title",
+    descKey: "home.step.flow.desc",
+  },
+  {
+    id: "mapping",
+    titleKey: "home.step.mapping.title",
+    descKey: "home.step.mapping.desc",
+  },
+  {
+    id: "quiz",
+    titleKey: "home.step.quiz.title",
+    descKey: "home.step.quiz.desc",
+  },
+];
+const steps = path.map(({ id, titleKey, descKey, href }) => ({
+  id,
+  title: t(titleKey),
+  desc: t(descKey),
+  href,
+}));
+const labels = {
+  progress: t("home.start.progress"),
+  soon: t("home.start.soon"),
+  done: t("home.start.done"),
+  open: t("home.start.open"),
+};
 ---
 
 <Base>
-  <h1>{t("site.title")}</h1>
-  <Counter client:load label={t("counter.label")} />
+  <div class="mx-auto max-w-2xl px-4">
+    <h1 class="text-3xl font-bold">{t("site.title")}</h1>
+    <p class="mt-4 text-lg">{t("home.lead")}</p>
+    <p class="mt-3 text-muted">{t("home.lead2")}</p>
+    <h2 class="mt-10 text-2xl font-semibold">{t("home.start.title")}</h2>
+    <p class="mt-2 mb-4 text-muted">{t("home.start.intro")}</p>
+    <StartHere client:load steps={steps} labels={labels} />
+  </div>
 </Base>

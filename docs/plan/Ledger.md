@@ -9,29 +9,21 @@ Rules:
 
 ## Now
 (max 3 open tasks)
-- [ ] T-030 Confirm the latest pacs.008 version on iso20022.org and check XSD and definition redistribution terms. Done when: `docs/sources.md` records the terms and the decision "commit" or "fetch in CI", with an ADR if it changes [[ADR-006 Licences]]. Runs first: the answer decides whether definitions go in the repo #agent #phase/2
-- [ ] T-033 Create `docs/sources.md` (required by `CLAUDE.md`). Done when: it lists every source used so far, with URL and retrieval date #agent #phase/1
-- [ ] T-020 Scaffold Astro: static output, base path, strict TS, `astro check`. Done when: `npm run build` passes and the site is served under `/iso20022-edu/` in `npm run preview` #agent #phase/1
+- [ ] T-029 PR CI workflow: `npm run build`, `astro check`, check-content on every PR. Done when: a PR shows the check and a broken build turns it red. Implemented on local branch `feat/t-029-ci` (reviewed, approved), not pushed #agent #phase/1 #blocked needs T-103
+- [ ] T-022 Deploy workflow (`withastro/action`). Done when: the landing page is live on Pages #agent #phase/1 #blocked needs T-103
+- [ ] T-037 Accessibility (axe) and JS-size checks in CI. Done when: CI fails on an axe error or a page over about 100 KB JS #agent #phase/1 #blocked needs T-103
 
 ## Waiting on me
+- [ ] T-103 Grant the GitHub CLI the workflow scope: run `gh auth refresh -h github.com -s workflow` and approve in the browser (pushes of .github/workflows/* are rejected without it) #me #phase/1
 - T-026 needs T-022 and T-029 to have run once.
 
 ## Next
 ### Phase 0: repo, GitHub, working rules
 ### Phase 1: scaffold
-- [ ] T-028 Pin Node (`.nvmrc` + `engines`), commit lockfile, add lint and format, add Dependabot. Done when: `npm ci` works on a clean clone and CI uses the pinned Node #agent #phase/1
-- [ ] T-016 Add Tailwind v4 and Preact integration ([[ADR-009 TypeScript and Tailwind]]). Done when: a test island hydrates and a `dark:` class works #agent #phase/1
-- [ ] T-027 i18n `en`, Base layout, `t()` helper, `ui.en.json`. Done when: the layout renders text only through `t()` #agent #phase/1
-- [ ] T-029 PR CI workflow: `npm run build`, `astro check`, check-content on every PR. Done when: a PR shows the check and a broken build turns it red #agent #phase/1
-- [ ] T-021 Disclaimer and licence footer. Done when: it shows on every page, linking both licences #agent #phase/1
-- [ ] T-022 Deploy workflow (`withastro/action`). Done when: the landing page is live on Pages #agent #phase/1
-- [ ] T-036 404 page, favicon, page meta and social card, robots and sitemap. Done when: Lighthouse SEO has no failures on the landing page #agent #phase/1
-- [ ] T-037 Accessibility (axe) and JS-size checks in CI. Done when: CI fails on an axe error or a page over about 100 KB JS #agent #phase/1
-- [ ] T-023 Design tokens, dark mode toggle, UI primitives (Button, Badge, Tabs, Sheet). Done when: each primitive renders in light and dark and is keyboard operable #agent #phase/1
-- [ ] T-024 Landing page with "Start here" guided path and `localStorage` progress. Done when: progress survives a reload and the path works on mobile width #agent #phase/1
 - [ ] T-025 Review the look and landing page (light and dark, mobile) #me #phase/1
 - [ ] T-026 Add the build check as a required status check in the `protect-main` ruleset, once T-022 and T-029 have run once #me #phase/1
 ### Phase 2: XSD import
+- [ ] T-030 Confirm the latest pacs.008 version on iso20022.org and check XSD and definition redistribution terms. Done when: `docs/sources.md` records the terms and the decision "commit" or "fetch in CI", with an ADR if it changes [[ADR-006 Licences]]. Runs first: the answer decides whether definitions go in the repo #agent #phase/2
 - [ ] T-031 `import-xsd.ts` + test on an XSD snippet (sequence, choice, multiplicity, codes, documentation). Done when: the test covers each construct and unknown constructs fail loudly #agent #phase/2
 - [ ] T-032 Generate `src/data/schema/pacs.008.001.NN.json`. Done when: the file validates against its zod schema and is not hand-edited #agent #phase/2
 - [ ] T-035 Write `docs/maintenance.md` (yearly update routine). Done when: it follows section 8 of [[Project Plan]] #agent #phase/2
@@ -67,6 +59,15 @@ Rules:
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-033 Create `docs/sources.md` (required by `CLAUDE.md`). Done when: it lists every source used so far, with URL and retrieval date #agent #phase/1 ✅ 2026-11-21 [PR #6](https://github.com/MaciejSulewski/iso20022-edu/pull/6)
+- [x] T-020 Scaffold Astro: static output, base path, strict TS, `astro check`. Done when: `npm run build` passes and the site is served under `/iso20022-edu/` in `npm run preview` #agent #phase/1 ✅ 2026-11-21 [PR #7](https://github.com/MaciejSulewski/iso20022-edu/pull/7)
+- [x] T-028 Pin Node (`.nvmrc` + `engines`), commit lockfile, add lint and format, add Dependabot. Done when: `npm ci` works on a clean clone and CI uses the pinned Node #agent #phase/1 ✅ 2026-11-21 [PR #8](https://github.com/MaciejSulewski/iso20022-edu/pull/8)
+- [x] T-016 Add Tailwind v4 and Preact integration ([[ADR-009 TypeScript and Tailwind]]). Done when: a test island hydrates and a `dark:` class works #agent #phase/1 ✅ 2026-11-21 [PR #10](https://github.com/MaciejSulewski/iso20022-edu/pull/10)
+- [x] T-027 i18n `en`, Base layout, `t()` helper, `ui.en.json`. Done when: the layout renders text only through `t()` #agent #phase/1 ✅ 2026-11-21 [PR #11](https://github.com/MaciejSulewski/iso20022-edu/pull/11)
+- [x] T-021 Disclaimer and licence footer. Done when: it shows on every page, linking both licences #agent #phase/1 ✅ 2026-11-21 [PR #12](https://github.com/MaciejSulewski/iso20022-edu/pull/12)
+- [x] T-036 404 page, favicon, page meta and social card, robots and sitemap. Done when: Lighthouse SEO has no failures on the landing page #agent #phase/1 ✅ 2026-11-21 [PR #13](https://github.com/MaciejSulewski/iso20022-edu/pull/13)
+- [x] T-023 Design tokens, dark mode toggle, UI primitives (Button, Badge, Tabs, Sheet). Done when: each primitive renders in light and dark and is keyboard operable #agent #phase/1 ✅ 2026-11-21 [PR #14](https://github.com/MaciejSulewski/iso20022-edu/pull/14)
+- [x] T-024 Landing page with "Start here" guided path and `localStorage` progress. Done when: progress survives a reload and the path works on mobile width #agent #phase/1 ✅ 2026-11-21 [PR #15](https://github.com/MaciejSulewski/iso20022-edu/pull/15)
 - [x] T-000 Project plan, ledger and ADRs created ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-001 Install GitHub CLI and log in with `gh auth login` (keyring, no token pasted) ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-002 Repo `iso20022-edu`, URL `maciejsulewski.github.io/iso20022-edu` (no custom domain) ✅ 2026-11-21 [[2026-11-21]]

@@ -1,4 +1,56 @@
 @import "tailwindcss";
 
-/* Dark mode follows a .dark class on <html> (toggle: T-023). */
+/* Dark mode follows a .dark class on <html>, set by the Base head script and ThemeToggle. */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* One accent (blue). Text/background pairs meet WCAG AA (4.5:1) in both themes. */
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #f3f5f8;
+  --fg: #14181f;
+  --muted: #4a5565;
+  --line: #ced5de;
+  --accent: #0b5cad;
+  --accent-fg: #ffffff;
+}
+.dark {
+  color-scheme: dark;
+  --bg: #0f1419;
+  --surface: #182029;
+  --fg: #e6eaf0;
+  --muted: #a3adbb;
+  --line: #333e4b;
+  --accent: #6cb0f5;
+  --accent-fg: #0f1419;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-bg font-sans text-fg;
+  }
+  a {
+    @apply text-accent underline underline-offset-2;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+  code,
+  pre {
+    @apply font-mono;
+  }
+}
