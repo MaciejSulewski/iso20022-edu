@@ -1,6 +1,5 @@
 // Fails if content files disagree with the schema or with each other. Prints annotation coverage.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { XMLParser } from "fast-xml-parser";
 import { parse as parseYaml } from "yaml";
 import type { Schema } from "./schema-model.ts";
 import {
@@ -9,6 +8,7 @@ import {
   SampleSchema,
 } from "../src/lib/content-schemas.ts";
 import { resolvePath } from "../src/lib/resolver.ts";
+import { elementPaths, parseXml } from "../src/lib/xml-tree.ts";
 
 type File = { name: string; data: unknown };
 export type Input = {
@@ -18,26 +18,6 @@ export type Input = {
   /** xml is undefined when the sample's file is missing. */
   samples: (File & { xml?: string | undefined })[];
 };
-
-// Tag paths of every element, no indexes, Document/ and message root stripped. Attributes are ignored by default.
-function elementPaths(xml: string, root: string): Set<string> | undefined {
-  const out = new Set<string>();
-  const walk = (node: unknown, prefix: string) => {
-    if (typeof node !== "object" || node === null) return;
-    for (const [tag, v] of Object.entries(node)) {
-      if (tag === "#text") continue;
-      for (const child of Array.isArray(v) ? v : [v]) {
-        out.add(`${prefix}${tag}`);
-        walk(child, `${prefix}${tag}/`);
-      }
-    }
-  };
-  const doc = new XMLParser().parse(xml) as { Document?: unknown };
-  const top = (doc.Document as Record<string, unknown> | undefined)?.[root];
-  if (top === undefined) return undefined;
-  walk(top, "");
-  return out;
-}
 
 export function checkContent({
   schema,
@@ -130,12 +110,12 @@ export function checkContent({
       errors.push(`${f.name}: file "${s.file}" does not exist`);
       continue;
     }
-    const found = elementPaths(f.xml, schema.root);
-    if (!found) {
+    const raw = parseXml(f.xml, schema.root);
+    if (!raw) {
       errors.push(`${s.file}: expected root Document/${schema.root}`);
       continue;
     }
-    for (const p of found) {
+    for (const p of new Set(elementPaths(raw))) {
       if (resolvePath(schema, p)) paths.add(p);
       else
         errors.push(
