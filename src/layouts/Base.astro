@@ -20,13 +20,15 @@ const ogImage = new URL(`${import.meta.env.BASE_URL}og.png`, Astro.site);
     <meta name="viewport" content="width=device-width" />
     <script is:inline>
       try {
-        var s = localStorage.getItem("theme");
+        const s = localStorage.getItem("theme");
         if (
           s === "dark" ||
           (s !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)
         )
           document.documentElement.classList.add("dark");
-      } catch (e) {}
+      } catch {
+        // storage blocked: fall back to the light default
+      }
     </script>
     {noindex && <meta name="robots" content="noindex" />}
     <title>{fullTitle}</title>
