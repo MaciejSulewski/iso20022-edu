@@ -79,12 +79,15 @@ try {
   await axe(d, "desktop panel, MsgId selected");
   await aside.getByRole("button", { name: "<GrpHdr>" }).click();
   check((await d.locator(sel("GrpHdr")).count()) === 1, "breadcrumb selects");
+  await d.locator("[role=tooltip]").waitFor({ state: "detached" }); // Esc would first dismiss a tooltip
   await d.keyboard.press("Escape");
   check(
     (await d.locator("[aria-current='true']").count()) === 0,
     "Esc clears the selection with focus in the aside",
   );
   await d.click(el(MSGID));
+  await d.locator("[role=tooltip]").waitFor({ state: "visible" });
+  await d.keyboard.press("Escape"); // the first Esc dismisses the tooltip
   await d.keyboard.press("Escape");
   check(
     (await d.locator("[aria-current='true']").count()) === 0,
@@ -125,6 +128,174 @@ try {
     (await t.locator(sel(MSGID)).count()) === 1,
     "Enter keeps/selects the focused element",
   );
+
+  // legend, state markers, tooltip, beginner mode
+  const state = (p: Page, path: string) =>
+    p.evaluate(
+      (q) =>
+        document.querySelector(q)!.parentElement!.querySelector(".sr-only")!
+          .textContent,
+      el(path),
+    );
+  const l = await open(1280, 900);
+  check(
+    (await l.locator("dl dt").allTextContents())
+      .map((x) => x.slice(1))
+      .join() === "Required,Optional,Choice,Repeats",
+    "legend lists the four states",
+  );
+  check(
+    await l.evaluate(() =>
+      [...document.querySelectorAll("[data-id]")].every((b) =>
+        /^(Required|Optional|Choice)(, Repeats)?$/.test(
+          b.parentElement!.querySelector(".sr-only")?.textContent ?? "",
+        ),
+      ),
+    ),
+    "every element row names its state in text",
+  );
+  check(
+    (await state(l, MSGID)) === "Required" &&
+      (await state(l, "CdtTrfTxInf/PmtId/InstrId")) === "Optional" &&
+      (await state(l, "CdtTrfTxInf")) === "Required, Repeats" &&
+      (await state(l, "CdtTrfTxInf/DbtrAcct/Id/IBAN")) === "Choice",
+    "required, optional, repeating and choice rows read correctly",
+  );
+  const tip = l.getByRole("tooltip");
+  await l.hover(el(MSGID));
+  await tip.waitFor({ state: "visible", timeout: 2000 });
+  const tipText = await tip.innerText();
+  check(
+    tipText.includes("MessageIdentification") &&
+      tipText.includes("Required") &&
+      tipText.startsWith("MessageIdentification") &&
+      tipText.includes("The reference the sending bank gives"),
+    "hover shows ISO name, state and plain-English first sentence",
+  );
+  const describedBy = (await l
+    .locator(el(MSGID))
+    .getAttribute("aria-describedby"))!.split(" ");
+  check(
+    describedBy.includes((await tip.getAttribute("id"))!) &&
+      (await l.locator(`[id="${describedBy[0]}"]`).textContent()) ===
+        "Required",
+    "tooltip and the state text are linked with aria-describedby",
+  );
+  const [tb, rb] = [
+    (await tip.boundingBox())!,
+    (await l.locator(el(MSGID)).boundingBox())!,
+  ];
+  check(
+    tb.y >= rb.y + rb.height || tb.y + tb.height <= rb.y,
+    "tooltip does not cover its element",
+  );
+  await axe(l, "legend and tooltip open");
+  await tip.hover();
+  await l.waitForTimeout(400);
+  check(await tip.isVisible(), "tooltip stays while the pointer is over it");
+  await l.keyboard.press("Escape");
+  check((await tip.count()) === 0, "Esc hides the tooltip");
+  await l.mouse.move(0, 0);
+  await l.click(el(MSGID));
+  await l.hover(el(MSGID));
+  await tip.waitFor({ state: "visible", timeout: 2000 });
+  await l.keyboard.press("Escape");
+  check(
+    (await tip.count()) === 0 && (await l.locator(sel(MSGID)).count()) === 1,
+    "Esc on a tooltip hides it but keeps the selection",
+  );
+  await l.keyboard.press("Escape");
+  check(
+    (await l.locator("[aria-current='true']").count()) === 0,
+    "a second Esc clears the selection",
+  );
+  // Esc during the show delay dismisses the pending tooltip and keeps the selection
+  await l.click(el(MSGID));
+  await l.mouse.move(0, 0);
+  await l.waitForTimeout(400);
+  await l.hover(el("GrpHdr/CreDtTm"));
+  await l.keyboard.press("Escape");
+  await l.waitForTimeout(600);
+  check(
+    (await tip.count()) === 0 && (await l.locator(sel(MSGID)).count()) === 1,
+    "Esc during the show delay: no tooltip appears and the selection stays",
+  );
+  await l.locator("header button").first().focus();
+  await l.keyboard.press("Escape");
+  check(
+    (await l.locator(sel(MSGID)).count()) === 1,
+    "Esc with focus on the theme toggle leaves the selection",
+  );
+  await l.mouse.move(0, 0);
+  await l.focus(el("GrpHdr/CreDtTm"));
+  await tip.waitFor({ state: "visible", timeout: 2000 });
+  check(
+    (await tip.innerText()).includes("CreationDateTime"),
+    "keyboard focus shows the tooltip for the focused element",
+  );
+  await l.keyboard.press("Escape");
+  check((await tip.count()) === 0, "Esc hides the focus tooltip");
+
+  const touch = await (
+    await browser.newContext({
+      viewport: { width: 390, height: 800 },
+      hasTouch: true,
+      isMobile: true,
+    })
+  ).newPage();
+  await touch.goto(page, { waitUntil: "networkidle" });
+  await touch.tap(el(MSGID));
+  await touch.waitForTimeout(600);
+  check(
+    (await touch.getByRole("tooltip").count()) === 0 &&
+      (await sheetShown(touch)),
+    "touch: no tooltip, the tap opens the sheet",
+  );
+
+  const rowCount = (p: Page) => p.locator("[data-id]").count();
+  const pressed = (p: Page) =>
+    p
+      .getByRole("button", { name: "Beginner view" })
+      .getAttribute("aria-pressed");
+  const full = await rowCount(l);
+  await l.click(el("CdtTrfTxInf/PmtId/InstrId"));
+  await l.getByRole("button", { name: "Beginner view" }).click();
+  const beginner = await rowCount(l);
+  const note = await l.getByRole("status").innerText();
+  check(
+    (await pressed(l)) === "true" &&
+      beginner < full &&
+      note === `${full - beginner} optional elements hidden` &&
+      !(await l.evaluate(() =>
+        [...document.querySelectorAll("[data-id]")].some((b) =>
+          b
+            .parentElement!.querySelector(".sr-only")!
+            .textContent!.startsWith("Optional"),
+        ),
+      )),
+    "beginner mode hides optional rows and shows the count",
+  );
+  check(
+    (await l.locator(sel("CdtTrfTxInf/PmtId")).count()) === 1,
+    "beginner mode moves a hidden selection to its nearest visible ancestor",
+  );
+  await l.reload({ waitUntil: "networkidle" });
+  check((await pressed(l)) === "true", "beginner mode persists across reloads");
+  await l.goto(`${page}#CdtTrfTxInf/PmtId/InstrId`, {
+    waitUntil: "networkidle",
+  });
+  check(
+    (await pressed(l)) === "false" &&
+      (await l.locator(sel("CdtTrfTxInf/PmtId/InstrId")).count()) === 1,
+    "a deep link to a hidden element switches to full mode",
+  );
+  await l.getByRole("button", { name: "Beginner view" }).click();
+  await l.getByRole("button", { name: "Beginner view" }).click();
+  check(
+    (await rowCount(l)) === full,
+    "switching back to full restores every row",
+  );
+  await axe(l, "beginner mode");
 
   // mobile
   const m = await open(390, 800);
