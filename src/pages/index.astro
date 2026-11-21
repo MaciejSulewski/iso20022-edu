@@ -1,10 +1,8 @@
 ---
 import Base from "../layouts/Base.astro";
-import Counter from "../components/Counter";
 import { t } from "../i18n/t";
 ---
 
 <Base>
   <h1>{t("site.title")}</h1>
-  <Counter client:load label={t("counter.label")} />
 </Base>

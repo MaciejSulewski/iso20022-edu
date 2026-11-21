@@ -1,6 +1,5 @@
 {
   "site.title": "ISO 20022 Edu",
-  "counter.label": "Count",
   "footer.disclaimer": "Educational project, not affiliated with ISO or Swift.",
   "footer.code_licence": "Code: MIT licence",
   "footer.content_licence": "Content: CC BY 4.0 licence",
@@ -8,5 +7,23 @@
   "site.og_alt": "ISO 20022 Edu social card",
   "notfound.title": "Page not found",
   "notfound.body": "The page you are looking for does not exist.",
-  "notfound.home": "Back to the home page"
+  "notfound.home": "Back to the home page",
+  "theme.toggle": "Dark mode",
+  "ui.button": "Button",
+  "ui.badge": "Badge",
+  "ui.tabs": "Tabs",
+  "ui.sheet": "Sheet",
+  "ui.sheet.open": "Open sheet",
+  "ui.sheet.close": "Close",
+  "ui.sheet.body": "Sheet content. Press Escape or Close to return.",
+  "ui.tab.one": "Definition",
+  "ui.tab.two": "Example",
+  "ui.tab.three": "Notes",
+  "ui.tab.one.body": "The plain-language meaning of a field.",
+  "ui.tab.two.body": "A synthetic XML snippet.",
+  "ui.tab.three.body": "Extra context for learners.",
+  "ui.title": "UI primitives",
+  "ui.primary": "Primary",
+  "ui.secondary": "Secondary",
+  "ui.badge.label": "Mandatory"
 }
