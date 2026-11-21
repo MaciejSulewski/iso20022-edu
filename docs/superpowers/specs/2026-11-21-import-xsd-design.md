@@ -24,7 +24,7 @@ Silently producing a plausible but incomplete tree; hand-editing the output.
 - Public ISO text only; fixtures contain invented names/definitions.
 
 ## Output shape
-As in Project Plan section 3: `id`, `root`, `complexTypes{ name: { isoName, definition, elements[{tag, isoName, type, min, max, definition}], choice } }`, `simpleTypes{ name: { base, minLength?, maxLength?, pattern?, codes?, ... } }`. `max` is a number or `"unbounded"` **[call]**. Elements of a choice keep `min`/`max` per branch and the type has `choice: true`.
+As in Project Plan section 3: `id`, `root`, `complexTypes{ name: { isoName, definition, elements[{tag, isoName, type, min, max, definition}], choice } }`, `simpleTypes{ name: { base, minLength?, maxLength?, pattern?, codes?, ... } }`. `max` is a number or `"unbounded"` **[call]**. Simple types carry an optional `definition` from their annotation; a missing annotation on a complex type or its elements fails the import (the `Document` wrapper is exempt) **[call]**. Elements of a choice keep `min`/`max` per branch and the type has `choice: true`.
 
 ## Approaches
 1. **Parse with a small XML library (fast-xml-parser) and walk the tree** (chosen **[call]**): one devDependency, handles entities/namespaces/CDATA correctly, `preserveOrder` keeps element order (order matters in a sequence).

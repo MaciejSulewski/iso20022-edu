@@ -41,6 +41,7 @@ export const ComplexTypeSchema = z.strictObject({
 });
 
 export const SimpleTypeSchema = z.strictObject({
+  definition: z.string().optional(),
   base: z.string(),
   minLength: z.number().int().optional(),
   maxLength: z.number().int().optional(),

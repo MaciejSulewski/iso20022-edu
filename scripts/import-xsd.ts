@@ -27,7 +27,8 @@ function toTree(items: unknown[]): Node[] {
     const children = item[name] as unknown[];
     const text = (children as Record<string, unknown>[])
       .filter((c) => "#text" in c)
-      .map((c) => String(c["#text"]))
+      .map((c) => String(c["#text"]).trim())
+      .filter(Boolean)
       .join(" ");
     out.push({ name, attrs, kids: toTree(children), text });
   }
@@ -45,6 +46,8 @@ export function importXsd(xsdText: string): Schema {
     preserveOrder: true,
     ignoreAttributes: false,
     ignoreDeclaration: true,
+    parseTagValue: false,
+    trimValues: false, // attribute values (codes) must stay verbatim; text is trimmed in toTree
   }).parse(xsdText) as unknown[];
   const rootNode = toTree(parsed).find((n) => n.name.endsWith("schema"));
   if (!rootNode) return fail("no xs:schema root element");
@@ -55,7 +58,7 @@ export function importXsd(xsdText: string): Schema {
   // Throws on any attribute / child element not in the allowed lists.
   const check = (n: Node, ctx: string, attrs: string[], kids: string[]) => {
     for (const a of Object.keys(n.attrs)) {
-      if (!attrs.includes(a))
+      if (a !== "id" && !attrs.includes(a))
         fail(`unsupported attribute "${a}" on ${n.name} in ${ctx}`);
     }
     for (const k of n.kids) {
@@ -80,25 +83,36 @@ export function importXsd(xsdText: string): Schema {
 
   // xs:annotation/xs:documentation -> { isoName, definition }. Accepts
   // <Nm>..</Nm><Dfn>..</Dfn> and "Name = ... Definition = ..." text.
-  function docOf(n: Node, fallback: string, ctx: string) {
+  // No annotation: undefined when optional, a failure when required.
+  function docOf(n: Node, label: string, ctx: string, required: boolean) {
     const ann = one(n, "annotation", ctx);
-    if (!ann) return { isoName: fallback, definition: "" };
+    if (!ann) {
+      if (required) fail(`missing ${x("annotation")} on ${label} in ${ctx}`);
+      return undefined;
+    }
     check(ann, ctx, [], ["documentation"]);
     const d = one(ann, "documentation", ctx);
-    if (!d) return fail(`empty ${x("annotation")} on ${fallback} in ${ctx}`);
+    if (!d) return fail(`empty ${x("annotation")} on ${label} in ${ctx}`);
+    const where = `${x("documentation")} on ${label} in ${ctx}`;
+    for (const a of Object.keys(d.attrs))
+      fail(`unsupported attribute "${a}" on ${where}`);
+    for (const k of d.kids)
+      if (k.name !== "Nm" && k.name !== "Dfn")
+        fail(`unsupported element ${k.name} in ${where}`);
     const flat = (s: string) => s.replace(/\s+/g, " ").trim();
     const nm = d.kids.find((k) => k.name === "Nm");
     const dfn = d.kids.find((k) => k.name === "Dfn");
-    if (nm && dfn)
+    if (nm && dfn) {
+      if (d.text) fail(`stray text in ${where}`);
       return { isoName: flat(nm.text), definition: flat(dfn.text) };
+    }
     const m =
       /^\s*Name\s*=\s*([\s\S]*?)\s*Definition\s*=\s*([\s\S]*?)\s*$/.exec(
         d.text,
       );
-    if (m) return { isoName: flat(m[1]!), definition: flat(m[2]!) };
-    return fail(
-      `unrecognised ${x("documentation")} format on ${fallback} in ${ctx}`,
-    );
+    if (m && !d.kids.length)
+      return { isoName: flat(m[1]!), definition: flat(m[2]!) };
+    return fail(`unrecognised format of ${where}`);
   }
 
   const occurs = (n: Node) => {
@@ -108,7 +122,10 @@ export function importXsd(xsdText: string): Schema {
     return { min, max } as { min: number; max: number | "unbounded" };
   };
 
-  function complexType(n: Node): Schema["complexTypes"][string] {
+  function complexType(
+    n: Node,
+    exempt = false,
+  ): Schema["complexTypes"][string] {
     const name = need(n, "name", "complexType");
     check(
       n,
@@ -116,7 +133,8 @@ export function importXsd(xsdText: string): Schema {
       ["name"],
       ["annotation", "sequence", "choice", "simpleContent"],
     );
-    const { isoName, definition } = docOf(n, name, name);
+    const doc = docOf(n, name, name, !exempt);
+    const { isoName, definition } = doc ?? { isoName: name, definition: "" };
     const body = n.kids.filter((k) => k.name !== x("annotation"));
     if (body.length !== 1)
       return fail(
@@ -172,7 +190,7 @@ export function importXsd(xsdText: string): Schema {
       const tag = need(k, "name", name);
       return {
         tag,
-        ...docOf(k, tag, name),
+        ...(docOf(k, tag, name, !exempt) ?? { isoName: tag, definition: "" }),
         type: typeRef(need(k, "type", name), `element ${tag} in ${name}`),
         ...occurs(k),
       };
@@ -198,7 +216,9 @@ export function importXsd(xsdText: string): Schema {
         "minInclusive",
       ],
     );
+    const doc = docOf(n, name, name, false);
     const out: Schema["simpleTypes"][string] = {
+      ...(doc && { definition: doc.definition }),
       base: typeRef(need(r, "base", name), `restriction in ${name}`),
     };
     const seen = new Set<string>();
@@ -221,7 +241,11 @@ export function importXsd(xsdText: string): Schema {
 
   const complexTypes: Schema["complexTypes"] = {};
   const simpleTypes: Schema["simpleTypes"] = {};
-  const docRoot = { found: false };
+  const names = new Set<string>();
+  const unique = (name: string) => {
+    if (names.has(name)) fail(`duplicate type name "${name}"`);
+    names.add(name);
+  };
   const targetNs = rootNode.attrs["targetNamespace"] ?? "";
   for (const a of Object.keys(rootNode.attrs)) {
     if (!/^(xmlns(:.+)?|targetNamespace|elementFormDefault)$/.test(a))
@@ -230,13 +254,13 @@ export function importXsd(xsdText: string): Schema {
   for (const n of rootNode.kids) {
     if (n.name === x("complexType")) {
       const name = need(n, "name", "complexType");
-      if (name === "Document") {
-        docRoot.found = true;
-        continue;
-      }
+      if (name === "Document") continue;
+      unique(name);
       complexTypes[name] = complexType(n);
     } else if (n.name === x("simpleType")) {
-      simpleTypes[need(n, "name", "simpleType")] = simpleType(n);
+      const name = need(n, "name", "simpleType");
+      unique(name);
+      simpleTypes[name] = simpleType(n);
     } else if (n.name === x("element")) {
       check(n, "schema", ["name", "type"], []);
       if (n.attrs["name"] !== "Document" || n.attrs["type"] !== "Document")
@@ -251,7 +275,7 @@ export function importXsd(xsdText: string): Schema {
     (n) => n.name === x("complexType") && n.attrs["name"] === "Document",
   );
   if (!docType) return fail("no Document complexType");
-  const docDef = complexType(docType);
+  const docDef = complexType(docType, true);
   if (docDef.elements.length !== 1 || !("tag" in docDef.elements[0]!))
     return fail("Document must contain exactly one element");
   const root = docDef.elements[0].tag;
