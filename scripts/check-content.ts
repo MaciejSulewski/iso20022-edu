@@ -20,7 +20,7 @@ export type Input = {
 };
 
 // Tag paths of every element, no indexes, Document/ and message root stripped. Attributes are ignored by default.
-function elementPaths(xml: string, root: string): Set<string> {
+function elementPaths(xml: string, root: string): Set<string> | undefined {
   const out = new Set<string>();
   const walk = (node: unknown, prefix: string) => {
     if (typeof node !== "object" || node === null) return;
@@ -33,7 +33,9 @@ function elementPaths(xml: string, root: string): Set<string> {
     }
   };
   const doc = new XMLParser().parse(xml) as { Document?: unknown };
-  walk((doc.Document as Record<string, unknown> | undefined)?.[root], "");
+  const top = (doc.Document as Record<string, unknown> | undefined)?.[root];
+  if (top === undefined) return undefined;
+  walk(top, "");
   return out;
 }
 
@@ -81,7 +83,12 @@ export function checkContent({
       errors.push(
         `${f.name}: message "${a.message}" is not a known message id`,
       );
-    if (a.message !== schema.id) continue; // shortcut: one schema only, extend when a second message arrives
+    if (a.message !== schema.id) {
+      // shortcut: one schema loaded, extend when a second message arrives
+      if (ids.has(a.message))
+        errors.push(`${f.name}: no schema for message "${a.message}"`);
+      continue;
+    }
     for (const k of Object.keys(a.byPath)) {
       const r = resolvePath(schema, k);
       if (r) annotatedPaths.add(r.path);
@@ -115,11 +122,20 @@ export function checkContent({
       errors.push(
         `${f.name}: message "${s.message}" is not a known message id`,
       );
+    else if (s.message !== schema.id) {
+      errors.push(`${f.name}: no schema for message "${s.message}"`);
+      continue;
+    }
     if (f.xml === undefined) {
       errors.push(`${f.name}: file "${s.file}" does not exist`);
       continue;
     }
-    for (const p of elementPaths(f.xml, schema.root)) {
+    const found = elementPaths(f.xml, schema.root);
+    if (!found) {
+      errors.push(`${s.file}: expected root Document/${schema.root}`);
+      continue;
+    }
+    for (const p of found) {
       if (resolvePath(schema, p)) paths.add(p);
       else
         errors.push(
@@ -137,13 +153,19 @@ export function checkContent({
 
 if (import.meta.main) {
   const dir = (d: string) => new URL(`../src/content/${d}/`, import.meta.url);
+  const loadErrors: string[] = [];
   const load = (d: string): File[] =>
     readdirSync(dir(d))
       .filter((n) => n.endsWith(".yaml"))
-      .map((name) => ({
-        name,
-        data: parseYaml(readFileSync(new URL(name, dir(d)), "utf8")),
-      }));
+      .flatMap((name) => {
+        try {
+          const data = parseYaml(readFileSync(new URL(name, dir(d)), "utf8"));
+          return [{ name, data }];
+        } catch (e) {
+          loadErrors.push(`${name}: parse error: ${(e as Error).message}`);
+          return [];
+        }
+      });
   const samples = load("samples").map((f) => {
     const file = (f.data as { file?: string }).file ?? "";
     const url = new URL(file, dir("samples"));
@@ -167,6 +189,7 @@ if (import.meta.main) {
   console.log(
     `Coverage: ${coverage.annotated} of ${coverage.total} distinct sample element paths annotated`,
   );
+  errors.unshift(...loadErrors);
   if (errors.length) {
     console.error(errors.map((e) => `ERROR ${e}`).join("\n"));
     process.exit(1);
