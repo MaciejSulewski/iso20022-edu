@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fictional teaching sample: all BICs, IBANs, names and amounts are synthetic. -->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.14">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>MSG-2026-0001</MsgId>
+      <CreDtTm>2026-11-21T09:30:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>INDA</SttlmMtd>
+      </SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>INSTR-0001</InstrId>
+        <EndToEndId>E2E-0001</EndToEndId>
+        <UETR>8a562c67-ca16-48ba-b074-65581be6f011</UETR>
+      </PmtId>
+      <IntrBkSttlmAmt Ccy="EUR">1000.00</IntrBkSttlmAmt>
+      <IntrBkSttlmDt>2026-11-23</IntrBkSttlmDt>
+      <ChrgBr>SHAR</ChrgBr>
+      <Dbtr>
+        <Nm>Example Debtor Ltd</Nm>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>GB82WEST12345698765432</IBAN>
+        </Id>
+      </DbtrAcct>
+      <DbtrAgt>
+        <FinInstnId>
+          <BICFI>TESTGB2LXXX</BICFI>
+        </FinInstnId>
+      </DbtrAgt>
+      <CdtrAgt>
+        <FinInstnId>
+          <BICFI>TESTDEFFXXX</BICFI>
+        </FinInstnId>
+      </CdtrAgt>
+      <Cdtr>
+        <Nm>Example Creditor GmbH</Nm>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <IBAN>DE89370400440532013000</IBAN>
+        </Id>
+      </CdtrAcct>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>
