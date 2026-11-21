@@ -9,8 +9,6 @@ Rules:
 
 ## Now
 (max 3 open tasks)
-- [ ] T-030 Confirm the latest pacs.008 version on iso20022.org and check XSD and definition redistribution terms. Done when: `docs/sources.md` records the terms and the decision "commit" or "fetch in CI", with an ADR if it changes [[ADR-006 Licences]]. Runs first: the answer decides whether definitions go in the repo #agent #phase/2
-- [ ] T-031 `import-xsd.ts` + test on an XSD snippet (sequence, choice, multiplicity, codes, documentation); the snippet fixture is synthetic and hand-written, not an ISO excerpt, because the XSD is not committed ([[ADR-012 XSD not committed]]). Done when: the test covers each construct and unknown constructs fail loudly #agent #phase/2
 - [ ] T-032 Generate `src/data/schema/pacs.008.001.NN.json`. Done when: the file validates against its zod schema and is not hand-edited #agent #phase/2 #blocked T-104 (XSD URL unknown)
 
 ## Waiting on me
@@ -21,7 +19,6 @@ Rules:
 ### Phase 1: scaffold
 ### Phase 2: XSD import
 - [ ] T-105 Fetch script for the pacs.008 XSD (URL from T-104) + gitignore + run fetch and import-xsd in npm run build and CI, per [[ADR-012 XSD not committed]]. Done when: a clean clone builds with no committed XSD or schema JSON #agent #phase/2 #blocked T-104 (XSD URL unknown)
-- [ ] T-035 Write `docs/maintenance.md` (yearly update routine). Done when: it follows section 8 of [[Project Plan]] #agent #phase/2
 ### Phase 3: annotated XML prototype
 - [ ] T-040 Synthetic pacs.008 sample, valid under xmllint; xmllint step in CI. Done when: CI fails on an invalid sample #agent #phase/3
 - [ ] T-041 Zod schemas in `content.config.ts` (message, annotations, sample). Done when: a malformed content file fails the build #agent #phase/3
@@ -54,6 +51,9 @@ Rules:
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-030 Confirm the latest pacs.008 version on iso20022.org and check XSD and definition redistribution terms. Done when: `docs/sources.md` records the terms and the decision "commit" or "fetch in CI", with an ADR if it changes [[ADR-006 Licences]]. Runs first: the answer decides whether definitions go in the repo #agent #phase/2 ✅ 2026-11-21 [PR #24](https://github.com/MaciejSulewski/iso20022-edu/pull/24) (decision: fetch in CI, terms unread: 403, see T-104)
+- [x] T-031 `import-xsd.ts` + test on an XSD snippet (sequence, choice, multiplicity, codes, documentation); the snippet fixture is synthetic and hand-written, not an ISO excerpt, because the XSD is not committed ([[ADR-012 XSD not committed]]). Done when: the test covers each construct and unknown constructs fail loudly #agent #phase/2 ✅ 2026-11-21 [PR #25](https://github.com/MaciejSulewski/iso20022-edu/pull/25)
+- [x] T-035 Write `docs/maintenance.md` (yearly update routine). Done when: it follows section 8 of [[Project Plan]] #agent #phase/2 ✅ 2026-11-21 [PR #26](https://github.com/MaciejSulewski/iso20022-edu/pull/26)
 - [x] T-025 Review the look and landing page (light and dark, mobile) #me #phase/1 ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-026 Add the build check as a required status check in the `protect-main` ruleset, once T-022 and T-029 have run once #me #phase/1 ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-029 PR CI workflow: `npm run build`, `astro check`, check-content on every PR. Done when: a PR shows the check and a broken build turns it red. #agent #phase/1 ✅ 2026-11-21 [PR #17](https://github.com/MaciejSulewski/iso20022-edu/pull/17)
