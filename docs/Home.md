@@ -5,6 +5,7 @@ A static, interactive site that teaches ISO 20022 (pacs.008 first) to new bank s
 - [[Project Plan]]: stack, data model, phases, risks, maintenance
 - [[Ledger]]: tasks for me (#me) and for agents (#agent)
 - [[sources]]: public sources used for content, with retrieval dates
+- [[maintenance]]: yearly ISO/Swift update routine
 - Decisions: `decisions/` (ADR notes)
 - Session logs: `sessions/`
 
