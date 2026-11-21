@@ -1,0 +1,17 @@
+---
+interface Props {
+  variant?: "primary" | "secondary";
+}
+const { variant = "primary" } = Astro.props;
+const styles = {
+  primary: "bg-accent text-accent-fg border-accent",
+  secondary: "bg-bg text-fg border-line",
+};
+---
+
+<button
+  type="button"
+  class:list={["rounded border px-4 py-2 text-sm font-medium", styles[variant]]}
+>
+  <slot />
+</button>
