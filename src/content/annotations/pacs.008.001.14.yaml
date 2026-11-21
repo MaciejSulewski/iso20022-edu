@@ -1,2 +1,132 @@
 message: pacs.008.001.14
-byPath: {}
+byPath:
+  GrpHdr:
+    explanation:
+      en: "The header block at the top of the message. It holds information that applies to the whole message rather than to one payment: who sent it, when, how many payments it carries and how the banks will settle them. It can also name the sending and receiving banks; this sample does not."
+  GrpHdr/MsgId:
+    explanation:
+      en: "The reference the sending bank gives to this message, so that the receiving bank can quote it when asking about or answering this message. It is a reference between two neighbouring parties: each bank that passes the payment on gives its own message a new reference. It identifies the message, not the payment inside it."
+    notes:
+      en: Do not confuse it with the end-to-end identification, which follows the payment, not the message.
+    examples:
+      - MSG-2026-0001
+  GrpHdr/CreDtTm:
+    explanation:
+      en: The moment the sending bank created the message, as a date and a time. It records when the message was made. It does not say when the money moves; that is the interbank settlement date.
+    examples:
+      - "2026-11-21T09:30:00Z"
+  GrpHdr/NbOfTxs:
+    explanation:
+      en: How many individual payments the message contains. The receiving bank can compare it with the payment blocks it actually received. This sample carries one.
+    examples:
+      - "1"
+  GrpHdr/SttlmInf:
+    explanation:
+      en: The block that says how the sending and receiving bank will settle the payments between themselves. Settlement means the actual transfer of funds between the two banks, as opposed to the instruction to do it.
+  GrpHdr/SttlmInf/SttlmMtd:
+    explanation:
+      en: "The way the two banks settle the payments in this message. Each code names who settles or through what: the instructed bank, the instructing bank, a cover payment (a separate bank-to-bank payment that moves the funds alongside this message) or a clearing system."
+    notes:
+      en: In this sample the code INDA means the bank that receives the instruction (the instructed agent) carries out the settlement.
+    examples:
+      - INDA
+  CdtTrfTxInf:
+    explanation:
+      en: "One block per individual credit transfer: a payment that moves money from a debtor (the payer) to a creditor (the payee). It carries everything specific to that payment: references, amount, date, the parties, their accounts and their banks. The message can repeat this block for many payments."
+  CdtTrfTxInf/PmtId:
+    explanation:
+      en: The block that groups the identifiers of one payment. Different parties use different references for the same payment, so the message can carry several side by side.
+  CdtTrfTxInf/PmtId/InstrId:
+    explanation:
+      en: A reference the instructing agent (the bank sending this message) assigns to this one instruction, for use between it and the bank it instructs. They can use it to refer to the instruction in later messages. It is optional.
+    examples:
+      - INSTR-0001
+  CdtTrfTxInf/PmtId/EndToEndId:
+    explanation:
+      en: A reference set by the party that started the payment and passed on unchanged through the whole chain of banks. It lets the parties match this payment to their own records for reconciliation. It is mandatory.
+    examples:
+      - E2E-0001
+  CdtTrfTxInf/PmtId/UETR:
+    explanation:
+      en: A universally unique identifier (a UUID, version 4) that references the payment from start to end. A version 4 UUID is generated at random, so two payments practically never get the same value even without a central numbering scheme, and every bank in the chain can use the same value to find the payment. It is optional.
+    examples:
+      - 8a562c67-ca16-48ba-b074-65581be6f011
+  CdtTrfTxInf/IntrBkSttlmAmt:
+    explanation:
+      en: The money that passes from the instructing agent (the bank sending this message) to the instructed agent (the bank receiving it) for this payment. The Ccy attribute gives the currency as a three-letter ISO 4217 code, here EUR, and the element's value is the amount in that currency.
+    notes:
+      en: This is the amount between the banks, not necessarily the amount the debtor originally ordered.
+    examples:
+      - Ccy="EUR", value 1000.00
+  CdtTrfTxInf/IntrBkSttlmDt:
+    explanation:
+      en: "The day the two banks settle: the money leaves the paying bank's balance and reaches the receiving bank's. It is optional."
+    notes:
+      en: It is not the creation date-time. The message is created at one moment (CreDtTm) and settlement can fall on the same day or a later one. In the sample, creation is on 2026-11-21 and settlement on 2026-11-23.
+    examples:
+      - "2026-11-23"
+  CdtTrfTxInf/ChrgBr:
+    explanation:
+      en: "Says who pays the fees for processing the payment. The sample uses SHAR (shared): the debtor pays the fees on the sending side and the creditor pays those on the receiving side. The other codes put all fees on the debtor (DEBT), all on the creditor (CRED), or follow the rules agreed for the service level or payment scheme in use (SLEV)."
+    examples:
+      - SHAR
+  CdtTrfTxInf/Dbtr:
+    explanation:
+      en: "The debtor: the party that owes the money and whose account is debited. It is the payer. The block identifies the payer, here by name."
+  CdtTrfTxInf/Dbtr/Nm:
+    explanation:
+      en: The payer's name as written in the payment, for example a company's registered name. The banks and the creditor read it to see who is paying. It is optional.
+    examples:
+      - Example Debtor Ltd
+  CdtTrfTxInf/DbtrAcct:
+    explanation:
+      en: The debtor's account, the one to be debited because of this payment. The block holds the account identification. It is optional.
+  CdtTrfTxInf/DbtrAcct/Id:
+    explanation:
+      en: The identification of the debtor's account, used by the account owner and the bank that services it. It is either an IBAN or another identifier that the bank assigns (Othr), which can name the scheme it follows. This sample uses an IBAN.
+  CdtTrfTxInf/DbtrAcct/Id/IBAN:
+    explanation:
+      en: The International Bank Account Number of the debtor's account, an account identifier used internationally and defined in the standard ISO 13616. It identifies the account to debit.
+    examples:
+      - GB82WEST12345698765432
+  CdtTrfTxInf/DbtrAgt:
+    explanation:
+      en: "The debtor's agent: the bank that services the debtor's account, so the bank the payer uses to send the payment. The bank is identified inside the block."
+  CdtTrfTxInf/DbtrAgt/FinInstnId:
+    explanation:
+      en: The block that identifies the debtor's bank. It can hold one or more identifiers (a BIC, a clearing-system member identifier, a legal entity identifier (LEI) or another scheme-specific code) and also the bank's name and address. This sample uses only a BIC.
+  CdtTrfTxInf/DbtrAgt/FinInstnId/BICFI:
+    explanation:
+      en: The BIC (business identifier code, ISO 9362) of the debtor's bank. A BIC is a code allocated to a financial institution to identify it in messages between banks. The sample's BIC is fictional.
+    examples:
+      - TESTGB2LXXX
+  CdtTrfTxInf/CdtrAgt:
+    explanation:
+      en: "The creditor's agent: the bank that services the creditor's account, so the bank where the money should arrive. The bank is identified inside the block."
+  CdtTrfTxInf/CdtrAgt/FinInstnId:
+    explanation:
+      en: The block that identifies the creditor's bank. It can hold one or more identifiers (a BIC, a clearing-system member identifier, a legal entity identifier (LEI) or another scheme-specific code) and also the bank's name and address. This sample uses only a BIC.
+  CdtTrfTxInf/CdtrAgt/FinInstnId/BICFI:
+    explanation:
+      en: The BIC (business identifier code, ISO 9362) of the creditor's bank. It identifies the institution that services the creditor's account. The sample's BIC is fictional.
+    examples:
+      - TESTDEFFXXX
+  CdtTrfTxInf/Cdtr:
+    explanation:
+      en: "The creditor: the party the money is due to and whose account is credited. It is the payee. The block identifies the payee, here by name."
+  CdtTrfTxInf/Cdtr/Nm:
+    explanation:
+      en: The payee's name as written in the payment, for example a company's registered name. The banks and the debtor read it to see who is being paid. It is optional.
+    examples:
+      - Example Creditor GmbH
+  CdtTrfTxInf/CdtrAcct:
+    explanation:
+      en: The creditor's account, the one to be credited because of this payment. The block holds the account identification. It is optional.
+  CdtTrfTxInf/CdtrAcct/Id:
+    explanation:
+      en: The identification of the creditor's account, used by the account owner and the bank that services it. It is either an IBAN or another identifier that the bank assigns (Othr), which can name the scheme it follows. This sample uses an IBAN.
+  CdtTrfTxInf/CdtrAcct/Id/IBAN:
+    explanation:
+      en: The International Bank Account Number of the creditor's account, an account identifier used internationally and defined in the standard ISO 13616. It identifies the account to credit.
+    examples:
+      - DE89370400440532013000
