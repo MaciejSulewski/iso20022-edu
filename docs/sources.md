@@ -35,3 +35,12 @@ Retrieved 2026-11-21. Plain statement of limits: every iso20022.org page above a
 - Namespace pattern: `urn:iso:std:iso:20022:tech:xsd:pacs.008.001.NN`, so `urn:iso:std:iso:20022:tech:xsd:pacs.008.001.14`.
 - XSD download URL: not confirmed. The catalogue offers an XSD download per message, but no direct link was seen. Do not hard-code a URL pattern; find the link in the browser and record it here.
 - Keep .08? Search results show national and CBPR+-style usage guidelines for .08 (and .10, .06), so it is widely used in practice. Suggestion: build the importer for any version id, import .14 first, and add .08 only if cheap. The project owner decides ([[Project Plan]] section 6).
+
+**Second-hand input from the project owner (2026-11-21)**
+
+The project owner pasted the findings of a separate research session. It is not a primary source: the quoted passages were not checked against the iso20022.org pages (still unreadable to automation), so they count as leads for T-104, not as verified terms.
+- Agrees with the search summaries above: the IP policy gives third parties a non-exclusive, royalty-free licence to use published repository information, and the terms of use say site material may be reproduced freely under that policy, with a "not the official site" statement for replicas.
+- Adds the Swift-specific licence (Swift standards end-user licence): royalty-free use and software development allowed; sale prohibited; modifying material while keeping the Swift reference prohibited. Contributors other than Swift may have their own terms. The session advised written confirmation from Swift before committing Swift-submitted schemas publicly.
+- Its overall reading: generally permitted, subject to contributor-specific terms. It also suggested a `THIRD-PARTY-NOTICES.md` with source, contributor and "not official" wording.
+
+**Effect on the decision:** none yet. "Fetch in CI" stays. The generated JSON is a transformation of the definitions, which is the kind of change the Swift clause may restrict, and "permission to use" is not the same as "permission to redistribute". If T-104 confirms from the primary pages that redistribution of the pacs.008 XSD is allowed, a `THIRD-PARTY-NOTICES.md` with the "not the official site" statement is the next step when switching to "commit". Even with "fetch in CI", the site displays single definitions, so the "not affiliated with ISO or Swift" disclaimer ([[ADR-006 Licences]]) already covers the notice for that use.
