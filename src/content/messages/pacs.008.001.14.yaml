@@ -1,0 +1,14 @@
+id: pacs.008.001.14
+family: pacs
+name: FIToFICustomerCreditTransfer
+purpose: >-
+  Moves a customer credit transfer from one financial institution to the next,
+  carrying the instruction and the settlement details between the agents.
+mtEquivalent: MT 103
+sources:
+  - title: ISO 20022 message definitions (pacs.008.001.14)
+    url: https://www.iso20022.org/iso-20022-message-definitions
+    retrieved: "2026-11-21"
+lastReviewed:
+  date: "2026-11-21"
+  by: Maciej Sulewski
