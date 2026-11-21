@@ -1,0 +1,56 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import AnnotatedXml from "../../components/AnnotatedXml";
+import { buildTree } from "../../lib/xml-tree";
+import { t } from "../../i18n/t";
+import type { Schema } from "../../../scripts/schema-model";
+
+export async function getStaticPaths() {
+  const samples = await getCollection("samples");
+  return (await getCollection("messages"))
+    .filter((m) => samples.some((s) => s.data.message === m.id))
+    .map((message) => ({ params: { id: message.id }, props: { message } }));
+}
+
+const { message } = Astro.props;
+const sample = (await getCollection("samples")).find(
+  (s) => s.data.message === message.id,
+)!;
+// Vite ?raw keeps paths independent of the working directory.
+const xmls = import.meta.glob("../../content/samples/*.xml", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const schemas = import.meta.glob("../../data/schema/*.json", {
+  import: "default",
+  eager: true,
+}) as unknown as Record<string, Schema>;
+const overlay = (await getEntry("annotations", message.id))?.data;
+const nodes = buildTree(
+  xmls[`../../content/samples/${sample.data.file}`]!,
+  schemas[`../../data/schema/${message.id}.json`]!,
+  overlay,
+);
+const labels = {
+  tree: t("xml.tree"),
+  panel: t("xml.panel"),
+  empty: t("xml.panel.empty"),
+  path: t("xml.panel.path"),
+  isoName: t("xml.panel.name"),
+  collapse: t("xml.collapse"),
+  expand: t("xml.expand"),
+  count: t("xml.count"),
+};
+---
+
+<Base title={`${message.data.name} · ${t("xml.title")}`}>
+  <div class="mx-auto max-w-5xl px-4">
+    <h1 class="text-3xl font-bold">{message.data.name}</h1>
+    <p class="mt-1 font-mono text-sm text-muted">{message.id}</p>
+    <p class="mt-4">{sample.data.scenario}</p>
+    <p class="mt-2 mb-6 text-muted">{t("xml.lead")}</p>
+    <AnnotatedXml client:load nodes={nodes} labels={labels} />
+  </div>
+</Base>

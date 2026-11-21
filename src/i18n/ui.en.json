@@ -45,5 +45,15 @@
   "home.step.mapping.title": "Check the mapping",
   "home.step.mapping.desc": "Match fields to what a customer sees on a transfer.",
   "home.step.quiz.title": "Take the quiz",
-  "home.step.quiz.desc": "Test what you remember."
+  "home.step.quiz.desc": "Test what you remember.",
+  "xml.title": "Annotated XML",
+  "xml.lead": "Select any element to see what it is. Link straight to one with its path, for example #GrpHdr/MsgId.",
+  "xml.tree": "Sample message XML",
+  "xml.panel": "Element details",
+  "xml.panel.empty": "Select an element to see what it is.",
+  "xml.panel.path": "Path",
+  "xml.panel.name": "ISO name",
+  "xml.collapse": "Collapse {tag}",
+  "xml.expand": "Expand {tag}",
+  "xml.count": "{n} elements"
 }
