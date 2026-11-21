@@ -1,0 +1,4548 @@
+{
+  "id": "pacs.008.001.14",
+  "root": "FIToFICstmrCdtTrf",
+  "constraints": [
+    {
+      "name": "InstructedAgentRule",
+      "definition": "If GroupHeader/InstructedAgent is present, then CreditTransferTransactionInformation/InstructedAgent is not allowed."
+    },
+    {
+      "name": "InstructingAgentRule",
+      "definition": "If GroupHeader/InstructingAgent is present, then CreditTransferTransactionInformation/InstructingAgent is not allowed."
+    },
+    {
+      "name": "TotalInterbankSettlementAmountRule",
+      "definition": "If GroupHeader/TotalInterbankSettlementAmount is present, then all occurrences of CreditTransferTransactionInformation/InterbankSettlementAmount must have the same currency as the currency of GroupHeader/TotalInterbankSettlementAmount."
+    },
+    {
+      "name": "TotalInterbankSettlementAmountAndSumRule",
+      "definition": "If GroupHeader/TotalInterbankSettlementAmount is present, then it must equal the sum of all occurrences of CreditTransferTransactionInformation/InterbankSettlementAmount."
+    },
+    {
+      "name": "GroupHeaderInterbankSettlementDateRule",
+      "definition": "If GroupHeader/InterbankSettlementDate is present, then CreditTransferTransactionInformation/InterbankSettlementDate is not allowed."
+    },
+    {
+      "name": "TransactionInterbankSettlementDateRule",
+      "definition": "If GroupHeader/InterbankSettlementDate is not present, then CreditTransferTransactionInformation/InterbankSettlementDate must be present."
+    },
+    {
+      "name": "PaymentTypeInformationRule",
+      "definition": "If GroupHeader/PaymentTypeInformation is present, then CreditTransferTransactionInformation/PaymentTypeInformation is not allowed."
+    },
+    {
+      "name": "NumberOfTransactionsAndCreditTransfersRule",
+      "definition": "GroupHeader/NumberOfTransactions must equal the number of occurrences of CreditTransferTransactionInformation."
+    },
+    {
+      "name": "SupplementaryDataRule",
+      "definition": "The SupplementaryData building block at message level must not be used to provide additional information about a transaction. The SupplementaryData element at transaction level should be used for that purpose."
+    },
+    {
+      "name": "GroupHeaderExpiryDateTimeRule",
+      "definition": "If GroupHeader/ExpiryDateTime is present, then CreditTransferTransactionInformation/AdditionalDateTime/ExpiryDateTime is not allowed."
+    }
+  ],
+  "complexTypes": {
+    "AccountIdentification4Choice": {
+      "isoName": "AccountIdentification4Choice",
+      "definition": "Specifies the unique identification of an account as assigned by the account servicer.",
+      "elements": [
+        {
+          "tag": "IBAN",
+          "isoName": "IBAN",
+          "type": "IBAN2007Identifier",
+          "min": 1,
+          "max": 1,
+          "definition": "International Bank Account Number (IBAN) - identifier used internationally by financial institutions to uniquely identify the account of a customer. Further specifications of the format and content of the IBAN can be found in the standard ISO 13616 \"Banking and related financial services - International Bank Account Number (IBAN)\" version 1997-10-01, or later revisions."
+        },
+        {
+          "tag": "Othr",
+          "isoName": "Other",
+          "type": "GenericAccountIdentification1",
+          "min": 1,
+          "max": 1,
+          "definition": "Unique identification of an account, as assigned by the account servicer, using an identification scheme."
+        }
+      ],
+      "choice": true
+    },
+    "AccountSchemeName1Choice": {
+      "isoName": "AccountSchemeName1Choice",
+      "definition": "Sets of elements to identify a name of the identification scheme.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalAccountIdentification1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Name of the identification scheme, in a coded form as published in an external list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Name of the identification scheme, in a free text form."
+        }
+      ],
+      "choice": true
+    },
+    "ActiveCurrencyAndAmount": {
+      "isoName": "ActiveCurrencyAndAmount",
+      "definition": "A number of monetary units specified in an active currency where the unit of currency is explicit and compliant with ISO 4217.",
+      "elements": [],
+      "choice": false,
+      "content": {
+        "base": "ActiveCurrencyAndAmount_SimpleType",
+        "attributes": [
+          {
+            "name": "Ccy",
+            "type": "ActiveCurrencyCode",
+            "required": true
+          }
+        ]
+      }
+    },
+    "ActiveOrHistoricCurrencyAndAmount": {
+      "isoName": "ActiveOrHistoricCurrencyAndAmount",
+      "definition": "A number of monetary units specified in an active or a historic currency where the unit of currency is explicit and compliant with ISO 4217.",
+      "elements": [],
+      "choice": false,
+      "content": {
+        "base": "ActiveOrHistoricCurrencyAndAmount_SimpleType",
+        "attributes": [
+          {
+            "name": "Ccy",
+            "type": "ActiveOrHistoricCurrencyCode",
+            "required": true
+          }
+        ]
+      }
+    },
+    "AdditionalDateTime1": {
+      "isoName": "AdditionalDateTime1",
+      "definition": "Series of additional dates related to the payment.",
+      "elements": [
+        {
+          "tag": "AccptncDtTm",
+          "isoName": "AcceptanceDateTime",
+          "type": "ISODateTime",
+          "min": 0,
+          "max": 1,
+          "definition": "Point in time when the payment order from the initiating party meets the processing conditions of the account servicing agent. This means that the account servicing agent has received the payment order and has applied checks such as authorisation, availability of funds."
+        },
+        {
+          "tag": "PoolgAdjstmntDt",
+          "isoName": "PoolingAdjustmentDate",
+          "type": "ISODate",
+          "min": 0,
+          "max": 1,
+          "definition": "Date used for the correction of the value date of a cash pool movement that has been posted with a different value date."
+        },
+        {
+          "tag": "XpryDtTm",
+          "isoName": "ExpiryDateTime",
+          "type": "ISODateTime",
+          "min": 0,
+          "max": 1,
+          "definition": "Date and time on which the payment should be expired if it has not settled."
+        }
+      ],
+      "choice": false
+    },
+    "AddressType3Choice": {
+      "isoName": "AddressType3Choice",
+      "definition": "Choice of formats for the type of address.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "AddressType2Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Type of address expressed as a code."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "GenericIdentification30",
+          "min": 1,
+          "max": 1,
+          "definition": "Type of address expressed as a proprietary code."
+        }
+      ],
+      "choice": true
+    },
+    "BranchAndFinancialInstitutionIdentification8": {
+      "isoName": "BranchAndFinancialInstitutionIdentification8",
+      "definition": "Unique and unambiguous identification of a financial institution or a branch of a financial institution.",
+      "elements": [
+        {
+          "tag": "FinInstnId",
+          "isoName": "FinancialInstitutionIdentification",
+          "type": "FinancialInstitutionIdentification23",
+          "min": 1,
+          "max": 1,
+          "definition": "Unique and unambiguous identification of a financial institution, as assigned under an internationally recognised or proprietary identification scheme."
+        },
+        {
+          "tag": "BrnchId",
+          "isoName": "BranchIdentification",
+          "type": "BranchData5",
+          "min": 0,
+          "max": 1,
+          "definition": "Identifies a specific branch of a financial institution.\n\nUsage: This component should be used in case the identification information in the financial institution component does not provide identification up to branch level."
+        }
+      ],
+      "choice": false
+    },
+    "BranchData5": {
+      "isoName": "BranchData5",
+      "definition": "Information that locates and identifies a specific branch of a financial institution.",
+      "elements": [
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique and unambiguous identification of a branch of a financial institution."
+        },
+        {
+          "tag": "LEI",
+          "isoName": "LEI",
+          "type": "LEIIdentifier",
+          "min": 0,
+          "max": 1,
+          "definition": "Legal entity identification for the branch of the financial institution."
+        },
+        {
+          "tag": "Nm",
+          "isoName": "Name",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Name by which an agent is known and which is usually used to identify that agent."
+        },
+        {
+          "tag": "PstlAdr",
+          "isoName": "PostalAddress",
+          "type": "PostalAddress27",
+          "min": 0,
+          "max": 1,
+          "definition": "Information that locates and identifies a specific address, as defined by postal services."
+        }
+      ],
+      "choice": false
+    },
+    "CashAccount40": {
+      "isoName": "CashAccount40",
+      "definition": "Provides the details to identify an account.",
+      "elements": [
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "AccountIdentification4Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique and unambiguous identification for the account between the account owner and the account servicer."
+        },
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "CashAccountType2Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the nature, or use of the account."
+        },
+        {
+          "tag": "Ccy",
+          "isoName": "Currency",
+          "type": "ActiveOrHistoricCurrencyCode",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification of the currency in which the account is held. \n\nUsage: Currency should only be used in case one and the same account number covers several currencies\nand the initiating party needs to identify which currency needs to be used for settlement on the account."
+        },
+        {
+          "tag": "Nm",
+          "isoName": "Name",
+          "type": "Max70Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Name of the account, as assigned by the account servicing institution, in agreement with the account owner in order to provide an additional means of identification of the account.\n\nUsage: The account name is different from the account owner name. The account name is used in certain user communities to provide a means of identifying the account, in addition to the account owner's identity and the account number."
+        },
+        {
+          "tag": "Prxy",
+          "isoName": "Proxy",
+          "type": "ProxyAccountIdentification1",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies an alternate assumed name for the identification of the account."
+        }
+      ],
+      "choice": false
+    },
+    "CashAccountType2Choice": {
+      "isoName": "CashAccountType2Choice",
+      "definition": "Nature or use of the account.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalCashAccountType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Account type, in a coded form."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Nature or use of the account in a proprietary form."
+        }
+      ],
+      "choice": true
+    },
+    "CategoryPurpose1Choice": {
+      "isoName": "CategoryPurpose1Choice",
+      "definition": "Specifies the high level purpose of the instruction based on a set of pre-defined categories.\nUsage: This is used by the initiating party to provide information concerning the processing of the payment. It is likely to trigger special processing by any of the agents involved in the payment chain.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalCategoryPurpose1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Category purpose, as published in an external category purpose code list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Category purpose, in a proprietary form."
+        }
+      ],
+      "choice": true
+    },
+    "ChargeType3Choice": {
+      "isoName": "ChargeType3Choice",
+      "definition": "Specifies the charge type.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalChargeType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Charge type, in a coded form."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "GenericIdentification3",
+          "min": 1,
+          "max": 1,
+          "definition": "Type of charge in a proprietary form, as defined by the issuer."
+        }
+      ],
+      "choice": true
+    },
+    "Charges16": {
+      "isoName": "Charges16",
+      "definition": "Provides information on the charges related to the payment transaction.",
+      "elements": [
+        {
+          "tag": "Amt",
+          "isoName": "Amount",
+          "type": "ActiveOrHistoricCurrencyAndAmount",
+          "min": 1,
+          "max": 1,
+          "definition": "Transaction charges to be paid by the charge bearer."
+        },
+        {
+          "tag": "Agt",
+          "isoName": "Agent",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 1,
+          "max": 1,
+          "definition": "Agent that takes the transaction charges or to which the transaction charges are due."
+        },
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "ChargeType3Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Defines the type of charges."
+        }
+      ],
+      "choice": false
+    },
+    "ClearingSystemIdentification2Choice": {
+      "isoName": "ClearingSystemIdentification2Choice",
+      "definition": "Choice of a clearing system identifier.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalClearingSystemIdentification1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Identification of a clearing system, in a coded form as published in an external list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Identification code for a clearing system, that has not yet been identified in the list of clearing systems."
+        }
+      ],
+      "choice": true
+    },
+    "ClearingSystemIdentification3Choice": {
+      "isoName": "ClearingSystemIdentification3Choice",
+      "definition": "Specifies the clearing system identification.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalCashClearingSystem1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Infrastructure through which the payment instruction is processed, as published in an external clearing system identification code list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Clearing system identification in a proprietary form."
+        }
+      ],
+      "choice": true
+    },
+    "ClearingSystemMemberIdentification2": {
+      "isoName": "ClearingSystemMemberIdentification2",
+      "definition": "Unique identification, as assigned by a clearing system, to unambiguously identify a member of the clearing system.",
+      "elements": [
+        {
+          "tag": "ClrSysId",
+          "isoName": "ClearingSystemIdentification",
+          "type": "ClearingSystemIdentification2Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Specification of a pre-agreed offering between clearing agents or the channel through which the payment instruction is processed."
+        },
+        {
+          "tag": "MmbId",
+          "isoName": "MemberIdentification",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Identification of a member of a clearing system."
+        }
+      ],
+      "choice": false
+    },
+    "Contact13": {
+      "isoName": "Contact13",
+      "definition": "Specifies the details of the contact person.",
+      "elements": [
+        {
+          "tag": "NmPrfx",
+          "isoName": "NamePrefix",
+          "type": "NamePrefix2Code",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the terms used to formally address a person."
+        },
+        {
+          "tag": "Nm",
+          "isoName": "Name",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Name by which a party is known and which is usually used to identify that party."
+        },
+        {
+          "tag": "PhneNb",
+          "isoName": "PhoneNumber",
+          "type": "PhoneNumber",
+          "min": 0,
+          "max": 1,
+          "definition": "Collection of information that identifies a phone number, as defined by telecom services."
+        },
+        {
+          "tag": "MobNb",
+          "isoName": "MobileNumber",
+          "type": "PhoneNumber",
+          "min": 0,
+          "max": 1,
+          "definition": "Collection of information that identifies a mobile phone number, as defined by telecom services."
+        },
+        {
+          "tag": "FaxNb",
+          "isoName": "FaxNumber",
+          "type": "PhoneNumber",
+          "min": 0,
+          "max": 1,
+          "definition": "Collection of information that identifies a FAX number, as defined by telecom services."
+        },
+        {
+          "tag": "URLAdr",
+          "isoName": "URLAddress",
+          "type": "Max2048Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Address for the Universal Resource Locator (URL), for example an address used over the www (HTTP) service."
+        },
+        {
+          "tag": "EmailAdr",
+          "isoName": "EmailAddress",
+          "type": "Max256Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Address for electronic mail (e-mail)."
+        },
+        {
+          "tag": "EmailPurp",
+          "isoName": "EmailPurpose",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Purpose for which an email address may be used."
+        },
+        {
+          "tag": "JobTitl",
+          "isoName": "JobTitle",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Title of the function."
+        },
+        {
+          "tag": "Rspnsblty",
+          "isoName": "Responsibility",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Role of a person in an organisation."
+        },
+        {
+          "tag": "Dept",
+          "isoName": "Department",
+          "type": "Max70Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification of a division of a large organisation or building."
+        },
+        {
+          "tag": "Othr",
+          "isoName": "Other",
+          "type": "OtherContact1",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Contact details in another form."
+        },
+        {
+          "tag": "PrefrdMtd",
+          "isoName": "PreferredMethod",
+          "type": "PreferredContactMethod2Code",
+          "min": 0,
+          "max": 1,
+          "definition": "Preferred method used to reach the contact."
+        }
+      ],
+      "choice": false
+    },
+    "CreditTransferMandateData1": {
+      "isoName": "CreditTransferMandateData1",
+      "definition": "Provides further details related to a credit transfer mandate signed between the creditor and the debtor.",
+      "elements": [
+        {
+          "tag": "MndtId",
+          "isoName": "MandateIdentification",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique identification, as assigned by the creditor, to unambiguously identify the mandate."
+        },
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "MandateTypeInformation2",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the type of mandate, such as paper, electronic or scheme."
+        },
+        {
+          "tag": "DtOfSgntr",
+          "isoName": "DateOfSignature",
+          "type": "ISODate",
+          "min": 0,
+          "max": 1,
+          "definition": "Date on which the credit transfer mandate has been signed by the debtor."
+        },
+        {
+          "tag": "DtOfVrfctn",
+          "isoName": "DateOfVerification",
+          "type": "ISODateTime",
+          "min": 0,
+          "max": 1,
+          "definition": "Date on which the credit transfer mandate has been verified."
+        },
+        {
+          "tag": "ElctrncSgntr",
+          "isoName": "ElectronicSignature",
+          "type": "Max10KBinary",
+          "min": 0,
+          "max": 1,
+          "definition": "Additional security provisions, such as a digital signature, as provided by the debtor."
+        },
+        {
+          "tag": "FrstPmtDt",
+          "isoName": "FirstPaymentDate",
+          "type": "ISODate",
+          "min": 0,
+          "max": 1,
+          "definition": "Date of the first payment of a recurrent credit transfer as per the mandate."
+        },
+        {
+          "tag": "FnlPmtDt",
+          "isoName": "FinalPaymentDate",
+          "type": "ISODate",
+          "min": 0,
+          "max": 1,
+          "definition": "Date of the final payment of a recurrent credit transfer as per the mandate."
+        },
+        {
+          "tag": "Frqcy",
+          "isoName": "Frequency",
+          "type": "Frequency36Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Regularity with which credit transfer instructions are to be created and processed."
+        },
+        {
+          "tag": "Rsn",
+          "isoName": "Reason",
+          "type": "MandateSetupReason1Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Reason for the setup of the credit transfer mandate.\n\nUsage: \nThe reason will allow the user to distinguish between different mandates for the same creditor."
+        }
+      ],
+      "choice": false
+    },
+    "CreditTransferTransaction73": {
+      "isoName": "CreditTransferTransaction73",
+      "definition": "Provides further details specific to the individual transaction(s) included in the message.",
+      "elements": [
+        {
+          "tag": "PmtId",
+          "isoName": "PaymentIdentification",
+          "type": "PaymentIdentification13",
+          "min": 1,
+          "max": 1,
+          "definition": "Set of elements used to reference a payment instruction."
+        },
+        {
+          "tag": "PmtTpInf",
+          "isoName": "PaymentTypeInformation",
+          "type": "PaymentTypeInformation28",
+          "min": 0,
+          "max": 1,
+          "definition": "Set of elements used to further specify the type of transaction."
+        },
+        {
+          "tag": "IntrBkSttlmAmt",
+          "isoName": "InterbankSettlementAmount",
+          "type": "ActiveCurrencyAndAmount",
+          "min": 1,
+          "max": 1,
+          "definition": "Amount of money moved between the instructing agent and the instructed agent."
+        },
+        {
+          "tag": "IntrBkSttlmDt",
+          "isoName": "InterbankSettlementDate",
+          "type": "ISODate",
+          "min": 0,
+          "max": 1,
+          "definition": "Date on which the amount of money ceases to be available to the agent that owes it and when the amount of money becomes available to the agent to which it is due."
+        },
+        {
+          "tag": "SttlmPrty",
+          "isoName": "SettlementPriority",
+          "type": "Priority3Code",
+          "min": 0,
+          "max": 1,
+          "definition": "Indicator of the urgency or order of importance that the instructing party would like the instructed party to apply to the processing of the settlement instruction."
+        },
+        {
+          "tag": "SttlmTmIndctn",
+          "isoName": "SettlementTimeIndication",
+          "type": "SettlementDateTimeIndication1",
+          "min": 0,
+          "max": 1,
+          "definition": "Provides information on the occurred settlement time of the payment transaction."
+        },
+        {
+          "tag": "SttlmTmReq",
+          "isoName": "SettlementTimeRequest",
+          "type": "SettlementTimeRequest2",
+          "min": 0,
+          "max": 1,
+          "definition": "Provides information on the requested settlement time of the payment instruction."
+        },
+        {
+          "tag": "AddtlDtTm",
+          "isoName": "AdditionalDateTime",
+          "type": "AdditionalDateTime1",
+          "min": 0,
+          "max": 1,
+          "definition": "Series of additional date and time data that can be applied to the payment."
+        },
+        {
+          "tag": "InstdAmt",
+          "isoName": "InstructedAmount",
+          "type": "ActiveOrHistoricCurrencyAndAmount",
+          "min": 0,
+          "max": 1,
+          "definition": "Amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency as ordered by the initiating party.\nUsage: This amount has to be transported unchanged through the transaction chain."
+        },
+        {
+          "tag": "XchgRate",
+          "isoName": "ExchangeRate",
+          "type": "BaseOneRate",
+          "min": 0,
+          "max": 1,
+          "definition": "Factor used to convert an amount from one currency into another. This reflects the price at which one currency was bought with another currency."
+        },
+        {
+          "tag": "AgrdRate",
+          "isoName": "AgreedRate",
+          "type": "CurrencyExchange26",
+          "min": 0,
+          "max": 1,
+          "definition": "Set of elements providing information about a pre-agreed exchange rate.\n\nUsage: This element can only be used where agreed either bilaterally or multilaterally as part of a payment scheme."
+        },
+        {
+          "tag": "ChrgBr",
+          "isoName": "ChargeBearer",
+          "type": "ChargeBearerType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies which party/parties will bear the charges associated with the processing of the payment transaction."
+        },
+        {
+          "tag": "ChrgsInf",
+          "isoName": "ChargesInformation",
+          "type": "Charges16",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Provides information on the charges to be paid by the charge bearer(s) related to the payment transaction."
+        },
+        {
+          "tag": "MndtRltdInf",
+          "isoName": "MandateRelatedInformation",
+          "type": "CreditTransferMandateData1",
+          "min": 0,
+          "max": 1,
+          "definition": "Provides further details of the mandate signed between the creditor and the debtor."
+        },
+        {
+          "tag": "PmtSgntr",
+          "isoName": "PaymentSignature",
+          "type": "CryptographicKey1Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Cryptographic key identifying terms agreed by agents within the payment chain pre-settlement. This key can also be used post-settlement to confirm the payment has been credited as intended."
+        },
+        {
+          "tag": "PrvsInstgAgt1",
+          "isoName": "PreviousInstructingAgent1",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent between the debtor's agent and the instructing agent. \n\nUsage: If more than one previous instructing agent is present, then PreviousInstructingAgent1 identifies the agent between the DebtorAgent and the PreviousInstructingAgent2."
+        },
+        {
+          "tag": "PrvsInstgAgt1Acct",
+          "isoName": "PreviousInstructingAgent1Account",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the previous instructing agent at its servicing agent in the payment chain."
+        },
+        {
+          "tag": "PrvsInstgAgt2",
+          "isoName": "PreviousInstructingAgent2",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent between the debtor's agent and the instructing agent. \n\nUsage: If more than two previous instructing agent are present, then PreviousInstructingAgent2 identifies the agent between the PreviousInstructingAgent1 and the PreviousInstructingAgent3."
+        },
+        {
+          "tag": "PrvsInstgAgt2Acct",
+          "isoName": "PreviousInstructingAgent2Account",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the previous instructing agent at its servicing agent in the payment chain."
+        },
+        {
+          "tag": "PrvsInstgAgt3",
+          "isoName": "PreviousInstructingAgent3",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent between the debtor's agent and the instructing agent. \n\nUsage: If PreviousInstructingAgent3 is present, then PreviousInstructingAgent3 identifies the agent between the PreviousInstructingAgent2 and the InstructingAgent."
+        },
+        {
+          "tag": "PrvsInstgAgt3Acct",
+          "isoName": "PreviousInstructingAgent3Account",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the previous instructing agent at its servicing agent in the payment chain."
+        },
+        {
+          "tag": "InstgAgt",
+          "isoName": "InstructingAgent",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent that instructs the next party in the chain to carry out the (set of) instruction(s)."
+        },
+        {
+          "tag": "InstdAgt",
+          "isoName": "InstructedAgent",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent that is instructed by the previous party in the chain to carry out the (set of) instruction(s)."
+        },
+        {
+          "tag": "IntrmyAgt1",
+          "isoName": "IntermediaryAgent1",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent between the debtor's agent and the creditor's agent.\n\nUsage: If more than one intermediary agent is present, then IntermediaryAgent1 identifies the agent between the DebtorAgent and the IntermediaryAgent2."
+        },
+        {
+          "tag": "IntrmyAgt1Acct",
+          "isoName": "IntermediaryAgent1Account",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the intermediary agent 1 at its servicing agent in the payment chain."
+        },
+        {
+          "tag": "IntrmyAgt2",
+          "isoName": "IntermediaryAgent2",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent between the debtor's agent and the creditor's agent.\n\nUsage: If more than two intermediary agents are present, then IntermediaryAgent2 identifies the agent between the IntermediaryAgent1 and the IntermediaryAgent3."
+        },
+        {
+          "tag": "IntrmyAgt2Acct",
+          "isoName": "IntermediaryAgent2Account",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the intermediary agent 2 at its servicing agent in the payment chain."
+        },
+        {
+          "tag": "IntrmyAgt3",
+          "isoName": "IntermediaryAgent3",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent between the debtor's agent and the creditor's agent.\n\nUsage: If IntermediaryAgent3 is present, then it identifies the agent between the IntermediaryAgent 2 and the CreditorAgent."
+        },
+        {
+          "tag": "IntrmyAgt3Acct",
+          "isoName": "IntermediaryAgent3Account",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the intermediary agent 3 at its servicing agent in the payment chain."
+        },
+        {
+          "tag": "UltmtDbtr",
+          "isoName": "UltimateDebtor",
+          "type": "PartyIdentification272",
+          "min": 0,
+          "max": 1,
+          "definition": "Ultimate party that owes an amount of money to the (ultimate) creditor."
+        },
+        {
+          "tag": "InitgPty",
+          "isoName": "InitiatingParty",
+          "type": "PartyIdentification272",
+          "min": 0,
+          "max": 1,
+          "definition": "Party that initiates the payment.\nUsage: This can be either the debtor or a party that initiates the credit transfer on behalf of the debtor."
+        },
+        {
+          "tag": "Dbtr",
+          "isoName": "Debtor",
+          "type": "PartyIdentification272",
+          "min": 1,
+          "max": 1,
+          "definition": "Party that owes an amount of money to the (ultimate) creditor."
+        },
+        {
+          "tag": "DbtrAcct",
+          "isoName": "DebtorAccount",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the debtor to which a debit entry will be made as a result of the transaction."
+        },
+        {
+          "tag": "DbtrAgt",
+          "isoName": "DebtorAgent",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 1,
+          "max": 1,
+          "definition": "Financial institution servicing an account for the debtor."
+        },
+        {
+          "tag": "DbtrAgtAcct",
+          "isoName": "DebtorAgentAccount",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the debtor agent at its servicing agent in the payment chain."
+        },
+        {
+          "tag": "CdtrAgt",
+          "isoName": "CreditorAgent",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 1,
+          "max": 1,
+          "definition": "Financial institution servicing an account for the creditor."
+        },
+        {
+          "tag": "CdtrAgtAcct",
+          "isoName": "CreditorAgentAccount",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the creditor agent at its servicing agent to which a credit entry will be made as a result of the payment transaction."
+        },
+        {
+          "tag": "Cdtr",
+          "isoName": "Creditor",
+          "type": "PartyIdentification272",
+          "min": 1,
+          "max": 1,
+          "definition": "Party to which an amount of money is due."
+        },
+        {
+          "tag": "CdtrAcct",
+          "isoName": "CreditorAccount",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the creditor to which a credit entry will be posted as a result of the payment transaction."
+        },
+        {
+          "tag": "UltmtCdtr",
+          "isoName": "UltimateCreditor",
+          "type": "PartyIdentification272",
+          "min": 0,
+          "max": 1,
+          "definition": "Ultimate party to which an amount of money is due."
+        },
+        {
+          "tag": "InstrForCdtrAgt",
+          "isoName": "InstructionForCreditorAgent",
+          "type": "InstructionForCreditorAgent3",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Further information related to the processing of the payment instruction, provided by the initiating party, and intended for the creditor agent."
+        },
+        {
+          "tag": "InstrForNxtAgt",
+          "isoName": "InstructionForNextAgent",
+          "type": "InstructionForNextAgent1",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Further information related to the processing of the payment instruction that may need to be acted upon by the next agent. \n\nUsage: The next agent may not be the creditor agent.\nThe instruction can relate to a level of service, can be an instruction that has to be executed by the agent, or can be information required by the next agent."
+        },
+        {
+          "tag": "Purp",
+          "isoName": "Purpose",
+          "type": "Purpose2Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Underlying reason for the payment transaction.\nUsage: Purpose is used by the end-customers, that is initiating party, (ultimate) debtor, (ultimate) creditor to provide information concerning the nature of the payment. Purpose is a content element, which is not used for processing by any of the agents involved in the payment chain."
+        },
+        {
+          "tag": "RgltryRptg",
+          "isoName": "RegulatoryReporting",
+          "type": "RegulatoryReporting10",
+          "min": 0,
+          "max": 10,
+          "definition": "Information needed due to regulatory and statutory requirements."
+        },
+        {
+          "tag": "Tax",
+          "isoName": "Tax",
+          "type": "TaxData1",
+          "min": 0,
+          "max": 1,
+          "definition": "Provides details on the tax."
+        },
+        {
+          "tag": "RltdRmtInf",
+          "isoName": "RelatedRemittanceInformation",
+          "type": "RemittanceLocation8",
+          "min": 0,
+          "max": 10,
+          "definition": "Provides information related to the handling of the remittance information by any of the agents in the transaction processing chain."
+        },
+        {
+          "tag": "RmtInf",
+          "isoName": "RemittanceInformation",
+          "type": "RemittanceInformation26",
+          "min": 0,
+          "max": 1,
+          "definition": "Information supplied to enable the matching of an entry with the items that the transfer is intended to settle, such as commercial invoices in an accounts' receivable system."
+        },
+        {
+          "tag": "SplmtryData",
+          "isoName": "SupplementaryData",
+          "type": "SupplementaryData1",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Additional information that cannot be captured in the structured elements and/or any other specific block."
+        }
+      ],
+      "choice": false
+    },
+    "CreditorReferenceInformation3": {
+      "isoName": "CreditorReferenceInformation3",
+      "definition": "Reference information provided by the creditor to allow the identification of the underlying documents.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "CreditorReferenceType3",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the type of creditor reference."
+        },
+        {
+          "tag": "Ref",
+          "isoName": "Reference",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique reference, as assigned by the creditor, to unambiguously refer to the payment transaction.\n\nUsage: If available, the initiating party should provide this reference in the structured remittance information, to enable reconciliation by the creditor upon receipt of the amount of money.\n\nIf the business context requires the use of a creditor reference or a payment remit identification, and only one identifier can be passed through the end-to-end chain, the creditor's reference or payment remittance identification should be quoted in the end-to-end transaction identification."
+        }
+      ],
+      "choice": false
+    },
+    "CreditorReferenceType2Choice": {
+      "isoName": "CreditorReferenceType2Choice",
+      "definition": "Specifies the type of document referred by the creditor.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalCreditorReferenceType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Type of creditor reference, as published in an external creditor reference type code set."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Type of creditor reference, in a proprietary form."
+        }
+      ],
+      "choice": true
+    },
+    "CreditorReferenceType3": {
+      "isoName": "CreditorReferenceType3",
+      "definition": "Specifies the type of creditor reference.",
+      "elements": [
+        {
+          "tag": "CdOrPrtry",
+          "isoName": "CodeOrProprietary",
+          "type": "CreditorReferenceType2Choice",
+          "min": 1,
+          "max": 1,
+          "definition": "Coded or proprietary format creditor reference type."
+        },
+        {
+          "tag": "Issr",
+          "isoName": "Issuer",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Entity that assigns the credit reference type."
+        }
+      ],
+      "choice": false
+    },
+    "CryptographicKey1Choice": {
+      "isoName": "CryptographicKey1Choice",
+      "definition": "Choice of format for a cryptographic key which ensures that a payment can only be executed on the terms previously agreed.",
+      "elements": [
+        {
+          "tag": "ILPV4",
+          "isoName": "ILPV4",
+          "type": "HexBinaryText",
+          "min": 1,
+          "max": 1,
+          "definition": "Cryptographic key represented as a ILP V4 packet."
+        },
+        {
+          "tag": "Sgntr",
+          "isoName": "Signature",
+          "type": "SHA256SignatureText",
+          "min": 1,
+          "max": 1,
+          "definition": "Cryptographic key represented as a signature."
+        }
+      ],
+      "choice": true
+    },
+    "CurrencyExchange26": {
+      "isoName": "CurrencyExchange26",
+      "definition": "Set of elements used to provide details of the currency exchange.",
+      "elements": [
+        {
+          "tag": "UnitCcy",
+          "isoName": "UnitCurrency",
+          "type": "ActiveOrHistoricCurrencyCode",
+          "min": 0,
+          "max": 1,
+          "definition": "Currency in which the rate of exchange is expressed in a currency exchange. In the example GBP 1.00 = USD 1.30, the unit currency is GBP."
+        },
+        {
+          "tag": "QtdCcy",
+          "isoName": "QuotedCurrency",
+          "type": "ActiveOrHistoricCurrencyCode",
+          "min": 0,
+          "max": 1,
+          "definition": "Currency into which the base (unit) currency is converted. In the example GBP 1.00 = USD 1.30, the unit currency is USD."
+        },
+        {
+          "tag": "PreAgrdXchgRate",
+          "isoName": "PreAgreedExchangeRate",
+          "type": "BaseOneRate",
+          "min": 1,
+          "max": 1,
+          "definition": "The value of one currency expressed in relation to another currency. ExchangeRate\nexpresses the ratio between UnitCurrency and QuotedCurrency. (Amount in UnitCurrency * ExchangeRate = Amount in QuotedCurrency)"
+        },
+        {
+          "tag": "QtnDtTm",
+          "isoName": "QuotationDateTime",
+          "type": "ISODateTime",
+          "min": 0,
+          "max": 1,
+          "definition": "Date and time at which an exchange rate is quoted."
+        },
+        {
+          "tag": "QtId",
+          "isoName": "QuoteIdentification",
+          "type": "UUIDv4Identifier",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique identification to unambiguously identify the quote issued by the ForeignExchangeAgent.\n\nUsage: This identification must be passed on throughout the entire end-to-end chain."
+        },
+        {
+          "tag": "FXAgt",
+          "isoName": "ForeignExchangeAgent",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent who undertakes the conversion of funds from the unit currency to the quoted currency.\n\nUsage: The ForeignExchangeAgent must receive the AgreedRate block unchanged."
+        }
+      ],
+      "choice": false
+    },
+    "DateAndPlaceOfBirth1": {
+      "isoName": "DateAndPlaceOfBirth1",
+      "definition": "Date and place of birth of a person.",
+      "elements": [
+        {
+          "tag": "BirthDt",
+          "isoName": "BirthDate",
+          "type": "ISODate",
+          "min": 1,
+          "max": 1,
+          "definition": "Date on which a person is born."
+        },
+        {
+          "tag": "PrvcOfBirth",
+          "isoName": "ProvinceOfBirth",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Province where a person was born."
+        },
+        {
+          "tag": "CityOfBirth",
+          "isoName": "CityOfBirth",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "City where a person was born."
+        },
+        {
+          "tag": "CtryOfBirth",
+          "isoName": "CountryOfBirth",
+          "type": "CountryCode",
+          "min": 1,
+          "max": 1,
+          "definition": "Country where a person was born."
+        }
+      ],
+      "choice": false
+    },
+    "DateAndType1": {
+      "isoName": "DateAndType1",
+      "definition": "Specifies the date and type associated with the referred document.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "DateType2Choice",
+          "min": 1,
+          "max": 1,
+          "definition": "Type of date associated with the referred document."
+        },
+        {
+          "tag": "Dt",
+          "isoName": "Date",
+          "type": "ISODate",
+          "min": 1,
+          "max": 1,
+          "definition": "Date associated with the referred document."
+        }
+      ],
+      "choice": false
+    },
+    "DatePeriod2": {
+      "isoName": "DatePeriod2",
+      "definition": "Range of time defined by a start date and an end date.",
+      "elements": [
+        {
+          "tag": "FrDt",
+          "isoName": "FromDate",
+          "type": "ISODate",
+          "min": 1,
+          "max": 1,
+          "definition": "Start date of the range."
+        },
+        {
+          "tag": "ToDt",
+          "isoName": "ToDate",
+          "type": "ISODate",
+          "min": 1,
+          "max": 1,
+          "definition": "End date of the range."
+        }
+      ],
+      "choice": false
+    },
+    "DateType2Choice": {
+      "isoName": "DateType2Choice",
+      "definition": "Specifies the type of date for the referred document.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalDateType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies the date type, as published in an external date type code set."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies the date type, in a free-text form."
+        }
+      ],
+      "choice": true
+    },
+    "DocumentAdjustment1": {
+      "isoName": "DocumentAdjustment1",
+      "definition": "Set of elements used to provide information on the amount and reason of the document adjustment.",
+      "elements": [
+        {
+          "tag": "Amt",
+          "isoName": "Amount",
+          "type": "ActiveOrHistoricCurrencyAndAmount",
+          "min": 1,
+          "max": 1,
+          "definition": "Amount of money of the document adjustment."
+        },
+        {
+          "tag": "CdtDbtInd",
+          "isoName": "CreditDebitIndicator",
+          "type": "CreditDebitCode",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies whether the adjustment must be subtracted or added to the total amount."
+        },
+        {
+          "tag": "Rsn",
+          "isoName": "Reason",
+          "type": "Max4Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the reason for the adjustment."
+        },
+        {
+          "tag": "AddtlInf",
+          "isoName": "AdditionalInformation",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Provides further details on the document adjustment."
+        }
+      ],
+      "choice": false
+    },
+    "DocumentAmount1": {
+      "isoName": "DocumentAmount1",
+      "definition": "Provides details on the amount and type of the referred document.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "DocumentAmountType1Choice",
+          "min": 1,
+          "max": 1,
+          "definition": "Defines the type of amount."
+        },
+        {
+          "tag": "Amt",
+          "isoName": "Amount",
+          "type": "ActiveOrHistoricCurrencyAndAmount",
+          "min": 1,
+          "max": 1,
+          "definition": "Amount of money for the referred document."
+        }
+      ],
+      "choice": false
+    },
+    "DocumentAmountType1Choice": {
+      "isoName": "DocumentAmountType1Choice",
+      "definition": "Specifies the amount type.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalDocumentAmountType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies the amount type, as published in an external referred amount code set."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies the amount type, in a free-text form."
+        }
+      ],
+      "choice": true
+    },
+    "DocumentLineIdentification1": {
+      "isoName": "DocumentLineIdentification1",
+      "definition": "Identifies the documents referred to in the remittance information.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "DocumentLineType1",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the type of referred document line identification."
+        },
+        {
+          "tag": "Nb",
+          "isoName": "Number",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification of the type specified for the referred document line."
+        },
+        {
+          "tag": "RltdDt",
+          "isoName": "RelatedDate",
+          "type": "ISODate",
+          "min": 0,
+          "max": 1,
+          "definition": "Date associated with the referred document line."
+        }
+      ],
+      "choice": false
+    },
+    "DocumentLineInformation2": {
+      "isoName": "DocumentLineInformation2",
+      "definition": "Provides document line information.\n",
+      "elements": [
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "DocumentLineIdentification1",
+          "min": 1,
+          "max": "unbounded",
+          "definition": "Provides identification of the document line."
+        },
+        {
+          "tag": "Desc",
+          "isoName": "Description",
+          "type": "Max2048Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Description associated with the document line."
+        },
+        {
+          "tag": "Amt",
+          "isoName": "Amount",
+          "type": "RemittanceAmount4",
+          "min": 0,
+          "max": 1,
+          "definition": "Provides details on the amounts of the document line."
+        }
+      ],
+      "choice": false
+    },
+    "DocumentLineType1": {
+      "isoName": "DocumentLineType1",
+      "definition": "Specifies the type of the document line identification.",
+      "elements": [
+        {
+          "tag": "CdOrPrtry",
+          "isoName": "CodeOrProprietary",
+          "type": "DocumentLineType1Choice",
+          "min": 1,
+          "max": 1,
+          "definition": "Provides the type details of the referred document line identification."
+        },
+        {
+          "tag": "Issr",
+          "isoName": "Issuer",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification of the issuer of the reference document line identificationtype."
+        }
+      ],
+      "choice": false
+    },
+    "DocumentLineType1Choice": {
+      "isoName": "DocumentLineType1Choice",
+      "definition": "Specifies the type of the document line identification.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalDocumentLineType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Line identification type in a coded form."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Proprietary identification of the type of the remittance document."
+        }
+      ],
+      "choice": true
+    },
+    "DocumentType1": {
+      "isoName": "DocumentType1",
+      "definition": "Specifies the type of the document referred in the remittance information.",
+      "elements": [
+        {
+          "tag": "CdOrPrtry",
+          "isoName": "CodeOrProprietary",
+          "type": "DocumentType2Choice",
+          "min": 1,
+          "max": 1,
+          "definition": "Coded or proprietary format referred document type."
+        },
+        {
+          "tag": "Issr",
+          "isoName": "Issuer",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification of the issuer of the reference document type."
+        }
+      ],
+      "choice": false
+    },
+    "DocumentType2Choice": {
+      "isoName": "DocumentType2Choice",
+      "definition": "Specifies the type of the document.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalDocumentType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Type of remittance document, as published in an external document type code set."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Type of remittance document, in a proprietary form."
+        }
+      ],
+      "choice": true
+    },
+    "FIToFICustomerCreditTransferV14": {
+      "isoName": "FIToFICustomerCreditTransferV14",
+      "definition": "Scope\nThe FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer message is sent by the debtor agent to the creditor agent, directly or through other agents and/or a payment clearing and settlement system. It is used to move funds from a debtor account to a creditor.\nUsage\nThe FIToFICustomerCreditTransfer message is exchanged between agents and can contain one or more customer credit transfer instructions.\nThe FIToFICustomerCreditTransfer message does not allow for grouping: a CreditTransferTransactionInformation block must be present for each credit transfer transaction.\nThe FIToFICustomerCreditTransfer message can be used in different ways:\n- If the instructing agent and the instructed agent wish to use their direct account relationship in the currency of the transfer then the message contains both the funds for the customer transfer(s) as well as the payment details;\n- If the instructing agent and the instructed agent have no direct account relationship in the currency of the transfer, or do not wish to use their account relationship, then other (reimbursement) agents will be involved to cover for the customer transfer(s). The FIToFICustomerCreditTransfer contains only the payment details and the instructing agent must cover the customer transfer by sending a FinancialInstitutionCreditTransfer to a reimbursement agent. This payment method is called the Cover method;\n- If more than two financial institutions are involved in the payment chain and if the FIToFICustomerCreditTransfer is sent from one financial institution to the next financial institution in the payment chain, then the payment method is called the Serial method.\nThe FIToFICustomerCreditTransfer message can be used in domestic and cross-border scenarios.",
+      "elements": [
+        {
+          "tag": "GrpHdr",
+          "isoName": "GroupHeader",
+          "type": "GroupHeader131",
+          "min": 1,
+          "max": 1,
+          "definition": "Set of characteristics shared by all individual transactions included in the message."
+        },
+        {
+          "tag": "CdtTrfTxInf",
+          "isoName": "CreditTransferTransactionInformation",
+          "type": "CreditTransferTransaction73",
+          "min": 1,
+          "max": "unbounded",
+          "definition": "Set of elements providing information specific to the individual credit transfer(s)."
+        },
+        {
+          "tag": "SplmtryData",
+          "isoName": "SupplementaryData",
+          "type": "SupplementaryData1",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Additional information that cannot be captured in the structured elements and/or any other specific block."
+        }
+      ],
+      "choice": false
+    },
+    "FinancialIdentificationSchemeName1Choice": {
+      "isoName": "FinancialIdentificationSchemeName1Choice",
+      "definition": "Sets of elements to identify a name of the organisation identification scheme.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalFinancialInstitutionIdentification1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Name of the identification scheme, in a coded form as published in an external list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Name of the identification scheme, in a free text form."
+        }
+      ],
+      "choice": true
+    },
+    "FinancialInstitutionIdentification23": {
+      "isoName": "FinancialInstitutionIdentification23",
+      "definition": "Specifies the details to identify a financial institution.",
+      "elements": [
+        {
+          "tag": "BICFI",
+          "isoName": "BICFI",
+          "type": "BICFIDec2014Identifier",
+          "min": 0,
+          "max": 1,
+          "definition": "Code allocated to a financial institution by the ISO 9362 Registration Authority as described in ISO 9362 \"Banking - Banking telecommunication messages - Business identifier code (BIC)\"."
+        },
+        {
+          "tag": "ClrSysMmbId",
+          "isoName": "ClearingSystemMemberIdentification",
+          "type": "ClearingSystemMemberIdentification2",
+          "min": 0,
+          "max": 1,
+          "definition": "Information used to identify a member within a clearing system."
+        },
+        {
+          "tag": "LEI",
+          "isoName": "LEI",
+          "type": "LEIIdentifier",
+          "min": 0,
+          "max": 1,
+          "definition": "Legal entity identifier of the financial institution."
+        },
+        {
+          "tag": "Nm",
+          "isoName": "Name",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Name by which an agent is known and which is usually used to identify that agent."
+        },
+        {
+          "tag": "PstlAdr",
+          "isoName": "PostalAddress",
+          "type": "PostalAddress27",
+          "min": 0,
+          "max": 1,
+          "definition": "Information that locates and identifies a specific address, as defined by postal services."
+        },
+        {
+          "tag": "Othr",
+          "isoName": "Other",
+          "type": "GenericFinancialIdentification1",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique identification of an agent, as assigned by an institution, using an identification scheme."
+        }
+      ],
+      "choice": false
+    },
+    "Frequency36Choice": {
+      "isoName": "Frequency36Choice",
+      "definition": "Choice of format for a frequency, for example, the frequency of payment.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "Frequency6Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies a frequency in terms of a specified period type."
+        },
+        {
+          "tag": "Prd",
+          "isoName": "Period",
+          "type": "FrequencyPeriod1",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies a frequency in terms of a count per period within a specified period type."
+        },
+        {
+          "tag": "PtInTm",
+          "isoName": "PointInTime",
+          "type": "FrequencyAndMoment1",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies a frequency in terms of an exact point in time or moment within a specified period type."
+        }
+      ],
+      "choice": true
+    },
+    "FrequencyAndMoment1": {
+      "isoName": "FrequencyAndMoment1",
+      "definition": "Defines a frequency in terms a specific moment within a specified period type.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "Frequency6Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Period for which the number of instructions are to be created and processed."
+        },
+        {
+          "tag": "PtInTm",
+          "isoName": "PointInTime",
+          "type": "Exact2NumericText",
+          "min": 1,
+          "max": 1,
+          "definition": "Further information on the exact point in time the event should take place."
+        }
+      ],
+      "choice": false
+    },
+    "FrequencyPeriod1": {
+      "isoName": "FrequencyPeriod1",
+      "definition": "Defines a frequency in terms on counts per period for a specific period type.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "Frequency6Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Period for which the number of instructions are to be created and processed."
+        },
+        {
+          "tag": "CntPerPrd",
+          "isoName": "CountPerPeriod",
+          "type": "DecimalNumber",
+          "min": 1,
+          "max": 1,
+          "definition": "Number of instructions to be created and processed during the specified period."
+        }
+      ],
+      "choice": false
+    },
+    "Garnishment4": {
+      "isoName": "Garnishment4",
+      "definition": "Provides remittance information about a payment for garnishment-related purposes.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "GarnishmentType1",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies the type of garnishment."
+        },
+        {
+          "tag": "Grnshee",
+          "isoName": "Garnishee",
+          "type": "PartyIdentification272",
+          "min": 0,
+          "max": 1,
+          "definition": "Ultimate party that owes an amount of money to the (ultimate) creditor, in this case, to the garnisher."
+        },
+        {
+          "tag": "GrnshmtAdmstr",
+          "isoName": "GarnishmentAdministrator",
+          "type": "PartyIdentification272",
+          "min": 0,
+          "max": 1,
+          "definition": "Party on the credit side of the transaction who administers the garnishment on behalf of the ultimate beneficiary."
+        },
+        {
+          "tag": "RefNb",
+          "isoName": "ReferenceNumber",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Reference information that is specific to the agency receiving the garnishment."
+        },
+        {
+          "tag": "Dt",
+          "isoName": "Date",
+          "type": "ISODate",
+          "min": 0,
+          "max": 1,
+          "definition": "Date of payment which garnishment was taken from."
+        },
+        {
+          "tag": "RmtdAmt",
+          "isoName": "RemittedAmount",
+          "type": "ActiveOrHistoricCurrencyAndAmount",
+          "min": 0,
+          "max": 1,
+          "definition": "Amount of money remitted for the referred document."
+        },
+        {
+          "tag": "FmlyMdclInsrncInd",
+          "isoName": "FamilyMedicalInsuranceIndicator",
+          "type": "TrueFalseIndicator",
+          "min": 0,
+          "max": 1,
+          "definition": "Indicates if the person to whom the garnishment applies (that is, the ultimate debtor) has family medical insurance coverage available."
+        },
+        {
+          "tag": "MplyeeTermntnInd",
+          "isoName": "EmployeeTerminationIndicator",
+          "type": "TrueFalseIndicator",
+          "min": 0,
+          "max": 1,
+          "definition": "Indicates if the employment of the person to whom the garnishment applies (that is, the ultimate debtor) has been terminated."
+        }
+      ],
+      "choice": false
+    },
+    "GarnishmentType1": {
+      "isoName": "GarnishmentType1",
+      "definition": "Specifies the type of garnishment.",
+      "elements": [
+        {
+          "tag": "CdOrPrtry",
+          "isoName": "CodeOrProprietary",
+          "type": "GarnishmentType1Choice",
+          "min": 1,
+          "max": 1,
+          "definition": "Provides the type details of the garnishment."
+        },
+        {
+          "tag": "Issr",
+          "isoName": "Issuer",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification of the issuer of the garnishment type."
+        }
+      ],
+      "choice": false
+    },
+    "GarnishmentType1Choice": {
+      "isoName": "GarnishmentType1Choice",
+      "definition": "Specifies the type of garnishment.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalGarnishmentType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Garnishment type in a coded form.\nWould suggest this to be an External Code List to contain:\nGNCS    Garnishment from a third party payer for Child Support\nGNDP    Garnishment from a Direct Payer for Child Support\nGTPP     Garnishment from a third party payer to taxing agency."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Proprietary identification of the type of garnishment."
+        }
+      ],
+      "choice": true
+    },
+    "GenericAccountIdentification1": {
+      "isoName": "GenericAccountIdentification1",
+      "definition": "Information related to a generic account identification.",
+      "elements": [
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "Max34Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Identification assigned by an institution."
+        },
+        {
+          "tag": "SchmeNm",
+          "isoName": "SchemeName",
+          "type": "AccountSchemeName1Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Name of the identification scheme."
+        },
+        {
+          "tag": "Issr",
+          "isoName": "Issuer",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Entity that assigns the identification."
+        }
+      ],
+      "choice": false
+    },
+    "GenericFinancialIdentification1": {
+      "isoName": "GenericFinancialIdentification1",
+      "definition": "Information related to an identification of a financial institution.",
+      "elements": [
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Unique and unambiguous identification of a person."
+        },
+        {
+          "tag": "SchmeNm",
+          "isoName": "SchemeName",
+          "type": "FinancialIdentificationSchemeName1Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Name of the identification scheme."
+        },
+        {
+          "tag": "Issr",
+          "isoName": "Issuer",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Entity that assigns the identification."
+        }
+      ],
+      "choice": false
+    },
+    "GenericIdentification3": {
+      "isoName": "GenericIdentification3",
+      "definition": "Information related to an identification, for example, party identification or account identification.",
+      "elements": [
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Name or number assigned by an entity to enable recognition of that entity, for example, account identifier."
+        },
+        {
+          "tag": "Issr",
+          "isoName": "Issuer",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Entity that assigns the identification."
+        }
+      ],
+      "choice": false
+    },
+    "GenericIdentification30": {
+      "isoName": "GenericIdentification30",
+      "definition": "Information related to an identification, for example, party identification or account identification.",
+      "elements": [
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "Exact4AlphaNumericText",
+          "min": 1,
+          "max": 1,
+          "definition": "Proprietary information, often a code, issued by the data source scheme issuer."
+        },
+        {
+          "tag": "Issr",
+          "isoName": "Issuer",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Entity that assigns the identification."
+        },
+        {
+          "tag": "SchmeNm",
+          "isoName": "SchemeName",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Short textual description of the scheme."
+        }
+      ],
+      "choice": false
+    },
+    "GenericOrganisationIdentification3": {
+      "isoName": "GenericOrganisationIdentification3",
+      "definition": "Information related to an identification of an organisation.",
+      "elements": [
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "Max256Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Identification assigned by an institution."
+        },
+        {
+          "tag": "SchmeNm",
+          "isoName": "SchemeName",
+          "type": "OrganisationIdentificationSchemeName1Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Name of the identification scheme."
+        },
+        {
+          "tag": "Issr",
+          "isoName": "Issuer",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Entity that assigns the identification."
+        }
+      ],
+      "choice": false
+    },
+    "GenericPersonIdentification2": {
+      "isoName": "GenericPersonIdentification2",
+      "definition": "Information related to an identification of a person.",
+      "elements": [
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "Max256Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Unique and unambiguous identification of a person."
+        },
+        {
+          "tag": "SchmeNm",
+          "isoName": "SchemeName",
+          "type": "PersonIdentificationSchemeName1Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Name of the identification scheme."
+        },
+        {
+          "tag": "Issr",
+          "isoName": "Issuer",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Entity that assigns the identification."
+        }
+      ],
+      "choice": false
+    },
+    "GroupHeader131": {
+      "isoName": "GroupHeader131",
+      "definition": "Set of characteristics shared by all individual transactions included in the message.",
+      "elements": [
+        {
+          "tag": "MsgId",
+          "isoName": "MessageIdentification",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Point to point reference, as assigned by the instructing party, and sent to the next party in the chain to unambiguously identify the message.\nUsage: The instructing party has to make sure that MessageIdentification is unique per instructed party for a pre-agreed period."
+        },
+        {
+          "tag": "CreDtTm",
+          "isoName": "CreationDateTime",
+          "type": "ISODateTime",
+          "min": 1,
+          "max": 1,
+          "definition": "Date and time at which the message was created."
+        },
+        {
+          "tag": "XpryDtTm",
+          "isoName": "ExpiryDateTime",
+          "type": "ISODateTime",
+          "min": 0,
+          "max": 1,
+          "definition": "Date and time on which the payment should be expired if it has not settled."
+        },
+        {
+          "tag": "BtchBookg",
+          "isoName": "BatchBooking",
+          "type": "BatchBookingIndicator",
+          "min": 0,
+          "max": 1,
+          "definition": "Identifies whether a single entry per individual transaction or a batch entry for the sum of the amounts of all transactions within the group of a message is requested.\nUsage: Batch booking is used to request and not order a possible batch booking."
+        },
+        {
+          "tag": "NbOfTxs",
+          "isoName": "NumberOfTransactions",
+          "type": "Max15NumericText",
+          "min": 1,
+          "max": 1,
+          "definition": "Number of individual transactions contained in the message."
+        },
+        {
+          "tag": "CtrlSum",
+          "isoName": "ControlSum",
+          "type": "DecimalNumber",
+          "min": 0,
+          "max": 1,
+          "definition": "Total of all individual amounts included in the message, irrespective of currencies."
+        },
+        {
+          "tag": "TtlIntrBkSttlmAmt",
+          "isoName": "TotalInterbankSettlementAmount",
+          "type": "ActiveCurrencyAndAmount",
+          "min": 0,
+          "max": 1,
+          "definition": "Total amount of money moved between the instructing agent and the instructed agent."
+        },
+        {
+          "tag": "IntrBkSttlmDt",
+          "isoName": "InterbankSettlementDate",
+          "type": "ISODate",
+          "min": 0,
+          "max": 1,
+          "definition": "Date on which the amount of money ceases to be available to the agent that owes it and when the amount of money becomes available to the agent to which it is due."
+        },
+        {
+          "tag": "SttlmInf",
+          "isoName": "SettlementInformation",
+          "type": "SettlementInstruction15",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies the details on how the settlement of the transaction(s) between the instructing agent and the instructed agent is completed."
+        },
+        {
+          "tag": "PmtTpInf",
+          "isoName": "PaymentTypeInformation",
+          "type": "PaymentTypeInformation28",
+          "min": 0,
+          "max": 1,
+          "definition": "Set of elements used to further specify the type of transaction."
+        },
+        {
+          "tag": "InstgAgt",
+          "isoName": "InstructingAgent",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent that instructs the next party in the chain to carry out the (set of) instruction(s)."
+        },
+        {
+          "tag": "InstdAgt",
+          "isoName": "InstructedAgent",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent that is instructed by the previous party in the chain to carry out the (set of) instruction(s)."
+        }
+      ],
+      "choice": false
+    },
+    "InstructionForCreditorAgent3": {
+      "isoName": "InstructionForCreditorAgent3",
+      "definition": "Further information related to the processing of the payment instruction that may need to be acted upon by the creditor's agent. The instruction may relate to a level of service, or may be an instruction that has to be executed by the creditor's agent, or may be information required by the creditor's agent.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalCreditorAgentInstruction1Code",
+          "min": 0,
+          "max": 1,
+          "definition": "Coded information related to the processing of the payment instruction, provided by the initiating party, and intended for the creditor's agent."
+        },
+        {
+          "tag": "InstrInf",
+          "isoName": "InstructionInformation",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Further information complementing the coded instruction or instruction to the creditor's agent that is bilaterally agreed or specific to a user community."
+        }
+      ],
+      "choice": false
+    },
+    "InstructionForNextAgent1": {
+      "isoName": "InstructionForNextAgent1",
+      "definition": "Further information related to the processing of the payment instruction that may need to be acted upon by an other agent. The instruction may relate to a level of service, or may be an instruction that has to be executed by the creditor's agent, or may be information required by the other agent.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "Instruction4Code",
+          "min": 0,
+          "max": 1,
+          "definition": "Coded information related to the processing of the payment instruction, provided by the initiating party, and intended for the next agent in the payment chain."
+        },
+        {
+          "tag": "InstrInf",
+          "isoName": "InstructionInformation",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Further information complementing the coded instruction or instruction to the next agent that is bilaterally agreed or specific to a user community."
+        }
+      ],
+      "choice": false
+    },
+    "LocalInstrument2Choice": {
+      "isoName": "LocalInstrument2Choice",
+      "definition": "Set of elements that further identifies the type of local instruments being requested by the initiating party.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalLocalInstrument1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies the local instrument, as published in an external local instrument code list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies the local instrument, as a proprietary code."
+        }
+      ],
+      "choice": true
+    },
+    "MandateClassification1Choice": {
+      "isoName": "MandateClassification1Choice",
+      "definition": "Specifies the high level purpose of the instruction based on a set of pre-defined categories.\nUsage: This is used by the initiating party to provide information concerning the processing of the payment. It is likely to trigger special processing by any of the agents involved in the payment chain.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "MandateClassification1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Category purpose, as published in an external category purpose code list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Category purpose, in a proprietary form."
+        }
+      ],
+      "choice": true
+    },
+    "MandateSetupReason1Choice": {
+      "isoName": "MandateSetupReason1Choice",
+      "definition": "Specifies the reason for the setup of the mandate.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalMandateSetupReason1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Reason for the mandate setup, as published in an external reason code list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max70Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Reason for the mandate setup, in a proprietary form."
+        }
+      ],
+      "choice": true
+    },
+    "MandateTypeInformation2": {
+      "isoName": "MandateTypeInformation2",
+      "definition": "Set of elements used to further detail the information related to the type of payment.",
+      "elements": [
+        {
+          "tag": "SvcLvl",
+          "isoName": "ServiceLevel",
+          "type": "ServiceLevel8Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Agreement under which or rules under which the mandate resides."
+        },
+        {
+          "tag": "LclInstrm",
+          "isoName": "LocalInstrument",
+          "type": "LocalInstrument2Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "User community specific instrument.\nUsage: This element is used to specify a local instrument, local clearing option and/or further qualify the service or service level."
+        },
+        {
+          "tag": "CtgyPurp",
+          "isoName": "CategoryPurpose",
+          "type": "CategoryPurpose1Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the high level purpose of the mandate based on a set of pre-defined categories."
+        },
+        {
+          "tag": "Clssfctn",
+          "isoName": "Classification",
+          "type": "MandateClassification1Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Type of direct debit instruction."
+        }
+      ],
+      "choice": false
+    },
+    "NameAndAddress18": {
+      "isoName": "NameAndAddress18",
+      "definition": "Information that locates and identifies a party.",
+      "elements": [
+        {
+          "tag": "Nm",
+          "isoName": "Name",
+          "type": "Max140Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Name by which a party is known and is usually used to identify that party."
+        },
+        {
+          "tag": "Adr",
+          "isoName": "Address",
+          "type": "PostalAddress27",
+          "min": 1,
+          "max": 1,
+          "definition": "Postal address of a party."
+        }
+      ],
+      "choice": false
+    },
+    "OrganisationIdentification39": {
+      "isoName": "OrganisationIdentification39",
+      "definition": "Unique and unambiguous way to identify an organisation.",
+      "elements": [
+        {
+          "tag": "AnyBIC",
+          "isoName": "AnyBIC",
+          "type": "AnyBICDec2014Identifier",
+          "min": 0,
+          "max": 1,
+          "definition": "Business identification code of the organisation."
+        },
+        {
+          "tag": "LEI",
+          "isoName": "LEI",
+          "type": "LEIIdentifier",
+          "min": 0,
+          "max": 1,
+          "definition": "Legal entity identification as an alternate identification for a party."
+        },
+        {
+          "tag": "Othr",
+          "isoName": "Other",
+          "type": "GenericOrganisationIdentification3",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Unique identification of an organisation, as assigned by an institution, using an identification scheme."
+        }
+      ],
+      "choice": false
+    },
+    "OrganisationIdentificationSchemeName1Choice": {
+      "isoName": "OrganisationIdentificationSchemeName1Choice",
+      "definition": "Sets of elements to identify a name of the organisation identification scheme.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalOrganisationIdentification1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Name of the identification scheme, in a coded form as published in an external list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Name of the identification scheme, in a free text form."
+        }
+      ],
+      "choice": true
+    },
+    "OtherContact1": {
+      "isoName": "OtherContact1",
+      "definition": "Communication device number or electronic address used for communication.",
+      "elements": [
+        {
+          "tag": "ChanlTp",
+          "isoName": "ChannelType",
+          "type": "Max4Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Method used to contact the financial institution’s contact for the specific tax region."
+        },
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "Max128Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Communication value such as phone number or email address."
+        }
+      ],
+      "choice": false
+    },
+    "Party52Choice": {
+      "isoName": "Party52Choice",
+      "definition": "Specifies the identification of a person or an organisation.",
+      "elements": [
+        {
+          "tag": "OrgId",
+          "isoName": "OrganisationIdentification",
+          "type": "OrganisationIdentification39",
+          "min": 1,
+          "max": 1,
+          "definition": "Unique and unambiguous way to identify an organisation."
+        },
+        {
+          "tag": "PrvtId",
+          "isoName": "PrivateIdentification",
+          "type": "PersonIdentification18",
+          "min": 1,
+          "max": 1,
+          "definition": "Unique and unambiguous identification of a person, for example a passport."
+        }
+      ],
+      "choice": true
+    },
+    "PartyIdentification272": {
+      "isoName": "PartyIdentification272",
+      "definition": "Specifies the identification of a person or an organisation.",
+      "elements": [
+        {
+          "tag": "Nm",
+          "isoName": "Name",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Name by which a party is known and which is usually used to identify that party."
+        },
+        {
+          "tag": "PstlAdr",
+          "isoName": "PostalAddress",
+          "type": "PostalAddress27",
+          "min": 0,
+          "max": 1,
+          "definition": "Information that locates and identifies a specific address, as defined by postal services."
+        },
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "Party52Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique and unambiguous identification of a party."
+        },
+        {
+          "tag": "CtryOfRes",
+          "isoName": "CountryOfResidence",
+          "type": "CountryCode",
+          "min": 0,
+          "max": 1,
+          "definition": "Country in which a person resides (the place of a person's home). In the case of a company, it is the country from which the affairs of that company are directed."
+        },
+        {
+          "tag": "CtctDtls",
+          "isoName": "ContactDetails",
+          "type": "Contact13",
+          "min": 0,
+          "max": 1,
+          "definition": "Set of elements used to indicate how to contact the party."
+        }
+      ],
+      "choice": false
+    },
+    "PaymentIdentification13": {
+      "isoName": "PaymentIdentification13",
+      "definition": "Provides further means of referencing a payment transaction.",
+      "elements": [
+        {
+          "tag": "InstrId",
+          "isoName": "InstructionIdentification",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique identification, as assigned by an instructing party for an instructed party, to unambiguously identify the instruction.\n\nUsage: The instruction identification is a point to point reference that can be used between the instructing party and the instructed party to refer to the individual instruction. It can be included in several messages related to the instruction."
+        },
+        {
+          "tag": "EndToEndId",
+          "isoName": "EndToEndIdentification",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Unique identification, as assigned by the initiating party, to unambiguously identify the transaction. This identification is passed on, unchanged, throughout the entire end-to-end chain.\n\nUsage: The end-to-end identification can be used for reconciliation or to link tasks relating to the transaction. It can be included in several messages related to the transaction.\n\nUsage: In case there are technical limitations to pass on multiple references, the end-to-end identification must be passed on throughout the entire end-to-end chain."
+        },
+        {
+          "tag": "TxId",
+          "isoName": "TransactionIdentification",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique identification, as assigned by the first instructing agent, to unambiguously identify the transaction that is passed on, unchanged, throughout the entire interbank chain. \nUsage: The transaction identification can be used for reconciliation, tracking or to link tasks relating to the transaction on the interbank level. \nUsage: The instructing agent has to make sure that the transaction identification is unique for a pre-agreed period."
+        },
+        {
+          "tag": "UETR",
+          "isoName": "UETR",
+          "type": "UUIDv4Identifier",
+          "min": 0,
+          "max": 1,
+          "definition": "Universally unique identifier to provide an end-to-end reference of a payment transaction."
+        },
+        {
+          "tag": "ClrSysRef",
+          "isoName": "ClearingSystemReference",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique reference, as assigned by a clearing system, to unambiguously identify the instruction."
+        }
+      ],
+      "choice": false
+    },
+    "PaymentTypeInformation28": {
+      "isoName": "PaymentTypeInformation28",
+      "definition": "Provides further details of the type of payment.",
+      "elements": [
+        {
+          "tag": "InstrPrty",
+          "isoName": "InstructionPriority",
+          "type": "Priority2Code",
+          "min": 0,
+          "max": 1,
+          "definition": "Indicator of the urgency or order of importance that the instructing party would like the instructed party to apply to the processing of the instruction."
+        },
+        {
+          "tag": "ClrChanl",
+          "isoName": "ClearingChannel",
+          "type": "ClearingChannel2Code",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the clearing channel to be used to process the payment instruction."
+        },
+        {
+          "tag": "SvcLvl",
+          "isoName": "ServiceLevel",
+          "type": "ServiceLevel8Choice",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Agreement under which or rules under which the transaction should be processed."
+        },
+        {
+          "tag": "LclInstrm",
+          "isoName": "LocalInstrument",
+          "type": "LocalInstrument2Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "User community specific instrument.\n\nUsage: This element is used to specify a local instrument, local clearing option and/or further qualify the service or service level."
+        },
+        {
+          "tag": "CtgyPurp",
+          "isoName": "CategoryPurpose",
+          "type": "CategoryPurpose1Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the high level purpose of the instruction based on a set of pre-defined categories.\nUsage: This is used by the initiating party to provide information concerning the processing of the payment. It is likely to trigger special processing by any of the agents involved in the payment chain."
+        }
+      ],
+      "choice": false
+    },
+    "PersonIdentification18": {
+      "isoName": "PersonIdentification18",
+      "definition": "Unique and unambiguous way to identify a person.",
+      "elements": [
+        {
+          "tag": "DtAndPlcOfBirth",
+          "isoName": "DateAndPlaceOfBirth",
+          "type": "DateAndPlaceOfBirth1",
+          "min": 0,
+          "max": 1,
+          "definition": "Date and place of birth of a person."
+        },
+        {
+          "tag": "Othr",
+          "isoName": "Other",
+          "type": "GenericPersonIdentification2",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Unique identification of a person, as assigned by an institution, using an identification scheme."
+        }
+      ],
+      "choice": false
+    },
+    "PersonIdentificationSchemeName1Choice": {
+      "isoName": "PersonIdentificationSchemeName1Choice",
+      "definition": "Sets of elements to identify a name of the identification scheme.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalPersonIdentification1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Name of the identification scheme, in a coded form as published in an external list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Name of the identification scheme, in a free text form."
+        }
+      ],
+      "choice": true
+    },
+    "PostalAddress27": {
+      "isoName": "PostalAddress27",
+      "definition": "Information that locates and identifies a specific address, as defined by postal services.",
+      "elements": [
+        {
+          "tag": "AdrTp",
+          "isoName": "AddressType",
+          "type": "AddressType3Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Identifies the nature of the postal address."
+        },
+        {
+          "tag": "CareOf",
+          "isoName": "CareOf",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identifies an addressee that is accepting the correspondence for the intended recipient. Using care of ensures the correspondence reaches the right recipient rather than getting returned to the sender."
+        },
+        {
+          "tag": "Dept",
+          "isoName": "Department",
+          "type": "Max70Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification of a division of a large organisation or building."
+        },
+        {
+          "tag": "SubDept",
+          "isoName": "SubDepartment",
+          "type": "Max70Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification of a sub-division of a large organisation or building."
+        },
+        {
+          "tag": "StrtNm",
+          "isoName": "StreetName",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Name of a street or thoroughfare."
+        },
+        {
+          "tag": "BldgNb",
+          "isoName": "BuildingNumber",
+          "type": "Max16Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Number that identifies the position of a building on a street."
+        },
+        {
+          "tag": "BldgNm",
+          "isoName": "BuildingName",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Name of the building or house."
+        },
+        {
+          "tag": "Flr",
+          "isoName": "Floor",
+          "type": "Max70Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Floor or storey within a building."
+        },
+        {
+          "tag": "UnitNb",
+          "isoName": "UnitNumber",
+          "type": "Max16Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identifies a flat or dwelling within the building."
+        },
+        {
+          "tag": "PstBx",
+          "isoName": "PostBox",
+          "type": "Max16Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Numbered box in a post office, assigned to a person or organisation, where letters are kept until called for."
+        },
+        {
+          "tag": "Room",
+          "isoName": "Room",
+          "type": "Max70Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Building room number."
+        },
+        {
+          "tag": "PstCd",
+          "isoName": "PostCode",
+          "type": "Max16Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identifier consisting of a group of letters and/or numbers that is added to a postal address to assist the sorting of mail."
+        },
+        {
+          "tag": "TwnNm",
+          "isoName": "TownName",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Name of a built-up area, with defined boundaries, and a local government."
+        },
+        {
+          "tag": "TwnLctnNm",
+          "isoName": "TownLocationName",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Specific location name within the town."
+        },
+        {
+          "tag": "DstrctNm",
+          "isoName": "DistrictName",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identifies a subdivision within a country sub-division."
+        },
+        {
+          "tag": "CtrySubDvsn",
+          "isoName": "CountrySubDivision",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identifies a subdivision of a country such as state, region, county."
+        },
+        {
+          "tag": "Ctry",
+          "isoName": "Country",
+          "type": "CountryCode",
+          "min": 0,
+          "max": 1,
+          "definition": "Nation with its own government."
+        },
+        {
+          "tag": "AdrLine",
+          "isoName": "AddressLine",
+          "type": "Max70Text",
+          "min": 0,
+          "max": 7,
+          "definition": "Information that locates and identifies a specific address, as defined by postal services, presented in free format text."
+        }
+      ],
+      "choice": false
+    },
+    "ProxyAccountIdentification1": {
+      "isoName": "ProxyAccountIdentification1",
+      "definition": "Information related to a proxy  identification of the account.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "ProxyAccountType1Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Type of the proxy identification."
+        },
+        {
+          "tag": "Id",
+          "isoName": "Identification",
+          "type": "Max2048Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Identification used to indicate the account identification under another specified name."
+        }
+      ],
+      "choice": false
+    },
+    "ProxyAccountType1Choice": {
+      "isoName": "ProxyAccountType1Choice",
+      "definition": "Specifies the scheme used for the identification of an account alias.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalProxyAccountType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Name of the identification scheme, in a coded form as published in an external list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Name of the identification scheme, in a free text form."
+        }
+      ],
+      "choice": true
+    },
+    "Purpose2Choice": {
+      "isoName": "Purpose2Choice",
+      "definition": "Specifies the underlying reason for the payment transaction.\nUsage: Purpose is used by the end-customers, that is initiating party, (ultimate) debtor, (ultimate) creditor to provide information concerning the nature of the payment. Purpose is a content element, which is not used for processing by any of the agents involved in the payment chain.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalPurpose1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Underlying reason for the payment transaction, as published in an external purpose code list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Purpose, in a proprietary form."
+        }
+      ],
+      "choice": true
+    },
+    "ReferredDocumentInformation8": {
+      "isoName": "ReferredDocumentInformation8",
+      "definition": "Set of elements used to identify the documents referred to in the remittance information.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "DocumentType1",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the type of referred document."
+        },
+        {
+          "tag": "Nb",
+          "isoName": "Number",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique and unambiguous identification of the referred document."
+        },
+        {
+          "tag": "RltdDt",
+          "isoName": "RelatedDate",
+          "type": "DateAndType1",
+          "min": 0,
+          "max": 1,
+          "definition": "Date and date type associated with the referred document."
+        },
+        {
+          "tag": "LineDtls",
+          "isoName": "LineDetails",
+          "type": "DocumentLineInformation2",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Set of elements used to provide the content of the referred document line."
+        }
+      ],
+      "choice": false
+    },
+    "RegulatoryAuthority2": {
+      "isoName": "RegulatoryAuthority2",
+      "definition": "Entity requiring the regulatory reporting information.",
+      "elements": [
+        {
+          "tag": "Nm",
+          "isoName": "Name",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Name of the entity requiring the regulatory reporting information."
+        },
+        {
+          "tag": "Ctry",
+          "isoName": "Country",
+          "type": "CountryCode",
+          "min": 0,
+          "max": 1,
+          "definition": "Country of the entity that requires the regulatory reporting information."
+        }
+      ],
+      "choice": false
+    },
+    "RegulatoryReporting10": {
+      "isoName": "RegulatoryReporting10",
+      "definition": "Information needed due to regulatory and/or statutory requirements.",
+      "elements": [
+        {
+          "tag": "DbtCdtRptgInd",
+          "isoName": "DebitCreditReportingIndicator",
+          "type": "RegulatoryReportingType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Identifies whether the regulatory reporting information applies to the debit side, to the credit side or to both debit and credit sides of the transaction."
+        },
+        {
+          "tag": "Authrty",
+          "isoName": "Authority",
+          "type": "RegulatoryAuthority2",
+          "min": 0,
+          "max": 1,
+          "definition": "Entity requiring the regulatory reporting information."
+        },
+        {
+          "tag": "Dtls",
+          "isoName": "Details",
+          "type": "StructuredRegulatoryReporting5",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Set of elements used to provide details on the regulatory reporting information."
+        }
+      ],
+      "choice": false
+    },
+    "RegulatoryReportingType1Choice": {
+      "isoName": "RegulatoryReportingType1Choice",
+      "definition": "Type of regulatory reporting.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalRegulatoryReportingType1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Type of regulatory reporting, in a coded form."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Type of regulatory reporting, in a proprietary form."
+        }
+      ],
+      "choice": true
+    },
+    "RemittanceAmount4": {
+      "isoName": "RemittanceAmount4",
+      "definition": "Provides details on the amounts of the referred document.",
+      "elements": [
+        {
+          "tag": "RmtAmtAndTp",
+          "isoName": "RemittanceAmountAndType",
+          "type": "DocumentAmount1",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Type and amount of money for the referred document."
+        },
+        {
+          "tag": "AdjstmntAmtAndRsn",
+          "isoName": "AdjustmentAmountAndReason",
+          "type": "DocumentAdjustment1",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Specifies detailed information on the amount and reason of the adjustment."
+        }
+      ],
+      "choice": false
+    },
+    "RemittanceInformation26": {
+      "isoName": "RemittanceInformation26",
+      "definition": "Information supplied to enable the matching/reconciliation of an entry with the items that the payment is intended to settle, such as commercial invoices in an accounts' receivable system.",
+      "elements": [
+        {
+          "tag": "Ustrd",
+          "isoName": "Unstructured",
+          "type": "Max140Text",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Information supplied to enable the matching/reconciliation of an entry with the items that the payment is intended to settle, such as commercial invoices in an accounts' receivable system, in an unstructured form."
+        },
+        {
+          "tag": "Strd",
+          "isoName": "Structured",
+          "type": "StructuredRemittanceInformation22",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Information supplied to enable the matching/reconciliation of an entry with the items that the payment is intended to settle, such as commercial invoices in an accounts' receivable system, in a structured form."
+        }
+      ],
+      "choice": false
+    },
+    "RemittanceLocation8": {
+      "isoName": "RemittanceLocation8",
+      "definition": "Provides information on the remittance advice.",
+      "elements": [
+        {
+          "tag": "RmtId",
+          "isoName": "RemittanceIdentification",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique identification, as assigned by the initiating party, to unambiguously identify the remittance information sent separately from the payment instruction, such as a remittance advice."
+        },
+        {
+          "tag": "RmtLctnDtls",
+          "isoName": "RemittanceLocationDetails",
+          "type": "RemittanceLocationData2",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Set of elements used to provide information on the location and/or delivery of the remittance information."
+        }
+      ],
+      "choice": false
+    },
+    "RemittanceLocationData2": {
+      "isoName": "RemittanceLocationData2",
+      "definition": "Provides additional details on the remittance advice.",
+      "elements": [
+        {
+          "tag": "Mtd",
+          "isoName": "Method",
+          "type": "RemittanceLocationMethod2Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Method used to deliver the remittance advice information."
+        },
+        {
+          "tag": "ElctrncAdr",
+          "isoName": "ElectronicAddress",
+          "type": "Max2048Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Electronic address to which an agent is to send the remittance information."
+        },
+        {
+          "tag": "PstlAdr",
+          "isoName": "PostalAddress",
+          "type": "NameAndAddress18",
+          "min": 0,
+          "max": 1,
+          "definition": "Postal address to which an agent is to send the remittance information."
+        }
+      ],
+      "choice": false
+    },
+    "SecuritiesAttributes1": {
+      "isoName": "SecuritiesAttributes1",
+      "definition": "Provides information on the securities trades that make up the payment.",
+      "elements": [
+        {
+          "tag": "UnqTxIdr",
+          "isoName": "UniqueTransactionIdentifier",
+          "type": "UTIIdentifier",
+          "min": 1,
+          "max": 1,
+          "definition": "Unique transaction identifier will be created at the time a transaction is first executed, shared with all registered entities and counterparties involved in the transaction, and used to track that particular transaction during its lifetime. This identifier can also be known as the Unique Swap Identifier (USI)."
+        },
+        {
+          "tag": "Amt",
+          "isoName": "Amount",
+          "type": "ActiveCurrencyAndAmount",
+          "min": 0,
+          "max": 1,
+          "definition": "Amount of money for the trade."
+        }
+      ],
+      "choice": false
+    },
+    "ServiceLevel8Choice": {
+      "isoName": "ServiceLevel8Choice",
+      "definition": "Specifies the service level of the transaction.",
+      "elements": [
+        {
+          "tag": "Cd",
+          "isoName": "Code",
+          "type": "ExternalServiceLevel1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies a pre-agreed service or level of service between the parties, as published in an external service level code list."
+        },
+        {
+          "tag": "Prtry",
+          "isoName": "Proprietary",
+          "type": "Max35Text",
+          "min": 1,
+          "max": 1,
+          "definition": "Specifies a pre-agreed service or level of service between the parties, as a proprietary code."
+        }
+      ],
+      "choice": true
+    },
+    "SettlementDateTimeIndication1": {
+      "isoName": "SettlementDateTimeIndication1",
+      "definition": "Information on the occurred settlement time(s) of the payment transaction.",
+      "elements": [
+        {
+          "tag": "DbtDtTm",
+          "isoName": "DebitDateTime",
+          "type": "ISODateTime",
+          "min": 0,
+          "max": 1,
+          "definition": "Date and time at which a payment has been debited at the transaction administrator. In the case of TARGET, the date and time at which the payment has been debited at the central bank, expressed in Central European Time (CET)."
+        },
+        {
+          "tag": "CdtDtTm",
+          "isoName": "CreditDateTime",
+          "type": "ISODateTime",
+          "min": 0,
+          "max": 1,
+          "definition": "Date and time at which a payment has been credited at the transaction administrator. In the case of TARGET, the date and time at which the payment has been credited at the receiving central bank, expressed in Central European Time (CET)."
+        }
+      ],
+      "choice": false
+    },
+    "SettlementInstruction15": {
+      "isoName": "SettlementInstruction15",
+      "definition": "Provides further details on the settlement of the instruction.",
+      "elements": [
+        {
+          "tag": "SttlmMtd",
+          "isoName": "SettlementMethod",
+          "type": "SettlementMethod1Code",
+          "min": 1,
+          "max": 1,
+          "definition": "Method used to settle the (batch of) payment instructions."
+        },
+        {
+          "tag": "SttlmAcct",
+          "isoName": "SettlementAccount",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "A specific purpose account used to post debit and credit entries as a result of the transaction."
+        },
+        {
+          "tag": "ClrSys",
+          "isoName": "ClearingSystem",
+          "type": "ClearingSystemIdentification3Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Specification of a pre-agreed offering between clearing agents or the channel through which the payment instruction is processed."
+        },
+        {
+          "tag": "InstgRmbrsmntAgt",
+          "isoName": "InstructingReimbursementAgent",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent through which the instructing agent will reimburse the instructed agent.\n\nUsage: If InstructingAgent and InstructedAgent have the same reimbursement agent, then only InstructingReimbursementAgent must be used."
+        },
+        {
+          "tag": "InstgRmbrsmntAgtAcct",
+          "isoName": "InstructingReimbursementAgentAccount",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the instructing reimbursement agent account at its servicing agent in the payment chain."
+        },
+        {
+          "tag": "InstdRmbrsmntAgt",
+          "isoName": "InstructedReimbursementAgent",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent at which the instructed agent will be reimbursed.\nUsage: If InstructedReimbursementAgent contains a branch of the InstructedAgent, then the party in InstructedAgent will claim reimbursement from that branch/will be paid by that branch.\nUsage: If InstructingAgent and InstructedAgent have the same reimbursement agent, then only InstructingReimbursementAgent must be used."
+        },
+        {
+          "tag": "InstdRmbrsmntAgtAcct",
+          "isoName": "InstructedReimbursementAgentAccount",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the instructed reimbursement agent account at its servicing agent in the payment chain."
+        },
+        {
+          "tag": "ThrdRmbrsmntAgt",
+          "isoName": "ThirdReimbursementAgent",
+          "type": "BranchAndFinancialInstitutionIdentification8",
+          "min": 0,
+          "max": 1,
+          "definition": "Agent at which the instructed agent will be reimbursed.\nUsage: If ThirdReimbursementAgent contains a branch of the InstructedAgent, then the party in InstructedAgent will claim reimbursement from that branch/will be paid by that branch."
+        },
+        {
+          "tag": "ThrdRmbrsmntAgtAcct",
+          "isoName": "ThirdReimbursementAgentAccount",
+          "type": "CashAccount40",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous identification of the account of the third reimbursement agent account at its servicing agent in the payment chain."
+        }
+      ],
+      "choice": false
+    },
+    "SettlementTimeRequest2": {
+      "isoName": "SettlementTimeRequest2",
+      "definition": "Provides information on the requested settlement time(s) of the payment instruction.",
+      "elements": [
+        {
+          "tag": "CLSTm",
+          "isoName": "CLSTime",
+          "type": "ISOTime",
+          "min": 0,
+          "max": 1,
+          "definition": "Time by which the amount of money must be credited, with confirmation, to the CLS Bank's account at the central bank.\nUsage: Time must be expressed in Central European Time (CET)."
+        },
+        {
+          "tag": "TillTm",
+          "isoName": "TillTime",
+          "type": "ISOTime",
+          "min": 0,
+          "max": 1,
+          "definition": "Time until when the payment may be settled."
+        },
+        {
+          "tag": "FrTm",
+          "isoName": "FromTime",
+          "type": "ISOTime",
+          "min": 0,
+          "max": 1,
+          "definition": "Time as from when the payment may be settled."
+        },
+        {
+          "tag": "RjctTm",
+          "isoName": "RejectTime",
+          "type": "ISOTime",
+          "min": 0,
+          "max": 1,
+          "definition": "Time by when the payment must be settled to avoid rejection."
+        }
+      ],
+      "choice": false
+    },
+    "StructuredRegulatoryReporting5": {
+      "isoName": "StructuredRegulatoryReporting5",
+      "definition": "Information needed due to regulatory and statutory requirements.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "RegulatoryReportingType1Choice",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the type of the information supplied in the regulatory reporting details."
+        },
+        {
+          "tag": "Dt",
+          "isoName": "Date",
+          "type": "ISODate",
+          "min": 0,
+          "max": 1,
+          "definition": "Date related to the specified type of regulatory reporting details."
+        },
+        {
+          "tag": "Ctry",
+          "isoName": "Country",
+          "type": "CountryCode",
+          "min": 0,
+          "max": 1,
+          "definition": "Country related to the specified type of regulatory reporting details."
+        },
+        {
+          "tag": "RptgCd",
+          "isoName": "ReportingCode",
+          "type": "Max10Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the nature, purpose, and reason for the transaction to be reported for regulatory and statutory requirements in a coded form."
+        },
+        {
+          "tag": "Amt",
+          "isoName": "Amount",
+          "type": "ActiveOrHistoricCurrencyAndAmount",
+          "min": 0,
+          "max": 1,
+          "definition": "Amount of money to be reported for regulatory and statutory requirements."
+        },
+        {
+          "tag": "Inf",
+          "isoName": "Information",
+          "type": "Max35Text",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Additional details that cater for specific domestic regulatory requirements."
+        }
+      ],
+      "choice": false
+    },
+    "StructuredRemittanceInformation22": {
+      "isoName": "StructuredRemittanceInformation22",
+      "definition": "Information supplied to enable the matching/reconciliation of an entry with the items that the payment is intended to settle, such as commercial invoices in an accounts' receivable system, in a structured form.",
+      "elements": [
+        {
+          "tag": "RfrdDocInf",
+          "isoName": "ReferredDocumentInformation",
+          "type": "ReferredDocumentInformation8",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Provides the identification and the content of the referred document."
+        },
+        {
+          "tag": "RfrdDocAmt",
+          "isoName": "ReferredDocumentAmount",
+          "type": "RemittanceAmount4",
+          "min": 0,
+          "max": 1,
+          "definition": "Provides details on the amounts of the referred document."
+        },
+        {
+          "tag": "CdtrRefInf",
+          "isoName": "CreditorReferenceInformation",
+          "type": "CreditorReferenceInformation3",
+          "min": 0,
+          "max": 1,
+          "definition": "Reference information provided by the creditor to allow the identification of the underlying documents."
+        },
+        {
+          "tag": "Invcr",
+          "isoName": "Invoicer",
+          "type": "PartyIdentification272",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification of the organisation issuing the invoice, when it is different from the creditor or ultimate creditor."
+        },
+        {
+          "tag": "Invcee",
+          "isoName": "Invoicee",
+          "type": "PartyIdentification272",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification of the party to whom an invoice is issued, when it is different from the debtor or ultimate debtor."
+        },
+        {
+          "tag": "TaxRmt",
+          "isoName": "TaxRemittance",
+          "type": "TaxData1",
+          "min": 0,
+          "max": 1,
+          "definition": "Provides remittance information about a payment made for tax-related purposes."
+        },
+        {
+          "tag": "GrnshmtRmt",
+          "isoName": "GarnishmentRemittance",
+          "type": "Garnishment4",
+          "min": 0,
+          "max": 1,
+          "definition": "Provides remittance information about a payment for garnishment-related purposes."
+        },
+        {
+          "tag": "SctiesData",
+          "isoName": "SecuritiesData",
+          "type": "SecuritiesAttributes1",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Provides information on the securities trades that make up the payment."
+        },
+        {
+          "tag": "AddtlRmtInf",
+          "isoName": "AdditionalRemittanceInformation",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 3,
+          "definition": "Additional information, in free text form, to complement the structured remittance information."
+        }
+      ],
+      "choice": false
+    },
+    "SupplementaryData1": {
+      "isoName": "SupplementaryData1",
+      "definition": "Additional information that can not be captured in the structured fields and/or any other specific block.",
+      "elements": [
+        {
+          "tag": "PlcAndNm",
+          "isoName": "PlaceAndName",
+          "type": "Max350Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Unambiguous reference to the location where the supplementary data must be inserted in the message instance.\nIn the case of XML, this is expressed by a valid XPath."
+        },
+        {
+          "tag": "Envlp",
+          "isoName": "Envelope",
+          "type": "SupplementaryDataEnvelope1",
+          "min": 1,
+          "max": 1,
+          "definition": "Technical element wrapping the supplementary data."
+        }
+      ],
+      "choice": false
+    },
+    "SupplementaryDataEnvelope1": {
+      "isoName": "SupplementaryDataEnvelope1",
+      "definition": "Technical component that contains the validated supplementary data information. This technical envelope allows to segregate the supplementary data information from any other information.",
+      "elements": [
+        {
+          "any": true,
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "choice": false
+    },
+    "TaxAmount3": {
+      "isoName": "TaxAmount3",
+      "definition": "Set of elements used to provide information on the tax amount(s) of tax record.",
+      "elements": [
+        {
+          "tag": "Rate",
+          "isoName": "Rate",
+          "type": "PercentageRate",
+          "min": 0,
+          "max": 1,
+          "definition": "Rate used to calculate the tax."
+        },
+        {
+          "tag": "TaxblBaseAmt",
+          "isoName": "TaxableBaseAmount",
+          "type": "ActiveOrHistoricCurrencyAndAmount",
+          "min": 0,
+          "max": 1,
+          "definition": "Amount of money on which the tax is based."
+        },
+        {
+          "tag": "TtlAmt",
+          "isoName": "TotalAmount",
+          "type": "ActiveOrHistoricCurrencyAndAmount",
+          "min": 0,
+          "max": 1,
+          "definition": "Total amount that is the result of the calculation of the tax for the record."
+        },
+        {
+          "tag": "Dtls",
+          "isoName": "Details",
+          "type": "TaxRecordDetails3",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Set of elements used to provide details on the tax period and amount."
+        }
+      ],
+      "choice": false
+    },
+    "TaxAuthorisation1": {
+      "isoName": "TaxAuthorisation1",
+      "definition": "Details of the authorised tax paying party.",
+      "elements": [
+        {
+          "tag": "Titl",
+          "isoName": "Title",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Title or position of debtor or the debtor's authorised representative."
+        },
+        {
+          "tag": "Nm",
+          "isoName": "Name",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Name of the debtor or the debtor's authorised representative."
+        }
+      ],
+      "choice": false
+    },
+    "TaxData1": {
+      "isoName": "TaxData1",
+      "definition": "Details about tax paid, or to be paid, to the government in accordance with the law, including pre-defined parameters such as thresholds and type of account.",
+      "elements": [
+        {
+          "tag": "Cdtr",
+          "isoName": "Creditor",
+          "type": "TaxParty1",
+          "min": 0,
+          "max": 1,
+          "definition": "Party on the credit side of the transaction to which the tax applies."
+        },
+        {
+          "tag": "Dbtr",
+          "isoName": "Debtor",
+          "type": "TaxParty2",
+          "min": 0,
+          "max": 1,
+          "definition": "Party on the debit side of the transaction to which the tax applies."
+        },
+        {
+          "tag": "UltmtDbtr",
+          "isoName": "UltimateDebtor",
+          "type": "TaxParty2",
+          "min": 0,
+          "max": 1,
+          "definition": "Ultimate party that owes an amount of money to the (ultimate) creditor, in this case, to the taxing authority."
+        },
+        {
+          "tag": "AdmstnZone",
+          "isoName": "AdministrationZone",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Territorial part of a country to which the tax payment is related."
+        },
+        {
+          "tag": "RefNb",
+          "isoName": "ReferenceNumber",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Tax reference information that is specific to a taxing agency."
+        },
+        {
+          "tag": "Mtd",
+          "isoName": "Method",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Method used to indicate the underlying business or how the tax is paid."
+        },
+        {
+          "tag": "TtlTaxblBaseAmt",
+          "isoName": "TotalTaxableBaseAmount",
+          "type": "ActiveOrHistoricCurrencyAndAmount",
+          "min": 0,
+          "max": 1,
+          "definition": "Total amount of money on which the tax is based."
+        },
+        {
+          "tag": "TtlTaxAmt",
+          "isoName": "TotalTaxAmount",
+          "type": "ActiveOrHistoricCurrencyAndAmount",
+          "min": 0,
+          "max": 1,
+          "definition": "Total amount of money as result of the calculation of the tax."
+        },
+        {
+          "tag": "Dt",
+          "isoName": "Date",
+          "type": "ISODate",
+          "min": 0,
+          "max": 1,
+          "definition": "Date by which tax is due."
+        },
+        {
+          "tag": "SeqNb",
+          "isoName": "SequenceNumber",
+          "type": "Number",
+          "min": 0,
+          "max": 1,
+          "definition": "Sequential number of the tax report."
+        },
+        {
+          "tag": "Rcrd",
+          "isoName": "Record",
+          "type": "TaxRecord3",
+          "min": 0,
+          "max": "unbounded",
+          "definition": "Record of tax details."
+        }
+      ],
+      "choice": false
+    },
+    "TaxParty1": {
+      "isoName": "TaxParty1",
+      "definition": "Details about the entity involved in the tax paid or to be paid.",
+      "elements": [
+        {
+          "tag": "TaxId",
+          "isoName": "TaxIdentification",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Tax identification number of the creditor."
+        },
+        {
+          "tag": "RegnId",
+          "isoName": "RegistrationIdentification",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique identification, as assigned by an organisation, to unambiguously identify a party."
+        },
+        {
+          "tag": "TaxTp",
+          "isoName": "TaxType",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Type of tax payer."
+        }
+      ],
+      "choice": false
+    },
+    "TaxParty2": {
+      "isoName": "TaxParty2",
+      "definition": "Details about the entity involved in the tax paid or to be paid.",
+      "elements": [
+        {
+          "tag": "TaxId",
+          "isoName": "TaxIdentification",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Tax identification number of the debtor."
+        },
+        {
+          "tag": "RegnId",
+          "isoName": "RegistrationIdentification",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Unique identification, as assigned by an organisation, to unambiguously identify a party."
+        },
+        {
+          "tag": "TaxTp",
+          "isoName": "TaxType",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Type of tax payer."
+        },
+        {
+          "tag": "Authstn",
+          "isoName": "Authorisation",
+          "type": "TaxAuthorisation1",
+          "min": 0,
+          "max": 1,
+          "definition": "Details of the authorised tax paying party."
+        }
+      ],
+      "choice": false
+    },
+    "TaxPeriod3": {
+      "isoName": "TaxPeriod3",
+      "definition": "Period of time details related to the tax payment.",
+      "elements": [
+        {
+          "tag": "Yr",
+          "isoName": "Year",
+          "type": "ISOYear",
+          "min": 0,
+          "max": 1,
+          "definition": "Year related to the tax payment."
+        },
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "TaxRecordPeriod1Code",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification of the period related to the tax payment."
+        },
+        {
+          "tag": "FrToDt",
+          "isoName": "FromToDate",
+          "type": "DatePeriod2",
+          "min": 0,
+          "max": 1,
+          "definition": "Range of time between a start date and an end date for which the tax report is provided."
+        }
+      ],
+      "choice": false
+    },
+    "TaxRecord3": {
+      "isoName": "TaxRecord3",
+      "definition": "Set of elements used to define the tax record.",
+      "elements": [
+        {
+          "tag": "Tp",
+          "isoName": "Type",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "High level code to identify the type of tax details."
+        },
+        {
+          "tag": "Ctgy",
+          "isoName": "Category",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Specifies the tax code as published by the tax authority."
+        },
+        {
+          "tag": "CtgyDtls",
+          "isoName": "CategoryDetails",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Provides further details of the category tax code."
+        },
+        {
+          "tag": "DbtrSts",
+          "isoName": "DebtorStatus",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Code provided by local authority to identify the status of the party that has drawn up the settlement document."
+        },
+        {
+          "tag": "CertId",
+          "isoName": "CertificateIdentification",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identification number of the tax report as assigned by the taxing authority."
+        },
+        {
+          "tag": "FrmsCd",
+          "isoName": "FormsCode",
+          "type": "Max35Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Identifies, in a coded form, on which template the tax report is to be provided."
+        },
+        {
+          "tag": "Prd",
+          "isoName": "Period",
+          "type": "TaxPeriod3",
+          "min": 0,
+          "max": 1,
+          "definition": "Set of elements used to provide details on the period of time related to the tax payment."
+        },
+        {
+          "tag": "TaxAmt",
+          "isoName": "TaxAmount",
+          "type": "TaxAmount3",
+          "min": 0,
+          "max": 1,
+          "definition": "Set of elements used to provide information on the amount of the tax record."
+        },
+        {
+          "tag": "AddtlInf",
+          "isoName": "AdditionalInformation",
+          "type": "Max140Text",
+          "min": 0,
+          "max": 1,
+          "definition": "Further details of the tax record."
+        }
+      ],
+      "choice": false
+    },
+    "TaxRecordDetails3": {
+      "isoName": "TaxRecordDetails3",
+      "definition": "Provides information on the individual tax amount(s) per period of the tax record.",
+      "elements": [
+        {
+          "tag": "Prd",
+          "isoName": "Period",
+          "type": "TaxPeriod3",
+          "min": 0,
+          "max": 1,
+          "definition": "Set of elements used to provide details on the period of time related to the tax payment."
+        },
+        {
+          "tag": "Amt",
+          "isoName": "Amount",
+          "type": "ActiveOrHistoricCurrencyAndAmount",
+          "min": 1,
+          "max": 1,
+          "definition": "Underlying tax amount related to the specified period."
+        }
+      ],
+      "choice": false
+    }
+  },
+  "simpleTypes": {
+    "ActiveCurrencyAndAmount_SimpleType": {
+      "base": "decimal",
+      "totalDigits": 18,
+      "fractionDigits": 5,
+      "minInclusive": "0"
+    },
+    "ActiveCurrencyCode": {
+      "base": "string",
+      "pattern": "[A-Z]{3,3}"
+    },
+    "ActiveOrHistoricCurrencyAndAmount_SimpleType": {
+      "base": "decimal",
+      "totalDigits": 18,
+      "fractionDigits": 5,
+      "minInclusive": "0"
+    },
+    "ActiveOrHistoricCurrencyCode": {
+      "definition": "A code allocated to a currency by a Maintenance Agency under an international identification scheme, as described in the latest edition of the international standard ISO 4217 \"Codes for the representation of currencies and funds\".",
+      "base": "string",
+      "pattern": "[A-Z]{3,3}"
+    },
+    "AddressType2Code": {
+      "definition": "Specifies the type of address.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "ADDR",
+          "name": "Postal",
+          "definition": "Address is the complete postal address."
+        },
+        {
+          "code": "PBOX",
+          "name": "POBox",
+          "definition": "Address is a postal office (PO) box."
+        },
+        {
+          "code": "HOME",
+          "name": "Residential",
+          "definition": "Address is the home address."
+        },
+        {
+          "code": "BIZZ",
+          "name": "Business",
+          "definition": "Address is the business address."
+        },
+        {
+          "code": "MLTO",
+          "name": "MailTo",
+          "definition": "Address is the address to which mail is sent."
+        },
+        {
+          "code": "DLVY",
+          "name": "DeliveryTo",
+          "definition": "Address is the address to which delivery is to take place."
+        }
+      ]
+    },
+    "AnyBICDec2014Identifier": {
+      "definition": "Code allocated to a financial or non-financial institution by the ISO 9362 Registration Authority, as described in ISO 9362: 2014 - \"Banking - Banking telecommunication messages - Business identifier code (BIC)\".",
+      "base": "string",
+      "pattern": "[A-Z0-9]{4,4}[A-Z]{2,2}[A-Z0-9]{2,2}([A-Z0-9]{3,3}){0,1}"
+    },
+    "BICFIDec2014Identifier": {
+      "definition": "Code allocated to a financial institution by the ISO 9362 Registration Authority as described in ISO 9362: 2014 - \"Banking - Banking telecommunication messages - Business identifier code (BIC)\".",
+      "base": "string",
+      "pattern": "[A-Z0-9]{4,4}[A-Z]{2,2}[A-Z0-9]{2,2}([A-Z0-9]{3,3}){0,1}"
+    },
+    "BaseOneRate": {
+      "definition": "Rate expressed as a decimal, for example, 0.7 is 7/10 and 70%.",
+      "base": "decimal",
+      "totalDigits": 11,
+      "fractionDigits": 10
+    },
+    "BatchBookingIndicator": {
+      "definition": "Identifies whether the sending party requests a single debit or credit entry per individual transaction or a batch entry for the sum of the amounts of all transactions.",
+      "base": "boolean"
+    },
+    "ChargeBearerType1Code": {
+      "definition": "Specifies which party(ies) will pay charges due for processing of the instruction.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "DEBT",
+          "name": "BorneByDebtor",
+          "definition": "All transaction charges are to be borne by the debtor."
+        },
+        {
+          "code": "CRED",
+          "name": "BorneByCreditor",
+          "definition": "All transaction charges are to be borne by the creditor."
+        },
+        {
+          "code": "SHAR",
+          "name": "Shared",
+          "definition": "In a credit transfer context, means that transaction charges on the sender side are to be borne by the debtor, transaction charges on the receiver side are to be borne by the creditor. In a direct debit context, means that transaction charges on the sender side are to be borne by the creditor, transaction charges on the receiver side are to be borne by the debtor."
+        },
+        {
+          "code": "SLEV",
+          "name": "FollowingServiceLevel",
+          "definition": "Charges are to be applied following the rules agreed in the service level and/or scheme."
+        }
+      ]
+    },
+    "ClearingChannel2Code": {
+      "definition": "Specifies the clearing channel for the routing of the transaction, as part of the payment type identification.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "RTGS",
+          "name": "RealTimeGrossSettlementSystem",
+          "definition": "Clearing channel is a real-time gross settlement system."
+        },
+        {
+          "code": "RTNS",
+          "name": "RealTimeNetSettlementSystem",
+          "definition": "Clearing channel is a real-time net settlement system."
+        },
+        {
+          "code": "MPNS",
+          "name": "MassPaymentNetSystem",
+          "definition": "Clearing channel is a mass payment net settlement system."
+        },
+        {
+          "code": "BOOK",
+          "name": "BookTransfer",
+          "definition": "Payment through internal book transfer."
+        }
+      ]
+    },
+    "CountryCode": {
+      "definition": "Code to identify a country, a dependency, or another area of particular geopolitical interest, on the basis of country names obtained from the United Nations (ISO 3166, Alpha-2 code).",
+      "base": "string",
+      "pattern": "[A-Z]{2,2}"
+    },
+    "CreditDebitCode": {
+      "definition": "Specifies if an operation is an increase or a decrease.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "CRDT",
+          "name": "Credit",
+          "definition": "Operation is an increase."
+        },
+        {
+          "code": "DBIT",
+          "name": "Debit",
+          "definition": "Operation is a decrease."
+        }
+      ]
+    },
+    "DecimalNumber": {
+      "definition": "Number of objects represented as a decimal number, for example 0.75 or 45.6.",
+      "base": "decimal",
+      "totalDigits": 18,
+      "fractionDigits": 17
+    },
+    "Exact2NumericText": {
+      "definition": "Specifies a numeric string with an exact length of 2 digits.",
+      "base": "string",
+      "pattern": "[0-9]{2}"
+    },
+    "Exact4AlphaNumericText": {
+      "definition": "Specifies an alphanumeric string with a length of 4 characters.",
+      "base": "string",
+      "pattern": "[a-zA-Z0-9]{4}"
+    },
+    "ExternalAccountIdentification1Code": {
+      "definition": "Specifies the external account identification scheme name code in the format of character string with a maximum length of 4 characters.\nThe list of valid codes is an external code list published separately.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalCashAccountType1Code": {
+      "definition": "Specifies the nature, or use, of the cash account in the format of character string with a maximum length of 4 characters.\nThe list of valid codes is an external code list published separately.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalCashClearingSystem1Code": {
+      "definition": "Specifies the cash clearing system, as published in an external cash clearing system code list.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 3
+    },
+    "ExternalCategoryPurpose1Code": {
+      "definition": "Specifies the category purpose, as published in an external category purpose code list.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalChargeType1Code": {
+      "definition": "Specifies the nature, or use, of the charges in the format of character string with a maximum length of 4 characters.\nThe list of valid codes is an external code list published separately.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalClearingSystemIdentification1Code": {
+      "definition": "Specifies the clearing system identification code, as published in an external clearing system identification code list.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 5
+    },
+    "ExternalCreditorAgentInstruction1Code": {
+      "definition": "Specifies further instructions concerning the processing of a payment instruction, as provided to the creditor agent.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalCreditorReferenceType1Code": {
+      "definition": "Specifies the type of creditor reference as published in an external creditor reference type code set.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalDateType1Code": {
+      "definition": "Defines the type of date, as published in an external date type code list.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalDocumentAmountType1Code": {
+      "definition": "Specifies the nature, or use, of the amount, as published in an external document amount type code set.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalDocumentLineType1Code": {
+      "definition": "Specifies the document line type as published in an external document type code list.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalDocumentType1Code": {
+      "definition": "Specifies the document type as published in an external document type code list.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalFinancialInstitutionIdentification1Code": {
+      "definition": "Specifies the external financial institution identification scheme name code in the format of character string with a maximum length of 4 characters.\nThe list of valid codes is an external code list published separately.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalGarnishmentType1Code": {
+      "definition": "Specifies the garnishment type as published in an external document type code list.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalLocalInstrument1Code": {
+      "definition": "Specifies the external local instrument code in the format of character string with a maximum length of 35 characters.\nThe list of valid codes is an external code list published separately.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 35
+    },
+    "ExternalMandateSetupReason1Code": {
+      "definition": "Specifies the external mandate setup reason code in the format of character string with a maximum length of 4 characters.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalOrganisationIdentification1Code": {
+      "definition": "Specifies the external organisation identification scheme name code in the format of character string with a maximum length of 4 characters.\nThe list of valid codes is an external code list published separately.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalPersonIdentification1Code": {
+      "definition": "Specifies the external person identification scheme name code in the format of character string with a maximum length of 4 characters.\nThe list of valid codes is an external code list published separately.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalProxyAccountType1Code": {
+      "definition": "Specifies the external proxy account type code, as published in the proxy account type external code set.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalPurpose1Code": {
+      "definition": "Specifies the external purpose code in the format of character string with a maximum length of 4 characters.\nThe list of valid codes is an external code list published separately.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalRegulatoryReportingType1Code": {
+      "definition": "Specifies the type of regulatory reporting, as published in an external code set.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "ExternalServiceLevel1Code": {
+      "definition": "Specifies the external service level code in the format of character string with a maximum length of 4 characters.\nThe list of valid codes is an external code list published separately.\nExternal code sets can be downloaded from www.iso20022.org.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "Frequency6Code": {
+      "definition": "Specifies the regularity of an event.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "YEAR",
+          "name": "Annual",
+          "definition": "Event takes place every year or once a year."
+        },
+        {
+          "code": "MNTH",
+          "name": "Monthly",
+          "definition": "Event takes place every month or once a month."
+        },
+        {
+          "code": "QURT",
+          "name": "Quarterly",
+          "definition": "Event takes place every three months or four times a year."
+        },
+        {
+          "code": "MIAN",
+          "name": "SemiAnnual",
+          "definition": "Event takes place every six months or two times a year."
+        },
+        {
+          "code": "WEEK",
+          "name": "Weekly",
+          "definition": "Event takes place once a week."
+        },
+        {
+          "code": "DAIL",
+          "name": "Daily",
+          "definition": "Event takes place every day."
+        },
+        {
+          "code": "ADHO",
+          "name": "Adhoc",
+          "definition": "Event takes place on request or as necessary."
+        },
+        {
+          "code": "INDA",
+          "name": "IntraDay",
+          "definition": "Event takes place several times a day."
+        },
+        {
+          "code": "FRTN",
+          "name": "Fortnightly",
+          "definition": "Event takes place every two weeks."
+        }
+      ]
+    },
+    "HexBinaryText": {
+      "definition": "Specifies a character string with hexadecimal text characters.\n\nUsed for hex binary data only, supports only characters A-F, a-f and 0-9.",
+      "base": "string",
+      "pattern": "[0-9a-fA-F]+"
+    },
+    "IBAN2007Identifier": {
+      "definition": "The International Bank Account Number is a code used internationally by financial institutions to uniquely identify the account of a customer at a financial institution as described in the 2007 edition of the ISO 13616 standard \"Banking and related financial services - International Bank Account Number (IBAN)\" and replaced by the more recent edition of the standard.",
+      "base": "string",
+      "pattern": "[A-Z]{2,2}[0-9]{2,2}[a-zA-Z0-9]{1,30}"
+    },
+    "ISODate": {
+      "definition": "A particular point in the progression of time in a calendar year expressed in the YYYY-MM-DD format. This representation is defined in \"XML Schema Part 2: Datatypes Second Edition - W3C Recommendation 28 October 2004\" which is aligned with ISO 8601.",
+      "base": "date"
+    },
+    "ISODateTime": {
+      "definition": "A particular point in the progression of time defined by a mandatory date and a mandatory time component, expressed in either UTC time format (YYYY-MM-DDThh:mm:ss.sssZ), local time with UTC offset format (YYYY-MM-DDThh:mm:ss.sss+/-hh:mm), or local time format (YYYY-MM-DDThh:mm:ss.sss). These representations are defined in \"XML Schema Part 2: Datatypes Second Edition - W3C Recommendation 28 October 2004\" which is aligned with ISO 8601.\nNote on the time format:\n1) beginning / end of calendar day\n00:00:00 = the beginning of a calendar day\n24:00:00 = the end of a calendar day\n2) fractions of second in time format\nDecimal fractions of seconds may be included. In this case, the involved parties shall agree on the maximum number of digits that are allowed.",
+      "base": "dateTime"
+    },
+    "ISOTime": {
+      "definition": "A particular point in the progression of time in a calendar day expressed in either UTC time format (hh:mm:ss.sssZ), local time with UTC offset format (hh:mm:ss.sss+/-hh:mm), or local time format (hh:mm:ss.sss). These representations are defined in \"XML Schema Part 2: Datatypes Second Edition - W3C Recommendation 28 October 2004\" which is aligned with ISO 8601.\nNote on the time format:\n1) beginning / end of calendar day\n00:00:00 = the beginning of a calendar day\n24:00:00 = the end of a calendar day\n2) fractions of second in time format\nDecimal fractions of seconds may be included. In this case, the involved parties shall agree on the maximum number of digits that are allowed.",
+      "base": "time"
+    },
+    "ISOYear": {
+      "definition": "Year represented by YYYY (ISO 8601).",
+      "base": "gYear"
+    },
+    "Instruction4Code": {
+      "definition": "Specifies further instructions concerning the processing of a payment instruction, provided by the sending clearing agent to the next agent(s).",
+      "base": "string",
+      "codes": [
+        {
+          "code": "PHOA",
+          "name": "PhoneNextAgent",
+          "definition": "Please advise/contact next agent by phone."
+        },
+        {
+          "code": "TELA",
+          "name": "TelecomNextAgent",
+          "definition": "Please advise/contact next agent by the most efficient means of telecommunication."
+        }
+      ]
+    },
+    "LEIIdentifier": {
+      "definition": "Legal Entity Identifier is a code allocated to a party as described in ISO 17442 \"Financial Services - Legal Entity Identifier (LEI)\".",
+      "base": "string",
+      "pattern": "[A-Z0-9]{18,18}[0-9]{2,2}"
+    },
+    "MandateClassification1Code": {
+      "definition": "Specifies the type of direct debit amount, such as fixed or variable.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "FIXE",
+          "name": "Fixed",
+          "definition": "Direct debit amount is fixed."
+        },
+        {
+          "code": "USGB",
+          "name": "UsageBased",
+          "definition": "Direct debit amount is based on usage."
+        },
+        {
+          "code": "VARI",
+          "name": "Variable",
+          "definition": "Direct debit amount is variable."
+        }
+      ]
+    },
+    "Max10KBinary": {
+      "definition": "Binary data of 10K maximum.",
+      "base": "base64Binary",
+      "minLength": 1,
+      "maxLength": 10240
+    },
+    "Max10Text": {
+      "definition": "Specifies a character string with a maximum length of 10 characters.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 10
+    },
+    "Max128Text": {
+      "definition": "Specifies a character string with a maximum length of 128 characters.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "Max140Text": {
+      "definition": "Specifies a character string with a maximum length of 140 characters.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 140
+    },
+    "Max15NumericText": {
+      "definition": "Specifies a numeric string with a maximum length of 15 digits.",
+      "base": "string",
+      "pattern": "[0-9]{1,15}"
+    },
+    "Max16Text": {
+      "definition": "Specifies a character string with a maximum length of 16 characters.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 16
+    },
+    "Max2048Text": {
+      "definition": "Specifies a character string with a maximum length of 2048 characters.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 2048
+    },
+    "Max256Text": {
+      "definition": "Specifies a character string with a maximum length of 256 characters.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "Max34Text": {
+      "definition": "Specifies a character string with a maximum length of 34 characters.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 34
+    },
+    "Max350Text": {
+      "definition": "Specifies a character string with a maximum length of 350 characters.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 350
+    },
+    "Max35Text": {
+      "definition": "Specifies a character string with a maximum length of 35 characters.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 35
+    },
+    "Max4Text": {
+      "definition": "Specifies a character string with a maximum length of 4 characters.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 4
+    },
+    "Max70Text": {
+      "definition": "Specifies a character string with a maximum length of 70characters.",
+      "base": "string",
+      "minLength": 1,
+      "maxLength": 70
+    },
+    "NamePrefix2Code": {
+      "definition": "Specifies the terms used to formally address a person.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "DOCT",
+          "name": "Doctor",
+          "definition": "Title of the person is Doctor or Dr."
+        },
+        {
+          "code": "MADM",
+          "name": "Madam",
+          "definition": "Title of the person is Madam."
+        },
+        {
+          "code": "MISS",
+          "name": "Miss",
+          "definition": "Title of the person is Miss."
+        },
+        {
+          "code": "MIST",
+          "name": "Mister",
+          "definition": "Title of the person is Mister or Mr."
+        },
+        {
+          "code": "MIKS",
+          "name": "GenderNeutral",
+          "definition": "Title of the person is gender neutral (Mx)."
+        }
+      ]
+    },
+    "Number": {
+      "definition": "Number of objects represented as an integer.",
+      "base": "decimal",
+      "totalDigits": 18,
+      "fractionDigits": 0
+    },
+    "PercentageRate": {
+      "definition": "Rate expressed as a percentage, that is, in hundredths, for example, 0.7 is 7/10 of a percent, and 7.0 is 7%.",
+      "base": "decimal",
+      "totalDigits": 11,
+      "fractionDigits": 10
+    },
+    "PhoneNumber": {
+      "definition": "The collection of information which identifies a specific phone or FAX number as defined by telecom services.\nIt consists of a \"+\" followed by the country code (from 1 to 3 characters) then a \"-\" and finally, any combination of numbers, \"(\", \")\", \"+\" and \"-\" (up to 30 characters).",
+      "base": "string",
+      "pattern": "\\+[0-9]{1,3}-[0-9()+\\-]{1,30}"
+    },
+    "PreferredContactMethod2Code": {
+      "definition": "Preferred method used to reach the individual contact within an organisation.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "MAIL",
+          "name": "Email",
+          "definition": "Preferred method used to reach the contact is per email."
+        },
+        {
+          "code": "FAXX",
+          "name": "Fax",
+          "definition": "Preferred method used to reach the contact is per fax."
+        },
+        {
+          "code": "LETT",
+          "name": "Letter",
+          "definition": "Preferred method used to reach the contact is per letter."
+        },
+        {
+          "code": "CELL",
+          "name": "MobileOrCellPhone",
+          "definition": "Preferred method used to reach the contact is per mobile or cell phone."
+        },
+        {
+          "code": "ONLI",
+          "name": "Online",
+          "definition": "Preferred method used to reach the contact is online."
+        },
+        {
+          "code": "PHON",
+          "name": "Phone",
+          "definition": "Preferred method used to reach the contact is per phone."
+        }
+      ]
+    },
+    "Priority2Code": {
+      "definition": "Specifies the priority level of an event.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "HIGH",
+          "name": "High",
+          "definition": "Priority level is high."
+        },
+        {
+          "code": "NORM",
+          "name": "Normal",
+          "definition": "Priority level is normal."
+        }
+      ]
+    },
+    "Priority3Code": {
+      "definition": "Specifies the priority level of an event.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "URGT",
+          "name": "Urgent",
+          "definition": "Priority level is urgent (highest priority possible)."
+        },
+        {
+          "code": "HIGH",
+          "name": "High",
+          "definition": "Priority level is high."
+        },
+        {
+          "code": "NORM",
+          "name": "Normal",
+          "definition": "Priority level is normal."
+        }
+      ]
+    },
+    "RegulatoryReportingType1Code": {
+      "definition": "Identifies whether the regulatory reporting information applies to the debit side, to the credit side or to both debit and credit sides of the transaction.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "CRED",
+          "name": "Credit",
+          "definition": "Regulatory information applies to the credit side."
+        },
+        {
+          "code": "DEBT",
+          "name": "Debit",
+          "definition": "Regulatory information applies to the debit side."
+        },
+        {
+          "code": "BOTH",
+          "name": "Both",
+          "definition": "Regulatory information applies to both credit and debit sides."
+        }
+      ]
+    },
+    "RemittanceLocationMethod2Code": {
+      "definition": "Specifies the method used to deliver the remittance advice information.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "FAXI",
+          "name": "Fax",
+          "definition": "Remittance advice information must be faxed."
+        },
+        {
+          "code": "EDIC",
+          "name": "ElectronicDataInterchange",
+          "definition": "Remittance advice information must be sent through Electronic Data Interchange (EDI)."
+        },
+        {
+          "code": "URID",
+          "name": "UniformResourceIdentifier",
+          "definition": "Remittance advice information needs to be sent to a Uniform Resource Identifier (URI). URI is a compact string of characters that uniquely identify an abstract or physical resource. URI's are the super-set of identifiers, such as URLs, email addresses, ftp sites, etc, and as such, provide the syntax for all of the identification schemes."
+        },
+        {
+          "code": "EMAL",
+          "name": "EMail",
+          "definition": "Remittance advice information must be sent through e-mail."
+        },
+        {
+          "code": "POST",
+          "name": "Post",
+          "definition": "Remittance advice information must be sent through postal services."
+        },
+        {
+          "code": "SMSM",
+          "name": "SMS",
+          "definition": "Remittance advice information must be sent through by phone as a short message service (SMS)."
+        }
+      ]
+    },
+    "SHA256SignatureText": {
+      "definition": "Specifies a character string with an exact length of 32 binary bytes (64 hexadecimal text characters).\n\nUsed only for hex binary data only, supports only characters A-F and 0-9.",
+      "base": "string",
+      "pattern": "([0-9A-F][0-9A-F]){32}"
+    },
+    "SettlementMethod1Code": {
+      "definition": "Specifies the method used to settle the credit transfer instruction.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "INDA",
+          "name": "InstructedAgent",
+          "definition": "Settlement is done by the agent instructed to execute a payment instruction."
+        },
+        {
+          "code": "INGA",
+          "name": "InstructingAgent",
+          "definition": "Settlement is done by the agent instructing and forwarding the payment to the next party in the payment chain."
+        },
+        {
+          "code": "COVE",
+          "name": "CoverMethod",
+          "definition": "Settlement is done through a cover payment."
+        },
+        {
+          "code": "CLRG",
+          "name": "ClearingSystem",
+          "definition": "Settlement is done through a payment clearing system."
+        }
+      ]
+    },
+    "TaxRecordPeriod1Code": {
+      "definition": "Specifies the period related to the tax payment.",
+      "base": "string",
+      "codes": [
+        {
+          "code": "MM01",
+          "name": "FirstMonth",
+          "definition": "Tax is related to the second month of the period."
+        },
+        {
+          "code": "MM02",
+          "name": "SecondMonth",
+          "definition": "Tax is related to the first month of the period."
+        },
+        {
+          "code": "MM03",
+          "name": "ThirdMonth",
+          "definition": "Tax is related to the third month of the period."
+        },
+        {
+          "code": "MM04",
+          "name": "FourthMonth",
+          "definition": "Tax is related to the fourth month of the period."
+        },
+        {
+          "code": "MM05",
+          "name": "FifthMonth",
+          "definition": "Tax is related to the fifth month of the period."
+        },
+        {
+          "code": "MM06",
+          "name": "SixthMonth",
+          "definition": "Tax is related to the sixth month of the period."
+        },
+        {
+          "code": "MM07",
+          "name": "SeventhMonth",
+          "definition": "Tax is related to the seventh month of the period."
+        },
+        {
+          "code": "MM08",
+          "name": "EighthMonth",
+          "definition": "Tax is related to the eighth month of the period."
+        },
+        {
+          "code": "MM09",
+          "name": "NinthMonth",
+          "definition": "Tax is related to the ninth month of the period."
+        },
+        {
+          "code": "MM10",
+          "name": "TenthMonth",
+          "definition": "Tax is related to the tenth month of the period."
+        },
+        {
+          "code": "MM11",
+          "name": "EleventhMonth",
+          "definition": "Tax is related to the eleventh month of the period."
+        },
+        {
+          "code": "MM12",
+          "name": "TwelfthMonth",
+          "definition": "Tax is related to the twelfth month of the period."
+        },
+        {
+          "code": "QTR1",
+          "name": "FirstQuarter",
+          "definition": "Tax is related to the first quarter of the period."
+        },
+        {
+          "code": "QTR2",
+          "name": "SecondQuarter",
+          "definition": "Tax is related to the second quarter of the period."
+        },
+        {
+          "code": "QTR3",
+          "name": "ThirdQuarter",
+          "definition": "Tax is related to the third quarter of the period."
+        },
+        {
+          "code": "QTR4",
+          "name": "FourthQuarter",
+          "definition": "Tax is related to the forth quarter of the period."
+        },
+        {
+          "code": "HLF1",
+          "name": "FirstHalf",
+          "definition": "Tax is related to the first half of the period."
+        },
+        {
+          "code": "HLF2",
+          "name": "SecondHalf",
+          "definition": "Tax is related to the second half of the period."
+        }
+      ]
+    },
+    "TrueFalseIndicator": {
+      "definition": "A flag indicating a True or False value.",
+      "base": "boolean"
+    },
+    "UTIIdentifier": {
+      "definition": "Unique Transaction Identifier (UTI). Unique number allocated to a financial transaction as agreed among the parties and/or within the regulatory system under which it is formed. The UTI is described in the latest edition of the international standard ISO 23897:2020.",
+      "base": "string",
+      "pattern": "[A-Z0-9]{18}[0-9]{2}[A-Z0-9]{0,32}"
+    },
+    "UUIDv4Identifier": {
+      "definition": "Universally Unique IDentifier (UUID) version 4, as described in IETC RFC 4122 \"Universally Unique IDentifier (UUID) URN Namespace\".",
+      "base": "string",
+      "pattern": "[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}"
+    }
+  }
+}
