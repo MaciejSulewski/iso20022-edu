@@ -9,13 +9,9 @@ Rules:
 
 ## Now
 (max 3 open tasks)
-- [ ] T-029 PR CI workflow: `npm run build`, `astro check`, check-content on every PR. Done when: a PR shows the check and a broken build turns it red. Implemented on local branch `feat/t-029-ci` (reviewed, approved), not pushed #agent #phase/1 #blocked needs T-103
-- [ ] T-022 Deploy workflow (`withastro/action`). Done when: the landing page is live on Pages #agent #phase/1 #blocked needs T-103
-- [ ] T-037 Accessibility (axe) and JS-size checks in CI. Done when: CI fails on an axe error or a page over about 100 KB JS #agent #phase/1 #blocked needs T-103
 
 ## Waiting on me
-- [ ] T-103 Grant the GitHub CLI the workflow scope: run `gh auth refresh -h github.com -s workflow` and approve in the browser (pushes of .github/workflows/* are rejected without it) #me #phase/1
-- T-026 needs T-022 and T-029 to have run once.
+- T-026 can be done now (T-022 and T-029 have run).
 
 ## Next
 ### Phase 0: repo, GitHub, working rules
@@ -59,6 +55,10 @@ Rules:
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-029 PR CI workflow: `npm run build`, `astro check`, check-content on every PR. Done when: a PR shows the check and a broken build turns it red. #agent #phase/1 ✅ 2026-11-21 [PR #17](https://github.com/MaciejSulewski/iso20022-edu/pull/17)
+- [x] T-022 Deploy workflow (`withastro/action`). Done when: the landing page is live on Pages #agent #phase/1 ✅ 2026-11-21 [PR #18](https://github.com/MaciejSulewski/iso20022-edu/pull/18)
+- [x] T-037 Accessibility (axe) and JS-size checks in CI. Done when: CI fails on an axe error or a page over about 100 KB JS #agent #phase/1 ✅ 2026-11-21 [PR #19](https://github.com/MaciejSulewski/iso20022-edu/pull/19)
+- [x] T-103 Grant the GitHub CLI the workflow scope: run `gh auth refresh -h github.com -s workflow` and approve in the browser (pushes of .github/workflows/* are rejected without it) #me #phase/1 ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-033 Create `docs/sources.md` (required by `CLAUDE.md`). Done when: it lists every source used so far, with URL and retrieval date #agent #phase/1 ✅ 2026-11-21 [PR #6](https://github.com/MaciejSulewski/iso20022-edu/pull/6)
 - [x] T-020 Scaffold Astro: static output, base path, strict TS, `astro check`. Done when: `npm run build` passes and the site is served under `/iso20022-edu/` in `npm run preview` #agent #phase/1 ✅ 2026-11-21 [PR #7](https://github.com/MaciejSulewski/iso20022-edu/pull/7)
 - [x] T-028 Pin Node (`.nvmrc` + `engines`), commit lockfile, add lint and format, add Dependabot. Done when: `npm ci` works on a clean clone and CI uses the pinned Node #agent #phase/1 ✅ 2026-11-21 [PR #8](https://github.com/MaciejSulewski/iso20022-edu/pull/8)
