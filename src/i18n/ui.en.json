@@ -3,5 +3,10 @@
   "counter.label": "Count",
   "footer.disclaimer": "Educational project, not affiliated with ISO or Swift.",
   "footer.code_licence": "Code: MIT licence",
-  "footer.content_licence": "Content: CC BY 4.0 licence"
+  "footer.content_licence": "Content: CC BY 4.0 licence",
+  "site.description": "Free educational guide to ISO 20022 payment messages, with plain-language explanations and synthetic examples.",
+  "site.og_alt": "ISO 20022 Edu social card",
+  "notfound.title": "Page not found",
+  "notfound.body": "The page you are looking for does not exist.",
+  "notfound.home": "Back to the home page"
 }

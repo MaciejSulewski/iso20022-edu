@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://maciejsulewski.github.io/iso20022-edu/sitemap-index.xml
