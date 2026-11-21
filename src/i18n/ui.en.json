@@ -1,5 +1,7 @@
 {
   "site.title": "ISO 20022 Edu",
-  "nav.home": "Home",
-  "counter.label": "Count"
+  "counter.label": "Count",
+  "footer.disclaimer": "Educational project, not affiliated with ISO or Swift.",
+  "footer.code_licence": "Code: MIT licence",
+  "footer.content_licence": "Content: CC BY 4.0 licence"
 }
