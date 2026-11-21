@@ -36,7 +36,7 @@ iso20022-edu/
   astro.config.mjs            # site + base for Pages; i18n { defaultLocale: 'en', locales: ['en'] }
   src/
     content.config.ts         # zod schemas for all collections
-    data/schema/pacs.008.001.13.json   # GENERATED from XSD; do not edit
+    data/schema/pacs.008.001.13.json   # GENERATED at build from the fetched XSD; gitignored, not committed ([[ADR-012 XSD not committed]])
     content/
       annotations/pacs.008.001.13.yaml # hand-written overlay
       messages/pacs.008.001.13.yaml    # metadata: name, purpose, sources, lastReviewed
@@ -156,7 +156,7 @@ With scope cut to pacs.008, the effort goes into depth and experience. See [[ADR
      - `npm run build` (including the content checks) must pass before a PR.
    - **Obsidian:** open `docs/` as a vault. Move this plan into `docs/plan/Project Plan.md`, create `Home.md`, the Ledger, and ADR notes for the decisions already made (Astro, base ISO, English first, full tree, licences, Pages). Optional: install the community plugin **Tasks** for ledger queries; the ledger stays plain Markdown so it works without it.
 1. **Scaffold.** Astro project with strict TypeScript, Tailwind v4 and Preact; Base layout, i18n helper, design tokens, dark mode, UI primitives, landing page with guided path, licences, disclaimer, deploy workflow. The landing page goes live on Pages. **You review the look.**
-2. **XSD import.** Download the latest pacs.008 XSD, then write `import-xsd.ts` with a small test on a snippet of the XSD (sequence, choice, multiplicity, codes, documentation). Generate the JSON.
+2. **XSD import.** Fetch the latest pacs.008 XSD (a fetch script, not committed, [[ADR-012 XSD not committed]]), then write `import-xsd.ts` with a small test on a snippet of the XSD (sequence, choice, multiplicity, codes, documentation). The JSON is generated at build time and not committed.
 3. **Prototype: annotated XML.** One synthetic, xmllint-valid pacs.008 sample (single transaction, SHAR, debtor agent → creditor agent). Build AnnotatedXml (Preact island) and ElementPanel for desktop and mobile, with colour legend, hover previews and beginner/full mode, plus `check-content.ts`. Annotate the key path (about 30 elements); everything else falls back to the ISO definition. **You review.**
 4. **Full tree explorer and workspace.** SchemaTree page, mandatory filter, search, deep links; split-pane workspace; Ctrl+K command palette with element index and Pagefind.
 5. **More pacs.008 depth.** Overlay by type for shared components, explanations for codes, a second sample (intermediary agent, structured remittance).
@@ -171,8 +171,8 @@ With scope cut to pacs.008, the effort goes into depth and experience. See [[ADR
 - Polish locale.
 
 ## 6. Questions still open
-1. **Exact version:** confirm the latest pacs.008 on iso20022.org at Phase 2, and decide whether to also keep .08 because it is widely used in practice.
-2. **XSD redistribution:** check iso20022.org terms before committing XSDs to the repo. The fallback is fetching them in CI.
+1. **Exact version:** answered in [[sources]] (T-030): .14 found, unverified, whether to keep .08 is for the project owner to decide. Original question: confirm the latest pacs.008 on iso20022.org at Phase 2, and decide whether to also keep .08 because it is widely used in practice.
+2. **XSD redistribution:** answered, fetch in CI ([[ADR-012 XSD not committed]], [[sources]]). Original question: check iso20022.org terms before committing XSDs to the repo. The fallback is fetching them in CI.
 3. ~~Repo and URL name~~ Settled: `maciejsulewski.github.io/iso20022-edu`, no custom domain, no analytics.
 
 ## 7. Risks
