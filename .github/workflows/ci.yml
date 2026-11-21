@@ -23,3 +23,6 @@ jobs:
       - run: npm test
       # check-content step arrives with T-043
       - run: npm run build
+      - run: npm run check:size
+      - run: npx playwright install --with-deps chromium
+      - run: npm run check:a11y
