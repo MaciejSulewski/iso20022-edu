@@ -28,17 +28,34 @@ const schemas = import.meta.glob("../../data/schema/*.json", {
   eager: true,
 }) as unknown as Record<string, Schema>;
 const overlay = (await getEntry("annotations", message.id))?.data;
-const nodes = buildTree(
-  xmls[`../../content/samples/${sample.data.file}`]!,
-  schemas[`../../data/schema/${message.id}.json`]!,
-  overlay,
-);
+const file = `../../content/samples/${sample.data.file}`;
+const xml = xmls[file];
+const schema = schemas[`../../data/schema/${message.id}.json`];
+if (!xml) throw new Error(`Sample file missing for ${message.id}: ${file}`);
+if (!schema) throw new Error(`Schema JSON missing for ${message.id}`);
+const nodes = buildTree(xml, schema, overlay);
 const labels = {
   tree: t("xml.tree"),
   panel: t("xml.panel"),
+  close: t("xml.panel.close"),
   empty: t("xml.panel.empty"),
   path: t("xml.panel.path"),
-  isoName: t("xml.panel.name"),
+  explanation: t("xml.panel.explanation"),
+  none: t("xml.panel.none"),
+  iso: t("xml.panel.iso"),
+  facts: t("xml.panel.facts"),
+  type: t("xml.fact.type"),
+  use: t("xml.fact.use"),
+  reqOnce: t("xml.occ.reqOnce"),
+  optOnce: t("xml.occ.optOnce"),
+  reqMany: t("xml.occ.reqMany"),
+  optMany: t("xml.occ.optMany"),
+  upTo: t("xml.occ.upTo"),
+  choiceMember: t("xml.panel.choiceMember"),
+  choice: t("xml.panel.choice"),
+  codes: t("xml.panel.codes"),
+  examples: t("xml.panel.examples"),
+  notes: t("xml.panel.notes"),
   collapse: t("xml.collapse"),
   expand: t("xml.expand"),
   count: t("xml.count"),
@@ -47,7 +64,7 @@ const labels = {
 
 <Base title={`${message.data.name} · ${t("xml.title")}`}>
   <div class="mx-auto max-w-5xl px-4">
-    <h1 class="text-3xl font-bold">{message.data.name}</h1>
+    <h1 class="text-3xl font-bold break-words">{message.data.name}</h1>
     <p class="mt-1 font-mono text-sm text-muted">{message.id}</p>
     <p class="mt-4">{sample.data.scenario}</p>
     <p class="mt-2 mb-6 text-muted">{t("xml.lead")}</p>

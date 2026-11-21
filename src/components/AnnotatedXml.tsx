@@ -1,14 +1,13 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useId, useRef, useState } from "preact/hooks";
 import type { XmlNode } from "../lib/xml-tree.ts";
+import ElementPanel, { type PanelLabels } from "./ElementPanel";
 
-type Labels = {
+type Labels = PanelLabels & {
   tree: string;
   panel: string;
-  empty: string;
-  path: string;
-  isoName: string;
-  collapse: string; // contains {tag}
-  expand: string; // contains {tag}
+  close: string;
+  collapse: string; // contains {name} and {tag}
+  expand: string; // contains {name} and {tag}
   count: string; // contains {n}
 };
 
@@ -49,11 +48,30 @@ export default function AnnotatedXml({
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<string | null>(null);
   const [scroll, setScroll] = useState(0); // bumps when the hash asks for a scroll
+  const [desktop, setDesktop] = useState(true); // true on the server: the aside is CSS-hidden below lg
+  const [sheet, setSheet] = useState(false); // mobile bottom sheet
+  const dialog = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   const { rows, all } = flatten(nodes, collapsed);
   const byId = new Map(all.map((r) => [r.id, r]));
   const cur = useRef(selected);
   cur.current = selected;
   const sel = selected ? byId.get(selected)?.node : undefined;
+
+  useEffect(() => {
+    const mq = matchMedia("(min-width: 1024px)");
+    const on = () => setDesktop(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+
+  useEffect(() => {
+    const d = dialog.current;
+    if (!d) return;
+    if (sheet && !desktop && !d.open) d.showModal();
+    if ((!sheet || desktop) && d.open) d.close();
+  }, [sheet, desktop]);
 
   useEffect(() => {
     const fromHash = () => {
@@ -76,6 +94,7 @@ export default function AnnotatedXml({
         return next;
       });
       setSelected(hit.id);
+      setSheet(true);
       setScroll((s) => s + 1);
     };
     fromHash();
@@ -90,13 +109,23 @@ export default function AnnotatedXml({
         ?.scrollIntoView({ block: "nearest" });
   }, [scroll]);
 
-  function select(id: string) {
+  function select(id: string, openSheet = true) {
     setSelected(id);
+    if (openSheet) setSheet(true);
     // replaceState: selecting does not fill the back button, and fires no hashchange
     history.replaceState(null, "", `#${byId.get(id)!.node.path}`);
   }
 
+  // Esc on desktop clears the selection; on mobile the dialog handles Esc itself.
+  function onEsc(e: KeyboardEvent) {
+    if (e.key !== "Escape" || !desktop || !cur.current) return;
+    setSelected(null);
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+
   function toggle(id: string) {
+    // a selection hidden inside a collapsing branch moves to that branch
+    if (!collapsed.has(id) && selected?.startsWith(id + "/")) select(id, false);
     setCollapsed((c) => {
       const next = new Set(c);
       if (!next.delete(id)) next.add(id);
@@ -117,7 +146,7 @@ export default function AnnotatedXml({
     if (!next) return;
     e.preventDefault();
     next.focus();
-    select(next.dataset.id!);
+    select(next.dataset.id!, false);
   }
 
   return (
@@ -125,7 +154,10 @@ export default function AnnotatedXml({
       <div
         role="group"
         aria-label={labels.tree}
-        onKeyDown={onKey}
+        onKeyDown={(e) => {
+          onKey(e);
+          onEsc(e);
+        }}
         class="font-mono text-sm leading-6"
       >
         {rows.map(({ id, node, depth, close }) => {
@@ -161,10 +193,9 @@ export default function AnnotatedXml({
                 <button
                   type="button"
                   aria-expanded={open}
-                  aria-label={(open ? labels.collapse : labels.expand).replace(
-                    "{tag}",
-                    node.tag,
-                  )}
+                  aria-label={(open ? labels.collapse : labels.expand)
+                    .replace("{name}", node.info.isoName)
+                    .replace("{tag}", node.tag)}
                   onClick={() => toggle(id)}
                   class="flex size-6 shrink-0 items-center justify-center text-muted hover:text-fg"
                 >
@@ -205,21 +236,54 @@ export default function AnnotatedXml({
           );
         })}
       </div>
-      <aside
-        aria-label={labels.panel}
-        class="h-fit rounded border border-line bg-surface p-4 lg:sticky lg:top-4"
+      {desktop && (
+        <aside
+          aria-label={labels.panel}
+          class="hidden h-fit max-h-[calc(100vh-2rem)] overflow-y-auto rounded border border-line bg-surface p-4 lg:sticky lg:top-4 lg:block"
+        >
+          <ElementPanel
+            id={selected}
+            node={sel}
+            labels={labels}
+            titleId={titleId}
+            onSelect={(id) => select(id, false)}
+          />
+        </aside>
+      )}
+      <dialog
+        ref={dialog}
+        aria-labelledby={titleId}
+        onClose={() => {
+          setSheet(false);
+          // the browser returns focus to the opener; deep links have none, so do it here
+          if (cur.current)
+            document
+              .querySelector<HTMLElement>(
+                `[data-id="${CSS.escape(cur.current)}"]`,
+              )
+              ?.focus();
+        }}
+        class="m-0 mt-auto max-h-[80vh] w-full max-w-none overflow-y-auto rounded-t-lg border-t border-line bg-bg p-4 pb-8 text-fg backdrop:bg-black/50"
       >
-        {sel ? (
-          <dl aria-live="polite">
-            <dt class="text-sm text-muted">{labels.isoName}</dt>
-            <dd class="mb-3 text-lg font-semibold">{sel.info.isoName}</dd>
-            <dt class="text-sm text-muted">{labels.path}</dt>
-            <dd class="font-mono text-sm break-all">{sel.path}</dd>
-          </dl>
-        ) : (
-          <p class="text-muted">{labels.empty}</p>
+        {!desktop && sheet && (
+          <>
+            <button
+              type="button"
+              onClick={() => dialog.current?.close()}
+              class="mb-2 ml-auto block min-h-6 rounded border border-line px-3 py-1 text-sm"
+            >
+              {labels.close}
+            </button>
+            <ElementPanel
+              id={selected}
+              node={sel}
+              labels={labels}
+              titleId={titleId}
+              onSelect={(id) => select(id, false)}
+            />
+          </>
         )}
-      </aside>
+      </dialog>
     </div>
   );
 }
