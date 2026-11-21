@@ -15,6 +15,7 @@
     "test": "node --test src/i18n/t.test.ts scripts/import-xsd.test.ts scripts/extract-erepository.test.ts",
     "import-xsd": "node scripts/import-xsd.ts",
     "extract-erepository": "node scripts/extract-erepository.ts",
+    "check:xml": "xmllint --noout --schema schemas/pacs.008.001.14.xsd src/content/samples/*.xml",
     "check:a11y": "node scripts/check-a11y.ts",
     "check:size": "node scripts/check-js-size.ts"
   },
