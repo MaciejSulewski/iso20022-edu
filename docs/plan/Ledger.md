@@ -11,7 +11,6 @@ Rules:
 
 ## Next
 ### Phase 0: repo, GitHub, working rules
-- [ ] T-014 Turn on Pages (Source: GitHub Actions) and branch protection on `main` (PR required, CI must pass) #me #phase/0
 - [ ] T-015 Create the "report a content error" issue template #agent #phase/0
 ### Phase 1: scaffold
 - [ ] T-016 Add Tailwind v4, Preact integration, strict TS config and `astro check` to the scaffold ([[ADR-009 TypeScript and Tailwind]]) #agent #phase/1
@@ -21,6 +20,7 @@ Rules:
 - [ ] T-023 Design tokens, dark mode toggle, UI primitives (Button, Badge, Tabs, Sheet) #agent #phase/1
 - [ ] T-024 Landing page with "Start here" guided path and `localStorage` progress #agent #phase/1
 - [ ] T-025 Review the look and landing page (light and dark, mobile) #me #phase/1
+- [ ] T-026 Add the build check as a required status check in the `protect-main` ruleset, once T-022 has run once #me #phase/1
 ### Phase 2: XSD import
 - [ ] T-030 Confirm the latest pacs.008 version on iso20022.org and check XSD redistribution terms (commit or fetch in CI) #agent #phase/2
 - [ ] T-031 `import-xsd.ts` + test on an XSD snippet (sequence, choice, multiplicity, codes, documentation) #agent #phase/2
@@ -63,6 +63,7 @@ Rules:
 - [x] T-012 Add `LICENSE` (MIT) and `CONTENT-LICENSE` (CC BY 4.0) #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-013 Create the GitHub repo (`gh repo create --public --source . --push`) after T-001 and T-002 #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-101 Pagefind search: moved to T-052 ✅ 2026-11-21 [[2026-11-21]]
+- [x] T-014 Turn on Pages (Source: GitHub Actions) and branch protection on `main` (PR required, no status check yet, see T-026) #me #phase/0 ✅ 2026-11-21 [[2026-11-21]]
 
 ## Decisions
 - [[ADR-001 Astro]]
