@@ -8,14 +8,9 @@ Rules:
 - Agents read this note at the start of every session and update it at the end. Details: [[Project Plan]].
 
 ## Now
-- [x] T-003 Install Obsidian and open `iso20022-edu/docs` as a vault #me #phase/0
 
 ## Next
 ### Phase 0: repo, GitHub, working rules
-- [x] T-010 `git init`, default branch `main`, `.gitignore` (node_modules, dist, `docs/.obsidian/workspace*.json`) #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
-- [x] T-011 Write `CLAUDE.md` (working rules for agents) and a short `CONTRIBUTING.md` #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
-- [x] T-012 Add `LICENSE` (MIT) and `CONTENT-LICENSE` (CC BY 4.0) #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
-- [x] T-013 Create the GitHub repo (`gh repo create --public --source . --push`) after T-001 and T-002 #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
 - [ ] T-014 Turn on Pages (Source: GitHub Actions) and branch protection on `main` (PR required, CI must pass) #me #phase/0
 - [ ] T-015 Create the "report a content error" issue template #agent #phase/0
 ### Phase 1: scaffold
@@ -51,14 +46,15 @@ Rules:
 - [ ] T-101 Pagefind search (optional) #agent #phase/9
 - [ ] T-102 Write `docs/maintenance.md` (yearly update routine) and the schema diff script #agent #phase/9
 
-## Waiting on me
-- Nothing open in Phase 0 for me until T-014 (needs the repo from T-013)
-- Merge every PR
-
 ## Done
 - [x] T-000 Project plan, ledger and ADRs created ✅ 2026-11-21 [[2026-11-21]]
-- [x] T-002 Repo `iso20022-edu`, URL `maciejsulewski.github.io/iso20022-edu` (no custom domain) ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-001 Install GitHub CLI and log in with `gh auth login` (keyring, no token pasted) ✅ 2026-11-21 [[2026-11-21]]
+- [x] T-002 Repo `iso20022-edu`, URL `maciejsulewski.github.io/iso20022-edu` (no custom domain) ✅ 2026-11-21 [[2026-11-21]]
+- [x] T-003 Install Obsidian and open `iso20022-edu/docs` as a vault #me #phase/0  ✅ 2026-11-21
+- [x] T-010 `git init`, default branch `main`, `.gitignore` (node_modules, dist, `docs/.obsidian/workspace*.json`) #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
+- [x] T-011 Write `CLAUDE.md` (working rules for agents) and a short `CONTRIBUTING.md` #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
+- [x] T-012 Add `LICENSE` (MIT) and `CONTENT-LICENSE` (CC BY 4.0) #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
+- [x] T-013 Create the GitHub repo (`gh repo create --public --source . --push`) after T-001 and T-002 #agent #phase/0 ✅ 2026-11-21 [[2026-11-21]]
 
 ## Decisions
 - [[ADR-001 Astro]]
