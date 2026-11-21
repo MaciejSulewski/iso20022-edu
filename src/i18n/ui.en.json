@@ -66,6 +66,7 @@
   "xml.occ.optOnce": "Optional, once",
   "xml.occ.reqMany": "Required, repeating",
   "xml.occ.optMany": "Optional, repeating",
+  "xml.occ.atLeast": "at least {n} times",
   "xml.occ.upTo": "up to {n} times",
   "xml.panel.choiceMember": "One of several alternatives: only one element of this group is used in a message.",
   "xml.panel.choice": "A choice: exactly one of the elements inside it is used.",

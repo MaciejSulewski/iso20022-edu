@@ -38,6 +38,8 @@ function flatten(
 const attrText = (n: XmlNode) =>
   Object.entries(n.attrs ?? {}).map(([k, v]) => ` ${k}="${v}"`);
 
+const isMobile = () => !matchMedia("(min-width: 1024px)").matches;
+
 export default function AnnotatedXml({
   nodes,
   labels,
@@ -71,6 +73,7 @@ export default function AnnotatedXml({
     if (!d) return;
     if (sheet && !desktop && !d.open) d.showModal();
     if ((!sheet || desktop) && d.open) d.close();
+    if (sheet && desktop) setSheet(false); // resized up: no stale modal on the way back
   }, [sheet, desktop]);
 
   useEffect(() => {
@@ -94,7 +97,7 @@ export default function AnnotatedXml({
         return next;
       });
       setSelected(hit.id);
-      setSheet(true);
+      if (isMobile()) setSheet(true);
       setScroll((s) => s + 1);
     };
     fromHash();
@@ -111,7 +114,7 @@ export default function AnnotatedXml({
 
   function select(id: string, openSheet = true) {
     setSelected(id);
-    if (openSheet) setSheet(true);
+    if (openSheet && isMobile()) setSheet(true);
     // replaceState: selecting does not fill the back button, and fires no hashchange
     history.replaceState(null, "", `#${byId.get(id)!.node.path}`);
   }
@@ -150,14 +153,14 @@ export default function AnnotatedXml({
   }
 
   return (
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <div
+      onKeyDown={onEsc}
+      class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]"
+    >
       <div
         role="group"
         aria-label={labels.tree}
-        onKeyDown={(e) => {
-          onKey(e);
-          onEsc(e);
-        }}
+        onKeyDown={onKey}
         class="font-mono text-sm leading-6"
       >
         {rows.map(({ id, node, depth, close }) => {

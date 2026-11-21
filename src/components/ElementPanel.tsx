@@ -14,6 +14,7 @@ export type PanelLabels = Record<
   | "reqMany"
   | "optMany"
   | "upTo"
+  | "atLeast"
   | "choiceMember"
   | "choice"
   | "codes"
@@ -27,9 +28,13 @@ const h = "mb-1 text-sm font-semibold text-muted";
 function occurrence(i: XmlNode["info"], l: PanelLabels) {
   if (i.max === 1) return i.min >= 1 ? l.reqOnce : l.optOnce;
   const base = i.min >= 1 ? l.reqMany : l.optMany;
-  return i.max === "unbounded"
-    ? base
-    : `${base}, ${l.upTo.replace("{n}", String(i.max))}`;
+  return [
+    base,
+    i.min > 1 && l.atLeast.replace("{n}", String(i.min)),
+    i.max !== "unbounded" && l.upTo.replace("{n}", String(i.max)),
+  ]
+    .filter(Boolean)
+    .join(", ");
 }
 
 // The breadcrumb repeats the XML view: one ancestor per line, indented by depth,
