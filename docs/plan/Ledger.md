@@ -11,7 +11,7 @@ Rules:
 (max 3 open tasks)
 
 ## Waiting on me
-- [ ] T-104 Version (.14) and zip URL are done (2026-11-21, see [[sources]]). Still open: in a browser read the iso20022.org terms and record them in docs/sources.md; if it says redistribution is not allowed, reverse [[ADR-013 Commit the XSDs]] #me #phase/2
+- [x] T-104 Version (.14) and zip URL confirmed; iso20022.org terms of use, IP policy and Swift licence read and recorded in [[sources]]: redistribution allowed, [[ADR-013 Commit the XSDs]] stands #me #phase/2 ✅ 2026-11-21 [[2026-11-21]]
 
 ## Next
 ### Phase 0: repo, GitHub, working rules

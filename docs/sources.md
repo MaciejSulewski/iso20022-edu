@@ -6,8 +6,9 @@ Public sources used for content and planning. Every source used must be listed h
 |---|---|---|---|
 | ISO 20022 Message Definitions catalogue (Payments Clearing and Settlement, pacs.008) | https://www.iso20022.org/iso-20022-message-definitions?search=pacs.008 | Latest pacs.008 version; XSD download. Seen only as a web-search result snippet, the page itself returned HTTP 403 | 2026-11-21 |
 | ISO 20022 Messages Archive | https://www.iso20022.org/catalogue-messages/iso-20022-messages-archive | Older versions remain available there. Search snippet only | 2026-11-21 |
-| iso20022.org Terms of use | https://www.iso20022.org/terms-use | Reproduction terms. Search snippet only, page returned HTTP 403 | 2026-11-21 |
-| iso20022.org Intellectual property rights | https://www.iso20022.org/intellectual-property-rights | Contributor IP and licence to users. Search snippet only, page returned HTTP 403 | 2026-11-21 |
+| iso20022.org Terms of use | https://www.iso20022.org/terms-use | Reproduction terms. Read in full from a browser-saved copy (T-104) | 2026-11-21 |
+| iso20022.org Intellectual property rights | https://www.iso20022.org/intellectual-property-rights | Contributor IP and licence to users. Read in full from a browser-saved copy (T-104) | 2026-11-21 |
+| Swift standards end-user licence (September 2005) | https://www.iso20022.org/sites/default/files/documents/D7/SWIFTStandards_LIC_OUT_V5_.pdf | Swift-specific licence, linked from the IP page. Downloaded and read in full (T-104) | 2026-11-21 |
 
 ## Not used
 
@@ -15,7 +16,7 @@ Public sources used for content and planning. Every source used must be listed h
 
 ## Notes
 
-- The XSD redistribution terms could not be read in full; see "Redistribution terms and decision" below.
+- The terms of use, IP policy and Swift licence were read from the primary pages on 2026-11-21 (T-104); see "Primary reading (T-104)" below.
 - Licence and disclaimer: [[ADR-006 Licences]]. Educational, not affiliated with ISO or Swift.
 
 ## Redistribution terms and decision (T-030)
@@ -43,4 +44,14 @@ The project owner pasted the findings of a separate research session. It is not 
 - Adds the Swift-specific licence (Swift standards end-user licence): royalty-free use and software development allowed; sale prohibited; modifying material while keeping the Swift reference prohibited. Contributors other than Swift may have their own terms. The session advised written confirmation from Swift before committing Swift-submitted schemas publicly.
 - Its overall reading: generally permitted, subject to contributor-specific terms. It also suggested a `THIRD-PARTY-NOTICES.md` with source, contributor and "not official" wording.
 
-**Effect on the decision:** at the time, none. (Later the owner chose to commit, [[ADR-013 Commit the XSDs]]; the Swift caveat below stays as an accepted risk.) The generated JSON is a transformation of the definitions, which is the kind of change the Swift clause may restrict, and "permission to use" is not the same as "permission to redistribute". If T-104 confirms from the primary pages that redistribution of the pacs.008 XSD is allowed, a `THIRD-PARTY-NOTICES.md` with the "not the official site" statement is the next step when switching to "commit". Even with "fetch in CI", the site displays single definitions, so the "not affiliated with ISO or Swift" disclaimer ([[ADR-006 Licences]]) already covers the notice for that use.
+## Primary reading (T-104)
+
+Read 2026-11-21: the Terms of use and IP rights pages from copies the project owner saved in a browser, and the Swift licence PDF downloaded directly (HTTP 200). **Result: nothing forbids redistribution, so [[ADR-013 Commit the XSDs]] stands.** This replaces the search-summary and second-hand findings above.
+
+- **Terms of use:** material "is intended to be used and reproduced freely by all interested users" under the IP Right Policy. Any replica must state that it is not the official site and that https://www.iso20022.org/ is the sole source of up-to-date material. The rest is a no-warranty, no-liability disclaimer.
+- **IP policy:** contributors keep their IP rights and grant third parties "a non-exclusive, royalty-free license to use the published information". It links contributor policies for CBI and Swift. The CBI policy PDF was not read.
+- **Swift end-user licence:** world-wide, royalty-free, non-exclusive licence to use or promote the standards and to build software, products or services on them (section 2). Sub-licensing allowed if royalty-free (4). Limits (3): do not sell the standards; do not modify them while still calling the result "SWIFTStandards". Swift keeps ownership (5); the licence ends if a material term is broken (6).
+- **What the repo must do:** commit the XSDs unmodified, free of charge; carry the "not the official site" statement; do not present the derived `src/data/schema/*.json` as an official ISO or Swift schema. All three are in `THIRD-PARTY-NOTICES.md`.
+- **Still open:** other contributors (such as CBI) may have their own terms. Only pacs.008.001.14 is in scope ([[ADR-004 Scope pacs.008]]).
+
+**Effect on the decision (earlier, before the primary reading):** at the time, none. (Later the owner chose to commit, [[ADR-013 Commit the XSDs]]; the Swift caveat below stays as an accepted risk.) The generated JSON is a transformation of the definitions, which is the kind of change the Swift clause may restrict, and "permission to use" is not the same as "permission to redistribute". If T-104 confirms from the primary pages that redistribution of the pacs.008 XSD is allowed, a `THIRD-PARTY-NOTICES.md` with the "not the official site" statement is the next step when switching to "commit". Even with "fetch in CI", the site displays single definitions, so the "not affiliated with ISO or Swift" disclaimer ([[ADR-006 Licences]]) already covers the notice for that use.
