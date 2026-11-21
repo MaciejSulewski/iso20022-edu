@@ -9,7 +9,6 @@ Rules:
 
 ## Now
 (max 3 open tasks)
-- [ ] T-032 Generate `src/data/schema/pacs.008.001.NN.json`. Done when: the file validates against its zod schema and is not hand-edited. Note: the real XSDs carry no `xs:documentation` (checked 2026-11-21), so `import-xsd.ts` fails on them; decide where ISO names and definitions come from first #agent #phase/2
 
 ## Waiting on me
 - [ ] T-104 Version (.14) and zip URL are done (2026-11-21, see [[sources]]). Still open: in a browser read the iso20022.org terms and record them in docs/sources.md; if it says redistribution is not allowed, reverse [[ADR-013 Commit the XSDs]] #me #phase/2
@@ -51,6 +50,8 @@ Rules:
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-032 Generate `src/data/schema/pacs.008.001.NN.json`. Done when: the file validates against its zod schema and is not hand-edited #agent #phase/2 ✅ 2026-11-21 [PR #30](https://github.com/MaciejSulewski/iso20022-edu/pull/30) (pacs.008.001.14, definitions from the eRepository)
+- [x] T-106 `extract-erepository.ts`: pull the definitions the pacs.008.001.14 message reaches out of the local eRepository into a small committed defs JSON #agent #phase/2 ✅ 2026-11-21 [PR #30](https://github.com/MaciejSulewski/iso20022-edu/pull/30)
 - [x] T-030 Confirm the latest pacs.008 version on iso20022.org and check XSD and definition redistribution terms. Done when: `docs/sources.md` records the terms and the decision "commit" or "fetch in CI", with an ADR if it changes [[ADR-006 Licences]]. Runs first: the answer decides whether definitions go in the repo #agent #phase/2 ✅ 2026-11-21 [PR #24](https://github.com/MaciejSulewski/iso20022-edu/pull/24) (decision: fetch in CI, terms unread: 403, see T-104)
 - [x] T-031 `import-xsd.ts` + test on an XSD snippet (sequence, choice, multiplicity, codes, documentation); the snippet fixture is synthetic and hand-written, not an ISO excerpt, because the XSD is not committed ([[ADR-012 XSD not committed]]). Done when: the test covers each construct and unknown constructs fail loudly #agent #phase/2 ✅ 2026-11-21 [PR #25](https://github.com/MaciejSulewski/iso20022-edu/pull/25)
 - [x] T-035 Write `docs/maintenance.md` (yearly update routine). Done when: it follows section 8 of [[Project Plan]] #agent #phase/2 ✅ 2026-11-21 [PR #26](https://github.com/MaciejSulewski/iso20022-edu/pull/26)
