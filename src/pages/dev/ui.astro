@@ -1,0 +1,49 @@
+---
+import Base from "../../layouts/Base.astro";
+import Button from "../../components/ui/Button.astro";
+import Badge from "../../components/ui/Badge.astro";
+import Tabs from "../../components/ui/Tabs";
+import Sheet from "../../components/ui/Sheet";
+import { t } from "../../i18n/t";
+
+const tabs = [
+  { id: "one", label: t("ui.tab.one"), content: t("ui.tab.one.body") },
+  { id: "two", label: t("ui.tab.two"), content: t("ui.tab.two.body") },
+  { id: "three", label: t("ui.tab.three"), content: t("ui.tab.three.body") },
+];
+---
+
+<Base title={t("ui.title")} noindex>
+  <div class="mx-auto max-w-2xl space-y-8 p-4">
+    <h1 class="text-2xl font-semibold">{t("ui.title")}</h1>
+    {/* Dark panel is forced with the .dark class so both themes show at once. */}
+    {[
+      ["light", ""],
+      ["dark", "dark"],
+    ].map(([name, cls]) => (
+      <section
+        class={`${cls} space-y-4 rounded border border-line bg-bg p-4 text-fg`}
+      >
+        <h2 class="text-lg font-semibold">{name}</h2>
+        <div class="flex flex-wrap items-center gap-2">
+          <Button>{t("ui.primary")}</Button>
+          <Button variant="secondary">{t("ui.secondary")}</Button>
+          <Badge>{t("ui.badge.label")}</Badge>
+        </div>
+        <Tabs
+          client:load
+          tabs={tabs.map((x) => ({ ...x, id: `${name}-${x.id}` }))}
+          label={t("ui.tabs")}
+        />
+        <Sheet
+          client:load
+          openLabel={t("ui.sheet.open")}
+          closeLabel={t("ui.sheet.close")}
+          title={t("ui.sheet")}
+        >
+          {t("ui.sheet.body")}
+        </Sheet>
+      </section>
+    ))}
+  </div>
+</Base>
