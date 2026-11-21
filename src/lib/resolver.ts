@@ -12,9 +12,12 @@ export type Resolved = {
   definition: string;
   typeName: string;
   kind: "complex" | "simple";
+  /** min, max, mandatory and repeating are local to the parent element, not inherited from ancestors. */
   min: number;
   max: number | "unbounded";
+  /** Required when its parent is present (min > 0). Always false for a choice member: exactly one alternative is required. */
   mandatory: boolean;
+  /** max > 1, relative to the parent. */
   repeating: boolean;
   /** Parent is a choice type: this element is one alternative. */
   choiceMember: boolean;
@@ -28,7 +31,15 @@ export type Resolved = {
 
 // The message root type is the one complex type no element points to. The XSD
 // Document/<root> wrapper is not a type in the JSON, so it is optional in paths.
+const roots = new WeakMap<Schema, string | undefined>();
 export function rootTypeName(schema: Schema): string | undefined {
+  if (roots.has(schema)) return roots.get(schema);
+  const r = findRoot(schema);
+  roots.set(schema, r);
+  return r;
+}
+
+function findRoot(schema: Schema): string | undefined {
   const used = new Set(
     Object.values(schema.complexTypes).flatMap((c) =>
       c.elements.flatMap((e) => ("any" in e ? [] : [e.type])),
@@ -75,7 +86,7 @@ export function resolvePath(
     kind: cur ? "complex" : "simple",
     min: el.min,
     max: el.max,
-    mandatory: el.min > 0,
+    mandatory: el.min > 0 && !parent?.choice,
     repeating: el.max === "unbounded" || el.max > 1,
     choiceMember: !!parent?.choice,
     choice: !!cur?.choice,

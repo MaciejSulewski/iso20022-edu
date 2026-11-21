@@ -48,6 +48,8 @@ test("choice elements are flagged", () => {
   assert.equal(id?.choiceMember, false);
   const iban = resolvePath(schema, "CdtTrfTxInf/DbtrAcct/Id/IBAN");
   assert.equal(iban?.choiceMember, true);
+  assert.equal(iban?.min, 1);
+  assert.equal(iban?.mandatory, false);
   assert.equal(iban?.choice, false);
 });
 
@@ -79,4 +81,28 @@ test("codes in both shapes", () => {
     },
   };
   assert.deepEqual(resolvePath(plain, "GrpHdr/MsgId")?.codes, ["A", "B"]);
+});
+
+test("multiplicity is local to the parent, not inherited", () => {
+  // Dbtr is mandatory, Nm inside it is optional.
+  const nm = resolvePath(schema, "CdtTrfTxInf/Dbtr/Nm");
+  assert.equal(nm?.kind, "simple");
+  assert.equal(nm?.mandatory, false);
+  assert.equal(nm?.repeating, false);
+  assert.equal(resolvePath(schema, "CdtTrfTxInf/Dbtr")?.mandatory, true);
+  const tx = resolvePath(schema, "CdtTrfTxInf");
+  assert.equal(tx?.max, "unbounded");
+  assert.equal(tx?.mandatory, true);
+  assert.equal(tx?.repeating, true);
+});
+
+test("choice nested under a non-choice", () => {
+  const id = resolvePath(schema, "CdtTrfTxInf/Dbtr/Id");
+  assert.equal(id?.choice, true);
+  assert.equal(id?.choiceMember, false);
+  for (const p of ["OrgId", "PrvtId"]) {
+    const r = resolvePath(schema, `CdtTrfTxInf/Dbtr/Id/${p}`);
+    assert.equal(r?.choiceMember, true, p);
+    assert.equal(r?.mandatory, false, p);
+  }
 });
