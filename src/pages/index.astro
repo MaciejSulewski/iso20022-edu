@@ -1,16 +1,10 @@
 ---
-import "../styles/global.css";
+import Base from "../layouts/Base.astro";
 import Counter from "../components/Counter";
+import { t } from "../i18n/t";
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>ISO 20022 Edu</title>
-  </head>
-  <body>
-    <h1>ISO 20022 Edu</h1>
-    <Counter client:load />
-  </body>
-</html>
+<Base>
+  <h1>{t("site.title")}</h1>
+  <Counter client:load label={t("counter.label")} />
+</Base>
