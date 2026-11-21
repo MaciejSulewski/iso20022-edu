@@ -8,6 +8,9 @@ export default defineConfig({
   base: "/iso20022-edu/",
   output: "static",
   i18n: { defaultLocale: "en", locales: ["en"] },
-  integrations: [preact(), sitemap()],
+  integrations: [
+    preact(),
+    sitemap({ filter: (page) => !page.includes("/dev/") }),
+  ],
   vite: { plugins: [tailwindcss()] },
 });
