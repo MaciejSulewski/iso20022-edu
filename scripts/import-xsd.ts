@@ -205,7 +205,9 @@ export function importXsd(xsdText: string, defs?: Defs): Schema {
         ["annotation"],
       );
       const tag = need(k, "name", name);
-      const e = d && "elements" in d ? d.elements[tag] : undefined;
+      const e = (d as Partial<Defs["types"][string]> | undefined)?.elements?.[
+        tag
+      ];
       if (defs && !exempt && !e)
         fail(`no eRepository entry for element ${tag} in ${name}`);
       const xd = docOf(k, tag, name);
