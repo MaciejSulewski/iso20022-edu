@@ -1,0 +1,11 @@
+# eRepository definitions plan (T-106, T-032)
+
+Spec: `docs/superpowers/specs/2026-11-21-erepository-defs-design.md` (binding), plus `2026-11-21-import-xsd-design.md`. Global constraints: CLAUDE.md; ponytail full (smallest complete change); synthetic fixtures in unit tests; never commit the eRepository/metamodel (git-ignored); generated files never hand-edited; Conventional Commits with trailer `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`; do not push, open PRs, tick the ledger; no subagents; do not edit THIRD-PARTY-NOTICES.md.
+
+## Task 1: T-106 extract-erepository.ts
+
+Branch `feat/t-106-erepository-defs` (checked out). Build `scripts/extract-erepository.ts` and its test per spec goals 1-3 (exported pure function over a line iterable + thin CLI; `npm run extract-erepository`; extend `npm test`). Inspect the real file (grep/sed, never read it whole) to learn how code sets, simple types (`simpleType` refs resolve to CodeSet/Text/etc. entries) and choice components are stored; handle what the pacs.008.001.14 closure needs and throw on anything else reachable. Run it on the real file to produce `src/data/erepository/pacs.008.001.14.defs.json`, report its size and time, and check it is deterministic (run twice, identical). Done when: unit tests (synthetic fixtures) pass, unknown reachable constructs throw, the real run succeeds and the output has every component/element the XSD uses (verify with a quick script comparing XSD complexType names and element names against the defs; report any miss).
+
+## Task 2: T-032 importer uses the defs; generate the JSON
+
+Per spec goals 4-5. Update `scripts/import-xsd.ts`, `schema-model.ts` and tests (documentation optional; defs file input; every complexType/element must be found when a defs file is given; constraints and codes in output). Generate `src/data/schema/pacs.008.001.14.json` with `node scripts/import-xsd.ts schemas/pacs.008.001.14.xsd src/data/schema src/data/erepository/pacs.008.001.14.defs.json` (adjust the CLI to take the defs path; npm script `import-xsd` documents it). Validate against the zod model; no hand edits. Update docs/maintenance.md steps 2-3 to the two-step real routine. Done when: tests pass, the JSON is generated and validates, `npm test`, `lint`, `format:check`, `build` pass.
