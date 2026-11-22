@@ -40,10 +40,10 @@ Rules (same as before):
   before opening or merging a PR. Do not trust only the subagent's report. A WSL Ubuntu
   clone (Node 24, Chromium) at ~/repo reproduces Linux; UI_DELAY_MS and UI_CPU_RATE slow the
   checks on purpose.
-- Merging is delegated for this session only if I say so; otherwise leave PRs open. When
-  delegated: merge with a merge commit once review is clean and CI `build` is green for the
-  PR's head commit. Never merge a red or pending check, an open Critical/Important finding,
-  or a #me dependency.
+- Merging is delegated for this session: I approve merging your finished PRs (code and
+  docs/ PRs alike). Merge with a merge commit once review is clean and CI `build` is green
+  for the PR's head commit. Never merge a red or pending check, an open Critical/Important
+  finding, or a #me dependency. Stacked PRs: merge the base PR first.
 - Still forbidden without my OK: pushing to main, force-push, deleting branches, changing
   repo settings, committing the eRepository files.
 - Stage specific files only: about ten docs/ files show as modified because of CRLF line
