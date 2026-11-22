@@ -110,9 +110,9 @@ try {
             (a as HTMLAnchorElement).pathname + (a as HTMLAnchorElement).hash,
           text: a.textContent,
         })),
-      (l) =>
-        l.length > 0 &&
-        l.every(
+      (links) =>
+        links.length > 0 &&
+        links.every(
           (a) => a.href === `/iso20022-edu/messages/pacs.008.001.14/#${a.text}`,
         ),
     );

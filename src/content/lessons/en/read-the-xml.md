@@ -13,8 +13,11 @@ sources:
   - title: Namespaces in XML 1.0, third edition (W3C)
     url: https://www.w3.org/TR/xml-names/
     retrieved: "2026-11-22"
+  - title: Extensible Markup Language (XML) 1.0, fifth edition (W3C)
+    url: https://www.w3.org/TR/xml/
+    retrieved: "2026-11-22"
   - title: XML introduction (MDN Web Docs)
-    url: https://developer.mozilla.org/en-US/docs/Web/XML/XML_introduction
+    url: https://developer.mozilla.org/en-US/docs/Web/XML/Guides/XML_introduction
     retrieved: "2026-11-22"
 lastReviewed:
   date: "2026-11-22"
@@ -25,11 +28,11 @@ lastReviewed:
 
 A pacs.008 message is an XML document. XML is built from **elements**. Each element has a start tag such as `<MsgId>` and a matching end tag `</MsgId>`, and elements can sit inside other elements. Between the tags is either a value or more elements.
 
-An element can also carry an **attribute**, a name and value inside its start tag. In `<IntrBkSttlmAmt Ccy="EUR">1000.00</IntrBkSttlmAmt>` the attribute `Ccy` gives the currency of the amount.
+An element can also carry an **attribute**, a name and value pair written inside its start tag. In `<IntrBkSttlmAmt Ccy="EUR">1000.00</IntrBkSttlmAmt>` the attribute `Ccy` gives the currency of the amount.
 
 ## What the page leaves out
 
-The sample file starts with a `Document` element. Its `xmlns` attribute has no prefix, so it names the vocabulary that the plain element names inside it belong to. In the samples that name ends with `pacs.008.001.14`. Inside `Document` sits one element, `FIToFICstmrCdtTrf`, which holds the message.
+The sample file starts with a `Document` element. Its `xmlns` attribute declares a **namespace**, a name that says which vocabulary the element names belong to. Because it has no prefix, it applies to the plain element names inside. In the samples that name ends with `pacs.008.001.14`. Inside `Document` sits one element, `FIToFICstmrCdtTrf`, which holds the message.
 
 The workspace page does not draw `Document` or `FIToFICstmrCdtTrf`. Its XML pane starts at `GrpHdr`, and the paths you see in links, such as `#GrpHdr/MsgId`, start there too.
 
@@ -40,7 +43,7 @@ The workspace page does not draw `Document` or `FIToFICstmrCdtTrf`. Its XML pane
 
 ## The markers
 
-Every row has a symbol at its left, and the key above the XML explains them:
+Every row has a symbol at its left, and the key above the three panes explains them:
 
 - ● Required. ○ Optional. ◆ Choice, one of several alternatives. ↻ Repeats.
 
@@ -57,7 +60,7 @@ Some elements take a fixed list of codes. Select `SttlmMtd` and the pane lists t
 ## The two samples
 
 - **Basic single credit transfer** (the default page) is one EUR payment of 1000.00.
-- **Intermediary agent and structured remittance** is the second link under "Example messages". It adds an intermediary agent (`IntrmyAgt1`) and structured remittance information (`RmtInf/Strd`): an invoice number and a creditor reference instead of free text.
+- **Intermediary agent and structured remittance** is the second link under "Example messages". Compared with the basic sample it pays USD 2450.50, with charges `DEBT`. It adds the instructing and instructed agents (`InstgAgt`, `InstdAgt`), an intermediary agent (`IntrmyAgt1`) and structured remittance information (`RmtInf/Strd`), which splits the reason for the payment into separate fields: here an invoice number and a creditor reference.
 
 All names, accounts and BICs are made up.
 
@@ -65,4 +68,4 @@ All names, accounts and BICs are made up.
 
 - Which element would you look in for the message reference?
 - What does the ○ symbol tell you about an element?
-- What extra elements does the second sample add?
+- Name three things the second sample has that the basic one lacks.

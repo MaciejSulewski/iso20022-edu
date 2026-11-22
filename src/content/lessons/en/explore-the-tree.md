@@ -10,7 +10,7 @@ relatedElements:
   - CdtTrfTxInf/DbtrAgt
   - CdtTrfTxInf/CdtrAgt
 sources:
-  - title: W3C XML Schema Part 0, Primer (Second Edition)
+  - title: "W3C XML Schema Part 0: Primer, second edition"
     url: https://www.w3.org/TR/xmlschema-0/
     retrieved: "2026-11-22"
 lastReviewed:
@@ -24,7 +24,7 @@ The annotated XML shows only what one sample message contains. The **schema tree
 
 ## The numbers in brackets
 
-Each row ends with two numbers, such as `[0..1]` or `[1..n]`. They are the fewest and the most times the element can appear inside its parent, and `n` means no upper limit. These are the occurrence rules of XML Schema, the language the ISO 20022 definition is written in: a minimum of 1 or more makes an element required, and a missing maximum means once.
+Each row ends with two numbers, such as `[0..1]` or `[1..n]`. They are the fewest and the most times the element can appear inside its parent, and `n` means no upper limit. The first number is what decides whether an element can be left out: 0 means it can, anything higher means it cannot. XML Schema, the language the ISO 20022 definitions are written in, counts occurrences this way.
 
 - `[1..1]` is required, once. `GrpHdr` is one.
 - `[0..1]` is optional, once. `PmtTpInf` is one.
@@ -35,7 +35,7 @@ The ●, ○ and ↻ symbols at the left of each row say the same in a glance.
 
 ## Choices
 
-Some elements come in a group of alternatives, of which only one is used. Open `CdtTrfTxInf/Dbtr/Id` and you find `OrgId`, for an organisation, and `PrvtId`, for a person. Both show the ◆ symbol, and the Details pane says that only one element of the group is used. In XML Schema, a choice group allows one of its children to appear.
+Some elements come in a group of alternatives, of which only one is used. Open `CdtTrfTxInf/Dbtr/Id` and you find `OrgId`, for an organisation, and `PrvtId`, for a person. Both show the ◆ symbol, and the Details pane says that only one element of the group is used. The schema lets a message use only one of the listed alternatives. The numbers on each alternative describe it as it is used: pick `OrgId` and it appears once.
 
 ## Types
 
