@@ -1,0 +1,162 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { t } from "../../i18n/t";
+
+export async function getStaticPaths() {
+  return (await getCollection("mappings")).map((mapping) => ({
+    params: { id: mapping.id },
+    props: { mapping },
+  }));
+}
+
+const { mapping } = Astro.props;
+const { title, summary, message, lesson, sources, rows, additions } =
+  mapping.data;
+const base = import.meta.env.BASE_URL;
+const lessonEntry = await getEntry("lessons", lesson);
+if (!lessonEntry) throw new Error(`Lesson missing for mapping ${mapping.id}`);
+
+const pathLink = (path: string) => `${base}messages/${message}/#${path}`;
+const tables = [
+  { id: "rows", caption: t("mapping.rows"), first: t("mapping.field") },
+  { id: "additions", caption: t("mapping.additions"), first: null },
+] as const;
+---
+
+<Base title={title} description={summary}>
+  <article class="mx-auto max-w-5xl px-4">
+    <h1 class="text-3xl leading-tight font-bold">{title}</h1>
+    <p class="mt-3 max-w-[65ch] text-lg text-muted">{summary}</p>
+    <p class="mt-5 max-w-[65ch] rounded border border-line border-l-4 border-l-accent bg-surface p-3 text-sm">
+      {t("mapping.draft")}
+    </p>
+    <p class="mt-5 max-w-[65ch]">{t("mapping.about")}</p>
+
+    {tables.map((tbl) => {
+      const list = tbl.id === "rows" ? rows : additions;
+      return (
+        <section class="mt-10">
+          <h2 id={`${tbl.id}-caption`} class="text-xl font-semibold">
+            {tbl.caption}
+          </h2>
+          <div
+            role="region"
+            aria-labelledby={`${tbl.id}-caption`}
+            tabindex="0"
+            class="mt-3 overflow-x-auto rounded border border-line"
+          >
+            <table
+              class="w-full min-w-[40rem] border-collapse text-left text-sm"
+              data-mapping-table={tbl.id}
+            >
+              <thead class="bg-surface">
+                <tr>
+                  {tbl.first && (
+                    <th scope="col" class="p-3 align-bottom font-semibold">
+                      {tbl.first}
+                    </th>
+                  )}
+                  <th scope="col" class="p-3 align-bottom font-semibold">
+                    {t("mapping.elements")}
+                  </th>
+                  <th scope="col" class="p-3 align-bottom font-semibold">
+                    {t("mapping.note")}
+                  </th>
+                  <th scope="col" class="p-3 align-bottom font-semibold">
+                    {t("mapping.source")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((row) => (
+                  <tr class="border-t border-line align-top">
+                    {"field" in row && (
+                      <th scope="row" class="p-3 text-left font-semibold">
+                        {row.field}
+                        {row.fieldName && (
+                          <span class="block font-normal text-muted">
+                            {row.fieldName}
+                          </span>
+                        )}
+                      </th>
+                    )}
+                    <td class="p-3">
+                      <ul class="space-y-1">
+                        {row.paths.map((path) => (
+                          <li>
+                            <a
+                              class="font-mono break-all"
+                              href={pathLink(path)}
+                            >
+                              {path}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </td>
+                    <td class="p-3">
+                      {row.note}
+                      {"codes" in row && row.codes && (
+                        <ul class="mt-2 space-y-1">
+                          <li class="text-muted">{t("mapping.codes")}</li>
+                          {row.codes.map((c) => (
+                            <li>
+                              {t("mapping.becomes")
+                                .replace("{mt}", c.mt)
+                                .replace("{iso}", c.iso)}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </td>
+                    <td class="p-3 whitespace-nowrap">
+                      {row.sources.map((i, k) => (
+                        <>
+                          {k > 0 && ", "}
+                          <a href={`#source-${i + 1}`}>
+                            {t("mapping.sourceN").replace("{n}", String(i + 1))}
+                          </a>
+                        </>
+                      ))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      );
+    })}
+
+    <p class="mt-10">
+      <a href={`${base}lessons/${lesson}/`}>
+        {t("mapping.lesson")
+          .replace("{n}", String(lessonEntry.data.order))
+          .replace("{title}", lessonEntry.data.title)}
+      </a>
+    </p>
+
+    <section class="mt-10" aria-labelledby="sources">
+      <h2 id="sources" class="text-xl font-semibold">
+        {t("lesson.sources")}
+      </h2>
+      <ol class="mt-3 list-decimal space-y-2 pl-6 text-sm">
+        {sources.map((s, i) => (
+          <li id={`source-${i + 1}`}>
+            <a href={s.url} class="break-words">
+              {s.title}
+            </a>{" "}
+            <span class="text-muted">
+              ({t("lesson.retrieved").replace("{date}", s.retrieved)})
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <p class="mt-10 border-t border-line pt-4">
+      <a href={`${base}lessons/`}>{t("lesson.all")}</a>
+    </p>
+  </article>
+</Base>
