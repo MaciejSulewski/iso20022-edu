@@ -70,6 +70,7 @@
   "xml.panel.choiceMember": "One of several alternatives: only one element of this group is used in a message.",
   "xml.panel.choice": "A choice: exactly one of the elements inside it is used.",
   "xml.panel.codes": "Allowed codes",
+  "xml.panel.codeExplained": "In plain words:",
   "xml.panel.examples": "Examples",
   "xml.legend": "Key to the element markers",
   "xml.legend.note": "Required and optional are judged inside the parent: a required element is only needed when its parent is present.",

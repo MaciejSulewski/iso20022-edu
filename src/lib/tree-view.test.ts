@@ -112,6 +112,27 @@ test("toXmlNode merges the overlay by path, then by type, and normalises codes",
   assert.equal(toXmlNode(c as never, "Z/B").info.explanation, undefined);
 });
 
+test("toXmlNode adds the code explanation from the overlay, only where one exists", () => {
+  const c = el("B", "S1", { codes: ["X", { code: "Y", name: "Why" }] });
+  const base = { byPath: {}, byType: {} };
+  const n = toXmlNode(c as never, "A/B", {
+    ...base,
+    codes: { S1: { Y: { en: "because" } } },
+  });
+  assert.deepEqual(n.info.codes, [
+    { code: "X" },
+    { code: "Y", name: "Why", explanation: "because" },
+  ]);
+  const other = toXmlNode(c as never, "A/B", {
+    ...base,
+    codes: { S2: { Y: { en: "no" } } },
+  });
+  assert.deepEqual(other.info.codes, [
+    { code: "X" },
+    { code: "Y", name: "Why" },
+  ]);
+});
+
 test("parseHash", () => {
   assert.equal(parseHash("#GrpHdr/MsgId"), "GrpHdr/MsgId");
   assert.equal(parseHash("#%2FGrpHdr%2F"), "GrpHdr");
