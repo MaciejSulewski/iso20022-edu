@@ -501,6 +501,39 @@ try {
     }),
     "mobile: a pick far down the XML pane shows the tab bar and the top of the panel",
   );
+  // the row is on screen and not under the sticky tab bar
+  const onScreen = (q: string) =>
+    m.evaluate((q) => {
+      const r = document.querySelector(q)!.getBoundingClientRect();
+      const bar = document.querySelector("[role=tablist]")!;
+      return (
+        r.top >= bar.getBoundingClientRect().bottom - 1 &&
+        r.bottom <= innerHeight + 1
+      );
+    }, q);
+  const CA = "CdtTrfTxInf/CdtrAcct";
+  const tRow = (path: string) =>
+    `[role=treeitem][data-path="${path}"][aria-selected='true']`;
+  await m.getByRole("tab", { name: "Tree" }).click();
+  await frames(m);
+  check(
+    await onScreen(tRow("CdtTrfTxInf/CdtrAcct/Id/IBAN")),
+    "mobile: opening the Tree tab shows the row selected in the XML pane",
+  );
+  await m.locator(`[role=treeitem][data-path="${CA}"]`).click();
+  await until(m.getByRole("tab", { name: "Details", selected: true }));
+  await m.getByRole("tab", { name: "XML" }).click();
+  await frames(m);
+  check(
+    await onScreen(sel(CA)),
+    "mobile: opening the XML tab shows the row selected in the tree",
+  );
+  await m.evaluate(() => scrollBy(0, 3000));
+  await m.focus(el("GrpHdr/CreDtTm"));
+  check(
+    await onScreen(el("GrpHdr/CreDtTm")),
+    "mobile: a row focused from above the fold lands below the sticky tab bar",
+  );
   const mh = await open(390, 800, `#${MSGID}`);
   check(
     (await until(mh.getByRole("tab", { name: "Details", selected: true }))) &&
@@ -579,6 +612,12 @@ try {
       (await aria(s2)) === "72,56,80,vertical,0",
     "two vertical, focusable separators with value and limits in percent",
   );
+  const text = (l: Locator) => l.getAttribute("aria-valuetext");
+  check(
+    (await text(s1)) === "XML 36 %, Tree 36 %" &&
+      (await text(s2)) === "Tree 36 %, Details 28 %",
+    "each separator's value text names both pane widths",
+  );
   const w0 = await widths(s);
   const g = w0.grid;
   check(
@@ -592,6 +631,7 @@ try {
   const w1 = await widths(s);
   check(
     (await now(s1)) === "38" &&
+      (await text(s1)) === "XML 38 %, Tree 34 %" &&
       near(w1.xml - w0.xml, g * 0.02) &&
       near(w0.tree - w1.tree, g * 0.02) &&
       near(w1.details, w0.details),
@@ -644,6 +684,20 @@ try {
     (await now(s1)) === "20" && near((await widths(s)).xml, g * 0.2 - 12),
     "dragging past the limit stops at 20 % (measured)",
   );
+  // lost capture (as on pointercancel) ends the drag, even with the button still down
+  const c = (await s1.boundingBox())!;
+  await s.mouse.move(c.x + c.width / 2, c.y + 100);
+  await s.mouse.down();
+  // headless Chromium does not fire it for a scripted releasePointerCapture, so send the event itself
+  await s1.evaluate((e) =>
+    e.dispatchEvent(new PointerEvent("lostpointercapture", { pointerId: 1 })),
+  );
+  await s.mouse.move(c.x + c.width / 2 + 10, c.y + 100);
+  await s.mouse.up();
+  check(
+    (await now(s1)) === "20",
+    "after the pointer capture is lost, moving over the separator does not resize",
+  );
 
   // 1280px: a selection scrolls the other pane inside itself, never the window
   const j = await open(1280, 900);
@@ -652,7 +706,11 @@ try {
       const e = document.querySelector(q)!;
       const r = e.getBoundingClientRect();
       const p = e.closest("[data-pane]")!.getBoundingClientRect();
-      return r.top >= p.top - 1 && r.bottom <= p.bottom + 1;
+      // the part of the pane that is on screen
+      return (
+        r.top >= Math.max(p.top, 0) - 1 &&
+        r.bottom <= Math.min(p.bottom, innerHeight) + 1
+      );
     }, q);
   // a script click: Playwright's own click would first scroll the target into view
   const jClick = (q: string) =>
@@ -667,15 +725,48 @@ try {
     "1280px: selecting in the XML pane scrolls the tree pane to the row, not the window",
   );
   await j.locator("#panel-ws-xml").evaluate((e) => (e.scrollTop = 0));
-  const CA = "CdtTrfTxInf/CdtrAcct";
-  await jClick(`[role=treeitem][data-path="${CA}"]`);
-  await j.locator(sel(CA)).waitFor({ timeout: 3000 });
+  const DA = "CdtTrfTxInf/DbtrAgt"; // low in the XML pane, but within its reach
+  await jClick(`[role=treeitem][data-path="${DA}"]`);
+  await j.locator(sel(DA)).waitFor({ timeout: 3000 });
   await frames(j);
   check(
     (await j.evaluate(() => scrollY)) === 0 &&
       (await j.locator("#panel-ws-xml").evaluate((e) => e.scrollTop)) > 0 &&
-      (await inPane(sel(CA))),
+      (await inPane(sel(DA))),
     "1280px: selecting in the tree scrolls the XML pane to the row, not the window",
+  );
+  // a short window: the sticky panes run past the fold, the rows must still land on screen
+  const shortLink = async (path: string) => {
+    const p = await open(1280, 720, `#${path}`);
+    await p
+      .locator(`[role=treeitem][data-path="${path}"][aria-selected='true']`)
+      .waitFor({ timeout: 5000 });
+    await frames(p);
+    return p.evaluate(
+      (qs) => ({
+        y: scrollY,
+        rows: qs.map((q) => {
+          const r = document.querySelector(q)!.getBoundingClientRect();
+          return { top: r.top, bottom: r.bottom, h: innerHeight };
+        }),
+      }),
+      [`[role=treeitem][data-path="${path}"]`, el(path)],
+    );
+  };
+  const onWin = (r: { top: number; bottom: number; h: number }) =>
+    r.top >= 0 && r.bottom <= r.h + 1;
+  const low = await shortLink("CdtTrfTxInf/DbtrAcct/Id/IBAN");
+  check(
+    low.y === 0 && low.rows.every(onWin),
+    "1280x720: a deep link to a low row shows it on screen in both panes, without moving the window",
+  );
+  // the last rows: the XML pane cannot scroll far enough, so the window moves just enough
+  const last = await shortLink(IBAN);
+  check(
+    last.y > 0 &&
+      last.rows.every(onWin) &&
+      Math.abs(last.rows[1]!.bottom - last.rows[1]!.h) <= 1,
+    "1280x720: a row the pane cannot bring on screen moves the window just enough",
   );
 
   // cross-pane: one selection drives the XML pane, the tree and the panel
