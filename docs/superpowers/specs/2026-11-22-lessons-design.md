@@ -29,7 +29,7 @@ Front matter (zod `LessonSchema` in `src/lib/content-schemas.ts`, strict):
 - `title` string, `summary` string (one sentence, shown on the index and as the page description), `step` enum of the six step ids, `order` int (equals the step position, 1 to 6), `relatedElements` string array (default empty), `sources` array of `{ title, url, retrieved }` (min 1), `lastReviewed` `{ date, by }` with `by` = "unreviewed (AI-drafted, pending T-093)".
 - `STEPS` (ids in order) is exported once from `content-schemas.ts`; `index.astro` and the schema both use it.
 
-`check-content` rules (pure function, tested, each shown failing once): lesson ids match file names, `step` unique across lessons, `order` unique, every `relatedElements` path resolves in the schema, `sources` urls are https. It prints `Lessons: N of 6 steps`. **[call]** The hard rule "every step has exactly one lesson" is enabled in the last task, once all six exist (it is an error then).
+`check-content` rules (pure function, tested, each shown failing once): (no id-matches-file-name rule for lessons: the id comes from the file name by construction, front matter has no `id`), `step` unique across lessons, `order` unique, every `relatedElements` path resolves in the schema, `sources` urls are https. It prints `Lessons: N of 6 steps`. **[call]** The hard rule "every step has exactly one lesson" is enabled in the last task, once all six exist (it is an error then).
 
 ## Pages
 

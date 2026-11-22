@@ -176,7 +176,7 @@ export function checkContent({
   return {
     errors,
     coverage: { annotated, total: paths.size },
-    lessons: { count: lessons.length, missingSteps },
+    lessons: { count: byStep.size, missingSteps },
   };
 }
 

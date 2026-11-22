@@ -7,7 +7,7 @@ import { verifying } from "./ui-wait.ts";
 const { server, url } = await serveDist();
 const LESSON = `${url}lessons/what-is-pacs008/`;
 const TITLE = "What is pacs.008?";
-const PHRASE = "payment initiation";
+const PHRASE = "debtor agent";
 
 const browser = await chromium.launch();
 let bad = 0;
@@ -78,6 +78,9 @@ try {
   );
   const first = hrefs?.[0]?.text ?? "";
   await p.locator("#related ~ ul a").first().click();
+  await p
+    .waitForURL(`${url}messages/pacs.008.001.14/#${first}`)
+    .catch(() => {}); // a miss shows up in the settled read below
   await settle(
     p,
     `following the first related link selects ${first} in the tree`,
@@ -108,6 +111,7 @@ try {
             (o) => o.textContent ?? "",
           )
         : [],
+      all: opts.map((o) => o.textContent ?? ""),
       active: opts.findIndex((o) => o.getAttribute("aria-selected") === "true"),
       activeText:
         opts.find((o) => o.getAttribute("aria-selected") === "true")
@@ -122,10 +126,13 @@ try {
     (s) => s.pages.some((x) => x.startsWith(TITLE)),
     TITLE,
   );
-  for (let k = 0; k < 10; k++) {
-    const s = await q.evaluate(view, TITLE);
-    if (s.activeText.startsWith(TITLE)) break;
+  // walk to the lesson row one key press at a time, waiting for each move to settle
+  const target = (await q.evaluate(view, TITLE)).all.findIndex((x) =>
+    x.startsWith(TITLE),
+  );
+  for (let k = 1; k <= target; k++) {
     await q.keyboard.press("ArrowDown");
+    await settle(q, `row ${k} is active`, view, (v) => v.active === k, TITLE);
   }
   await q.keyboard.press("Enter");
   await q.waitForURL(LESSON, { timeout: 5000 }).then(

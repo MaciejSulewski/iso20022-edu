@@ -61,8 +61,9 @@
 
 /* Lesson prose (Markdown rendered inside .lesson): ~65ch measure, sans body, mono for element paths. */
 @layer components {
+  /* a wide table scrolls inside the lesson column instead of the page */
   .lesson {
-    @apply max-w-[65ch] text-base leading-7;
+    @apply max-w-[65ch] overflow-x-auto text-base leading-7;
   }
   .lesson h2 {
     @apply mt-10 mb-3 text-xl leading-snug font-semibold;
@@ -94,9 +95,8 @@
   .lesson blockquote {
     @apply my-4 border-l-4 border-line pl-4 text-muted;
   }
-  /* wide tables scroll inside the lesson column instead of the page */
   .lesson table {
-    @apply block overflow-x-auto border-collapse text-sm;
+    @apply w-full border-collapse text-sm;
   }
   .lesson th,
   .lesson td {

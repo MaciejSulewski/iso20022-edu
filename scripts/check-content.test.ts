@@ -214,12 +214,13 @@ test("lesson with bad front matter fails", () => {
   assert.match(errs(withLessons(l)), /a\.md/);
 });
 
-test("two lessons for one step fail", () => {
+test("two lessons for one step count as one step", () => {
   const i = withLessons(
     lessonFile("a.md", "lesson", 1),
     lessonFile("b.md", "lesson", 2),
   );
   assert.match(errs(i), /b\.md: step "lesson" is already used by a\.md/);
+  assert.equal(checkContent(i).lessons.count, 1);
 });
 
 test("two lessons with one order fail", () => {

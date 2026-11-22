@@ -146,5 +146,6 @@
   "lesson.nav": "Lessons",
   "lesson.prev": "Previous lesson",
   "lesson.next": "Next lesson",
-  "lesson.all": "All lessons"
+  "lesson.all": "All lessons",
+  "lesson.tool": "Open the workspace"
 }
