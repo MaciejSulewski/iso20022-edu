@@ -64,9 +64,16 @@ const check = (ok: boolean, what: string) => {
   if (!ok) bad++;
 };
 const settle = verifying(check);
-const open = async (width: number, to: string) => {
+const open = async (
+  width: number,
+  to: string,
+  reducedMotion: "reduce" | "no-preference" = "no-preference",
+) => {
   const p = await (
-    await browser.newContext({ viewport: { width, height: 900 } })
+    await browser.newContext({
+      viewport: { width, height: 900 },
+      reducedMotion,
+    })
   ).newPage();
   await throttle(p);
   await p.goto(to, { waitUntil: "networkidle" });
@@ -243,6 +250,65 @@ try {
   await settle(deep, "#cover/3 opens cover step 3", read, (x) =>
     shows(x, VARIANTS[1]!, 2),
   );
+
+  // motion: the marker travels and the connector pulses only when motion is allowed; either way the marker
+  // ends on the receiving card
+  const motion = () => {
+    const m = getComputedStyle(document.querySelector("[data-flow-marker]")!);
+    const c = getComputedStyle(
+      document.querySelector("[data-flow-connector]")!,
+    );
+    return {
+      transition: m.transitionDuration,
+      animation: c.animationName,
+      animationTime: c.animationDuration,
+    };
+  };
+  // the card is named by the flow data (passed in), not by the page's own receiver role
+  const onCard = (id: string) => {
+    const m = document
+      .querySelector("[data-flow-marker]")!
+      .getBoundingClientRect();
+    const r = document
+      .querySelector(`[data-participant="${id}"]`)!
+      .getBoundingClientRect();
+    return {
+      counter:
+        document.querySelector("[data-flow-detail] p")?.textContent ?? "",
+      x: m.left + m.width / 2,
+      left: r.left,
+      right: r.right,
+      top: r.top,
+      y: m.top + m.height / 2,
+    };
+  };
+  for (const mode of ["reduce", "no-preference"] as const) {
+    const a = await open(1280, FLOW, mode);
+    await settle(
+      a,
+      `${mode}: marker transition and connector animation are ${mode === "reduce" ? "off" : "on"}`,
+      motion,
+      (x) =>
+        mode === "reduce"
+          ? x.transition === "0s" && x.animation === "none"
+          : parseFloat(x.transition) > 0 &&
+            x.animation !== "none" &&
+            parseFloat(x.animationTime) > 0,
+    );
+    await next(a).click();
+    const to = VARIANTS[0]!.steps[1]!.to;
+    await settle(
+      a,
+      `${mode}: after Next serial step 2 shows and the marker ends on its receiver (${to})`,
+      onCard,
+      (x) =>
+        x.counter === "Step 2 of 4" &&
+        x.x > x.left &&
+        x.x < x.right &&
+        Math.abs(x.y - x.top) < 2,
+      to,
+    );
+  }
 
   // 390: step list instead of the diagram; picking a step selects it; no horizontal scroll
   const m = await open(390, FLOW);

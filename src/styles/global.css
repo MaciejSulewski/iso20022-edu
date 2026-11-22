@@ -39,6 +39,17 @@
     ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
 }
 
+/* Flow diagram: the connector between sender and receiver swells twice when a step is entered (motion-safe only). */
+@theme {
+  --animate-hop-pulse: hop-pulse 600ms ease-in-out 2;
+  @keyframes hop-pulse {
+    50% {
+      transform: scaleY(3);
+      opacity: 0.5;
+    }
+  }
+}
+
 @layer base {
   body {
     @apply bg-bg font-sans text-fg;
