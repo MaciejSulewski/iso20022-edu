@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import type { z } from "zod";
 import type { FlowSchema } from "../lib/content-schemas";
 import { clampStep, parseHash, toHash } from "../lib/flow";
@@ -65,6 +65,7 @@ export default function FlowPlayer({
 
   function go(v: number, s: number) {
     const n = clampStep(s, variants[v]!.steps.length);
+    hop.current = v === vi;
     setVi(v);
     setStep(n);
     history.replaceState(null, "", toHash(variants[v]!.id, n));
@@ -81,6 +82,25 @@ export default function FlowPlayer({
     gridColumnStart: Math.min(from, to) + 1,
     gridColumnEnd: Math.max(from, to) + 2,
   };
+  // centre of column i in the card grid (gap-3 = 0.75rem)
+  const n = participants.length;
+  const at = (i: number) =>
+    `calc((100% - ${n - 1} * 0.75rem) * ${(i + 0.5) / n} + ${i} * 0.75rem)`;
+
+  // The marker's style already puts it on the receiver. A step change made by Prev/Next or the list first
+  // places it on the sender with no transition, so CSS (if motion is allowed) carries it across; a load,
+  // deep link or variant switch puts it in place without travelling.
+  const marker = useRef<HTMLSpanElement>(null);
+  const hop = useRef(false);
+  useLayoutEffect(() => {
+    const m = marker.current!;
+    m.style.transition = "none";
+    m.style.left = at(hop.current ? from : to);
+    m.getBoundingClientRect(); // commit the start position before the transition is restored
+    m.style.transition = "";
+    m.style.left = at(to);
+    hop.current = false;
+  }, [vi, step]);
 
   return (
     <div>
@@ -142,6 +162,32 @@ export default function FlowPlayer({
               );
             })}
           </ol>
+          {/* the message marker: an envelope on the top edge of the receiving card (decoration: the roles say it in words) */}
+          <span
+            ref={marker}
+            aria-hidden="true"
+            data-flow-marker
+            style={{ left: at(to) }}
+            class="pointer-events-none absolute top-0 -translate-x-1/2 -translate-y-1/2 motion-safe:transition-[left] motion-safe:duration-600 motion-safe:ease-in-out"
+          >
+            <svg viewBox="0 0 20 14" class="block h-3.5 w-5">
+              <rect
+                x="1"
+                y="1"
+                width="18"
+                height="12"
+                rx="1.5"
+                class="fill-bg stroke-accent"
+                stroke-width="1.5"
+              />
+              <path
+                d="M1.5 2 10 8.5 18.5 2"
+                fill="none"
+                class="stroke-accent"
+                stroke-width="1.5"
+              />
+            </svg>
+          </span>
           {/* the hop: a bar from the sender's column to the receiver's, with what travels on it */}
           <div
             aria-hidden="true"
@@ -150,12 +196,20 @@ export default function FlowPlayer({
               gridTemplateColumns: `repeat(${participants.length}, minmax(0, 1fr))`,
             }}
           >
-            <div style={span} class="flex flex-col items-center px-[10%]">
+            {/* keyed by step so the pulse replays each time a step is entered */}
+            <div
+              key={`${vi}/${step}`}
+              style={span}
+              class="flex flex-col items-center px-[10%]"
+            >
               <div
                 class={`flex w-full items-center ${from > to ? "flex-row-reverse" : ""}`}
               >
                 <span class="size-2 shrink-0 rounded-full bg-accent" />
-                <span class="h-0.5 flex-1 bg-accent" />
+                <span
+                  data-flow-connector
+                  class="h-0.5 flex-1 bg-accent motion-safe:animate-hop-pulse"
+                />
                 <svg
                   viewBox="0 0 8 10"
                   class={`h-2.5 w-2 shrink-0 fill-accent ${from > to ? "rotate-180" : ""}`}
