@@ -147,6 +147,18 @@ try {
       (await aside(d).innerText()).includes("Agent that instructs the next"),
     "search by ISO name, picking the result selects the element, focuses it and shows the panel",
   );
+  // shared-type overlay: two agent elements with no byPath entry show the same byType text
+  const SHARED = "A block that identifies a bank and, if needed";
+  await chevron(d, TX).click();
+  for (const a of ["IntrmyAgt1", "PrvsInstgAgt1"]) {
+    await d.locator(row(`${TX}/${a}`)).click();
+    await settle(
+      d,
+      `${a} in the tree pane shows the shared-type explanation`,
+      () => document.querySelector("aside")?.textContent ?? "",
+      (t) => t.includes(SHARED),
+    );
+  }
   const before = d.typeReqs.length;
   await box.fill(BIC);
   await hit(BIC).click();

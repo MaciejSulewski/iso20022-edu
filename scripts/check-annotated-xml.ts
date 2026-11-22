@@ -79,6 +79,13 @@ try {
   const d = await open(1280, 900);
   const aside = d.getByRole("complementary", { name: "Element details" });
   check((await aside.count()) === 1, "panel region has an accessible name");
+  await d.click(el("CdtTrfTxInf/ChrgBr"));
+  await settle(
+    d,
+    "ChrgBr in the XML pane shows the plain-words explanation of SHAR",
+    () => document.querySelector("aside")?.textContent ?? "",
+    (t) => t.includes("In plain words:") && t.includes("The two sides split"),
+  );
   await d.click(el(MSGID));
   check(
     (await aside.innerText()).includes(ISO),
