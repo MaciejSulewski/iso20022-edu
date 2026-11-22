@@ -29,7 +29,15 @@ const TOOLS: Record<string, string> = {
   xml: WORKSPACE,
   tree: WORKSPACE,
   flow: `${BASE}flows/pacs.008-agent-chain/`,
+  mapping: `${BASE}mappings/mt103-pacs.008/`,
 };
+// the tool link's wording per step
+const label = (step: string) =>
+  step === "flow"
+    ? "Open the flow"
+    : step === "mapping"
+      ? "Open the mapping table"
+      : "Open the workspace";
 const LESSON = `${url}lessons/${LESSONS[0]!.slug}/`;
 const TITLE = LESSONS[0]!.title;
 const PHRASE = "debtor agent";
@@ -73,7 +81,7 @@ try {
   // 1b. every step links its lesson; steps with a tool also keep the tool link; the others link nothing else
   await settle(
     home,
-    "Start here: every step links its lesson (and only xml, tree and flow also their tool)",
+    "Start here: every step links its lesson (and only xml, tree, flow and mapping also their tool)",
     () =>
       Object.fromEntries(
         ["lesson", "xml", "tree", "flow", "mapping", "quiz"].map((id) => [
@@ -133,7 +141,7 @@ try {
     const tool = TOOLS[l.step];
     await settle(
       p,
-      `${l.slug}: the tool link ${tool ? `reads "${l.step === "flow" ? "Open the flow" : "Open the workspace"}" and goes to ${tool}` : "is absent"}`,
+      `${l.slug}: the tool link ${tool ? `reads "${label(l.step)}" and goes to ${tool}` : "is absent"}`,
       () =>
         [...document.querySelectorAll("article > p > a")]
           .filter((a) => a.textContent?.startsWith("Open the"))
@@ -147,8 +155,7 @@ try {
           tool
             ? [
                 {
-                  text:
-                    l.step === "flow" ? "Open the flow" : "Open the workspace",
+                  text: label(l.step),
                   path: tool,
                 },
               ]
