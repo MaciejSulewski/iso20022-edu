@@ -365,3 +365,8 @@ test("flow variant ids must be unique", () => {
   const i = withFlow((d) => d.variants.push({ ...d.variants[0]! }));
   assert.match(errs(i), /f\.yaml: variant id "serial" is used twice/);
 });
+
+test("flow participant ids must be unique", () => {
+  const i = withFlow((d) => d.participants.push({ ...d.participants[0]! }));
+  assert.match(errs(i), /f\.yaml: participant id "a" is used twice/);
+});

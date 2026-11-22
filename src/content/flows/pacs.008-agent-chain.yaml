@@ -107,8 +107,8 @@ variants:
         title: A second message tells the banks in between to move the funds
         text: >-
           The debtor agent also sends a cover payment, which tells the banks in
-          between to move the funds. Public sources point to a pacs.009 usage
-          for this. We did not read a source that sets it out in ISO 20022
+          between to move the funds. For CHAPS, the Bank of England's handbook
+          lists the cover message against a pacs.009 usage. We did not read a source that sets it out in ISO 20022
           terms.
         message: cover payment
       - from: intermediary

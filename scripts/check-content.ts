@@ -192,7 +192,12 @@ export function checkContent({
       errors.push(
         `${f.name}: sample "${fl.sample}" is not a sample of ${fl.message}`,
       );
-    const people = new Set(fl.participants.map((p) => p.id));
+    const people = new Set<string>();
+    for (const p of fl.participants) {
+      if (people.has(p.id))
+        errors.push(`${f.name}: participant id "${p.id}" is used twice`);
+      people.add(p.id);
+    }
     const seen = new Set<string>();
     for (const v of fl.variants) {
       if (seen.has(v.id))

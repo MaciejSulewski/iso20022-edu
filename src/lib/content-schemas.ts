@@ -72,8 +72,8 @@ export const LessonSchema = z.strictObject({
 });
 
 const FlowStep = z.strictObject({
-  from: z.string(),
-  to: z.string(),
+  from: z.string().min(1),
+  to: z.string().min(1),
   title: z.string().min(1),
   text: z.string().min(1),
   message: z.string().optional(),
@@ -82,7 +82,7 @@ const FlowStep = z.strictObject({
 });
 
 export const FlowSchema = z.strictObject({
-  id: z.string(),
+  id: z.string().min(1),
   message: z.string(),
   title: z.string().min(1),
   summary: z.string().min(1),
@@ -92,7 +92,11 @@ export const FlowSchema = z.strictObject({
   lastReviewed: Reviewed,
   participants: z
     .array(
-      z.strictObject({ id: z.string(), role: z.string(), who: z.string() }),
+      z.strictObject({
+        id: z.string().min(1),
+        role: z.string().min(1),
+        who: z.string().min(1),
+      }),
     )
     .min(2),
   variants: z
