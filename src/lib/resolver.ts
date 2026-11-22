@@ -74,11 +74,24 @@ export function resolvePath(
     typeName = el.type;
     cur = schema.complexTypes[typeName];
   }
-  if (!el || !("tag" in el) || !typeName) return undefined;
+  if (!el) return undefined;
+  return describe(schema, parent, el, segs.join("/"));
+}
+
+/** Builds a Resolved for one element of `parent`. Shared with schema-tree so mandatory/choice rules stay in one place. */
+export function describe(
+  schema: Schema,
+  parent: Complex | undefined,
+  el: Element,
+  path: string,
+): Resolved | undefined {
+  if ("any" in el) return undefined;
+  const typeName = el.type;
+  const cur = schema.complexTypes[typeName];
   const simple = schema.simpleTypes[typeName];
   if (!cur && !simple) return undefined;
   return {
-    path: segs.join("/"),
+    path,
     tag: el.tag,
     isoName: el.isoName,
     definition: el.definition,
