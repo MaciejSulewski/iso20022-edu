@@ -1,54 +1,33 @@
 ---
+import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import StartHere from "../components/StartHere";
+import { STEPS } from "../lib/content-schemas";
+import { toolHref } from "../lib/lesson-tools";
 import { t, type UiKey } from "../i18n/t";
 
-// Set `href` on a step once its page exists; until then it shows "coming soon".
-const path: { id: string; titleKey: UiKey; descKey: UiKey; href?: string }[] = [
-  {
-    id: "lesson",
-    titleKey: "home.step.lesson.title",
-    descKey: "home.step.lesson.desc",
-  },
-  {
-    id: "xml",
-    titleKey: "home.step.xml.title",
-    descKey: "home.step.xml.desc",
-    href: `${import.meta.env.BASE_URL}messages/pacs.008.001.14/`,
-  },
-  {
-    id: "tree",
-    titleKey: "home.step.tree.title",
-    descKey: "home.step.tree.desc",
-    href: `${import.meta.env.BASE_URL}messages/pacs.008.001.14/`,
-  },
-  {
-    id: "flow",
-    titleKey: "home.step.flow.title",
-    descKey: "home.step.flow.desc",
-  },
-  {
-    id: "mapping",
-    titleKey: "home.step.mapping.title",
-    descKey: "home.step.mapping.desc",
-  },
-  {
-    id: "quiz",
-    titleKey: "home.step.quiz.title",
-    descKey: "home.step.quiz.desc",
-  },
-];
-const steps = path.map(({ id, titleKey, descKey, href }) => ({
-  id,
-  title: t(titleKey),
-  desc: t(descKey),
-  href,
-}));
+const base = import.meta.env.BASE_URL;
+const lessons = await getCollection("lessons");
+// A step with a tool shows "Open step". Its lesson is linked too; step 1's tool is its lesson.
+// A step with neither shows "coming soon".
+const steps = STEPS.map((id) => {
+  const lesson = lessons.find((l) => l.data.step === id);
+  const lessonHref = lesson && `${base}lessons/${lesson.id}/`;
+  return {
+    id,
+    title: t(`home.step.${id}.title` as UiKey),
+    desc: t(`home.step.${id}.desc` as UiKey),
+    href: id === "lesson" ? lessonHref : toolHref(id, base),
+    lessonHref,
+    lessonTitle: lesson?.data.title,
+  };
+});
 const labels = {
   progress: t("home.start.progress"),
   soon: t("home.start.soon"),
   done: t("home.start.done"),
   open: t("home.start.open"),
+  lesson: t("home.start.lesson"),
 };
 ---
 
@@ -60,5 +39,8 @@ const labels = {
     <h2 class="mt-10 text-2xl font-semibold">{t("home.start.title")}</h2>
     <p class="mt-2 mb-4 text-muted">{t("home.start.intro")}</p>
     <StartHere client:load steps={steps} labels={labels} />
+    <p class="mt-4">
+      <a href={`${base}lessons/`}>{t("home.start.alllessons")}</a>
+    </p>
   </div>
 </Base>
