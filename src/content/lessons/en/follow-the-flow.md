@@ -28,9 +28,9 @@ lastReviewed:
 
 Say Ana banks with a small bank in one country and pays Ben, who banks somewhere else. Ana is the **debtor** and Ben the **creditor**. Ana's bank is the debtor agent and Ben's bank is the creditor agent. If the two banks have no direct link, one or more **intermediary agents** sit between them. The schema describes `IntrmyAgt1` as the agent between the two end banks, and numbers any further ones.
 
-## One message per step
+## One message per step (serial method)
 
-Ana does not send a pacs.008. Her bank does, to the next bank in the chain. That bank sends a pacs.008 of its own to the one after it, and so on. So a payment crossing three banks is carried by more than one message.
+In the serial method, Ana does not send a pacs.008. Her bank does, to the next bank in the chain. That bank sends a pacs.008 of its own to the one after it, and so on. So a payment crossing three banks is carried by more than one message.
 
 This is why the message has more than one reference:
 
@@ -55,7 +55,7 @@ The group header can also name reimbursement agents (`InstgRmbrsmntAgt` and othe
 
 Public sources describe two ways to send money across correspondent banks. Both descriptions below come from sources weaker than the schema, so treat them as an outline.
 
-In the **serial** method the customer payment is handed from bank to bank in turn. In the **cover** method the customer payment message goes toward the creditor agent, while a second message tells the banks in between to move the funds. An encyclopedia article on the older Swift form of this describes it that way. A bank software manual shows the receiving bank matching the two messages by amount, currency and date, and in the ISO 20022 world the Bank of England's handbook lists the cover message as a `pacs.009` usage. We did not read a source that sets out the cover method in ISO 20022 terms, so this lesson goes no further.
+In the **serial** method the customer payment is handed from bank to bank in turn. In the **cover** method the customer payment message goes toward the creditor agent, while a second message tells the banks in between to move the funds. An encyclopedia article on the older Swift form of this describes it that way. A bank software manual shows the receiving bank matching the two messages by amount, currency and date, and for CHAPS, the Bank of England's handbook lists the cover message against a `pacs.009` usage. We did not read a source that sets out the cover method in ISO 20022 terms, so this lesson goes no further.
 
 ## Coming soon
 

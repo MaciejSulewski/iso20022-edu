@@ -45,7 +45,7 @@ A scored quiz is planned. It is coming soon, and has no date.
 5. They are alternatives in a choice: a message uses one of them, an organisation or a person (lesson 3).
 6. `EndToEndId` stays the same. `MsgId` is assigned afresh by each sender (lesson 4, and the element definitions in the Details pane).
 7. Settlement between the two banks of that message happens through a separate cover payment (lesson 4, and the code list in the schema).
-8. `Ustrd` is free text. `Strd` is split into named elements, such as the creditor's reference (lessons 2 and 5).
+8. `Ustrd` is free text. `Strd` is split into named elements, such as the creditor's reference (lesson 5).
 
 ## Where next
 

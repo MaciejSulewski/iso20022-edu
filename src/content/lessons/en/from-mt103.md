@@ -23,21 +23,21 @@ lastReviewed:
 
 ## What an MT 103 is
 
-Before ISO 20022, banks mostly used message types from Swift's older "MT" family. An MT 103 is one of them. An encyclopedia article on Swift message types calls it a single customer credit transfer, used to instruct a funds transfer, and puts it in the category for customer payments. In day-to-day talk, the MT 103 is the message that pacs.008 replaces. The Bank of England's handbook sets them side by side in its table for CHAPS, the UK's high-value payment system, and says Swift planned to retire MT messaging for payments.
+An MT 103 is a message from Swift's older "MT" family. An encyclopedia article on Swift message types describes it as the message for one customer's credit transfer, filed under customer payments, and says it is used to instruct the transfer of funds. In day-to-day talk, the MT 103 is the message that pacs.008 replaces. The Bank of England's handbook sets them side by side in its table for CHAPS, the UK's high-value payment system, and says Swift planned to retire MT messaging for payments.
 
 This lesson does not list MT 103 fields. We found no public source that we could read and cite for them, and the field-by-field comparison is a later task (T-080) that needs a human reviewer.
 
 ## Why ISO 20022 has more parts
 
-An ISO 20022 message is built from named elements, as lessons 2 and 3 showed. The Bank of England handbook talks about "enhanced data", meaning data beyond what the existing MT formats require or support. It gives examples of what it wants banks to send: purpose codes and legal entity identifiers.
+An ISO 20022 message is built from named elements, as lessons 2 and 3 showed. The Bank of England handbook talks about "enhanced data", meaning data beyond the minimum that the existing MT formats require. For CHAPS it makes sending such data optional at first, then mandates some of it, such as purpose codes and legal entity identifiers.
 
 The idea behind that is simple. A computer can check or route a postcode that sits in its own element. It can do little with the same postcode buried in a line of text.
 
 ## Two examples from the schema
 
-**An address.** `CdtTrfTxInf/Dbtr/PstlAdr` holds the debtor's postal address. It offers separate elements for the street name (`StrtNm`), building number (`BldgNb`), post code (`PstCd`), town (`TwnNm`) and country (`Ctry`). It also has `AdrLine`, which can repeat up to seven times and carries free-format text. A message can put everything into free text, split it into elements, or mix the two. The Bank of England handbook says CHAPS will reject fully unstructured addresses from November 2026, so check the current rules of any scheme you work with.
+**An address.** `CdtTrfTxInf/Dbtr/PstlAdr` holds the debtor's postal address. It offers separate elements for the street name (`StrtNm`), building number (`BldgNb`), post code (`PstCd`), town (`TwnNm`) and country (`Ctry`). It also has `AdrLine`, which can repeat up to seven times and carries free-format text. A message can put everything into free text, split it into elements, or mix the two. The Bank of England's handbook, read on 2026-11-22, says CHAPS rejects fully unstructured addresses from November 2026. That is a rule of one UK scheme, not a general ISO 20022 rule, so check the current rules of any scheme you work with.
 
-**What the payment is for.** `CdtTrfTxInf/RmtInf` is the remittance information, the details a payee uses to match a payment to an invoice. `Ustrd` holds it as free text. `Strd` holds it as structured elements, for example the creditor's reference in `Strd/CdtrRefInf/Ref`. The handbook says that, where a CHAPS pacs.008 carries remittance data, it has to be structured from November 2025.
+**What the payment is for.** `CdtTrfTxInf/RmtInf` is the remittance information, the details a payee uses to match a payment to an invoice. `Ustrd` holds it as free text. `Strd` holds it as structured elements, for example the creditor's reference in `Strd/CdtrRefInf/Ref`. The same handbook says that, in CHAPS, remittance data in a pacs.008 has to be structured from November 2025. Again, that is a CHAPS rule.
 
 Both examples follow one pattern: where you once wrote a line of text, you now have named places for each piece, and the free-text option stays for what does not fit.
 
