@@ -3,8 +3,10 @@ import type { TreeChild } from "../lib/schema-tree.ts";
 import type { Overlay } from "../lib/xml-tree.ts";
 import { elementState, GLYPH, TONE, type Presence } from "../lib/xml-view.ts";
 import {
+  ancestors,
   chainOf,
   isOptional,
+  parentOf,
   parseHash,
   searchTree,
   toXmlNode,
@@ -78,6 +80,7 @@ export default function SchemaTree({
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const searchId = useId();
+  const gen = useRef(0); // bumped by every selection: a slower openPath that started earlier gives up
   const cur = useRef(selected);
   cur.current = selected;
 
@@ -115,6 +118,7 @@ export default function SchemaTree({
   }
 
   function select(path: string, openSheet = true) {
+    gen.current++;
     setSelected(path);
     setFocus(path);
     if (openSheet && isMobile()) setSheet(true);
@@ -123,32 +127,43 @@ export default function SchemaTree({
   }
 
   // Expands every ancestor of `path` (fetching type files in order) and selects it. Unknown paths do nothing.
-  async function openPath(path: string, openSheet = true) {
+  // Resolves true when it selected; false when the path is unknown, a load failed or a newer selection won.
+  async function openPath(path: string, openSheet = true): Promise<boolean> {
+    const g = ++gen.current;
     const segs = path.split("/");
     const chain: TreeChild[] = [];
     const seen = [rootType];
+    const expand = (n: number) =>
+      setExpanded((e) => {
+        const next = new Set(e);
+        ancestors(path)
+          .slice(0, n)
+          .forEach((p) => next.add(p));
+        return next;
+      });
     let list: TreeChild[] | undefined = root;
     for (const [i, seg] of segs.entries()) {
-      const c = list?.find((x) => !x.any && x.tag === seg);
-      if (!c || c.any) return;
+      const c = list.find((x) => !x.any && x.tag === seg);
+      if (!c || c.any) return false;
       chain.push(c);
       if (i === segs.length - 1) break;
-      if (c.kind !== "complex" || seen.includes(c.typeName)) return; // a recursive leaf has no children to show
+      if (c.kind !== "complex" || seen.includes(c.typeName)) return false; // a recursive leaf has no children to show
       seen.push(c.typeName);
-      list = await load(c.typeName);
+      const next = await load(c.typeName);
+      if (gen.current !== g) return false;
+      if (!next) {
+        expand(i + 1); // show the failed branch with its retry
+        return false;
+      }
+      list = next;
     }
-    setExpanded((e) => {
-      const next = new Set(e);
-      segs
-        .slice(0, -1)
-        .forEach((_, i) => next.add(segs.slice(0, i + 1).join("/")));
-      return next;
-    });
+    expand(segs.length);
     if (chain.some(isOptional)) setRequiredOnly(false); // a link to a hidden element shows everything
     select(path, openSheet);
     requestAnimationFrame(() =>
       rowEl(path)?.scrollIntoView({ block: "nearest" }),
     );
+    return true;
   }
 
   useEffect(() => {
@@ -197,6 +212,7 @@ export default function SchemaTree({
     // the selection moves to the nearest visible ancestor, as in the annotated XML
     if (k > 0) select(selected!.split("/").slice(0, k).join("/"), false);
     else {
+      gen.current++;
       setSelected(null);
       history.replaceState(null, "", location.pathname + location.search);
     }
@@ -218,7 +234,7 @@ export default function SchemaTree({
     );
     const r = rows[i];
     if (!r) return;
-    const parent = r.path.slice(0, r.path.lastIndexOf("/"));
+    const parent = parentOf(r.path);
     const act: Record<string, () => void> = {
       ArrowDown: () => moveTo(rows[i + 1]?.path),
       ArrowUp: () => moveTo(rows[i - 1]?.path),
@@ -229,7 +245,7 @@ export default function SchemaTree({
         else if (!r.open) toggle(r);
         else if ((rows[i + 1]?.depth ?? 0) > r.depth) moveTo(rows[i + 1]!.path);
       },
-      ArrowLeft: () => (r.open ? toggle(r) : parent && moveTo(parent)),
+      ArrowLeft: () => (r.open ? toggle(r) : moveTo(parent || undefined)),
       Enter: () => !r.child.any && select(r.path),
       " ": () => !r.child.any && select(r.path),
     };
@@ -348,7 +364,9 @@ export default function SchemaTree({
                   type="button"
                   onClick={() => {
                     setQuery("");
-                    void openPath(path).then(() => rowEl(path)?.focus());
+                    void openPath(path).then(
+                      (ok) => ok && rowEl(path)?.focus(),
+                    );
                   }}
                   class="block min-h-9 w-full px-3 py-1 text-left hover:bg-surface"
                 >
@@ -458,6 +476,7 @@ export default function SchemaTree({
                       {labels.error}{" "}
                       <button
                         type="button"
+                        tabIndex={-1}
                         onClick={() => retry(r)}
                         class="text-accent underline underline-offset-2"
                       >
