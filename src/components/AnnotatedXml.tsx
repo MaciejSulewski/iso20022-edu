@@ -9,19 +9,13 @@ import {
   visibleRows,
   type Presence,
 } from "../lib/xml-view.ts";
-import ElementPanel, { type PanelLabels } from "./ElementPanel";
 
-type Labels = PanelLabels & {
+export type XmlLabels = {
   tree: string;
-  panel: string;
-  close: string;
   collapse: string; // contains {name} and {tag}
   expand: string; // contains {name} and {tag}
   count: string; // contains {n}
-  legend: string;
-  legendNote: string;
   states: Record<Presence | "repeats", string>;
-  hints: Record<Presence | "repeats", string>;
   mode: string;
   modeHint: string;
   hidden: string; // contains {n}
@@ -75,54 +69,43 @@ function flatten(
 const attrText = (n: XmlNode) =>
   Object.entries(n.attrs ?? {}).map(([k, v]) => ` ${k}="${v}"`);
 
-const isMobile = () => !matchMedia("(min-width: 1024px)").matches;
-
+// Controlled by `selected` (a path). Repeats share a path, so the view keeps its own row id:
+// it marks the first row with the path, or keeps its current row when that already has it.
 export default function AnnotatedXml({
   nodes,
   labels,
+  selected,
+  onSelect,
 }: {
   nodes: XmlNode[];
-  labels: Labels;
+  labels: XmlLabels;
+  selected: string | null;
+  onSelect: (path: string | null) => void;
 }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [selected, setSelected] = useState<string | null>(null);
-  const [scroll, setScroll] = useState(0); // bumps when the hash asks for a scroll
-  const [desktop, setDesktop] = useState(true); // true on the server: the aside is CSS-hidden below lg
-  const [sheet, setSheet] = useState(false); // mobile bottom sheet
+  const [rowId, setRowId] = useState<string | null>(null);
+  const [scroll, setScroll] = useState(0); // bumps when a selection from elsewhere asks for a scroll
   const [beginner, setBeginner] = useState(false); // full by default, so server and first client render match
   const [tip, setTip] = useState<Tip | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const pending = useRef(false); // a tooltip is waiting for its show delay
   const root = useRef<HTMLDivElement>(null);
   const tipId = useId();
-  const dialog = useRef<HTMLDialogElement>(null);
-  const titleId = useId();
   const { rows: allRows, all } = flatten(nodes, collapsed);
   const { rows } = visibleRows(allRows, beginner);
   const { hidden } = visibleRows(all, true);
   const byId = new Map(all.map((r) => [r.id, r]));
+  const shown = !selected
+    ? null
+    : rowId && byId.get(rowId)?.node.path === selected
+      ? rowId
+      : (all.find((r) => r.node.path === selected)?.id ?? null);
   const cur = useRef(selected);
   cur.current = selected;
-  const sel = selected ? byId.get(selected)?.node : undefined;
-
-  useEffect(() => {
-    const mq = matchMedia("(min-width: 1024px)");
-    const on = () => setDesktop(mq.matches);
-    on();
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, []);
 
   useEffect(() => {
     setBeginner(store.get() === "beginner");
   }, []);
-
-  useEffect(() => {
-    if (!sheet) return;
-    clearTimeout(timer.current); // no tooltip behind or after the sheet
-    pending.current = false;
-    setTip(null);
-  }, [sheet]);
 
   useEffect(() => {
     if (!tip) return;
@@ -131,66 +114,41 @@ export default function AnnotatedXml({
     return () => removeEventListener("scroll", hide, true);
   }, [tip]);
 
+  // a selection from another pane or the hash: open its branch, leave beginner mode if it hides it, scroll to it
   useEffect(() => {
-    const d = dialog.current;
-    if (!d) return;
-    if (sheet && !desktop && !d.open) d.showModal();
-    if ((!sheet || desktop) && d.open) d.close();
-    if (sheet && desktop) setSheet(false); // resized up: no stale modal on the way back
-  }, [sheet, desktop]);
+    if (!shown || shown === rowId) return;
+    const parts = shown.split("/");
+    setCollapsed((c) => {
+      const next = new Set(c);
+      parts
+        .slice(0, -1)
+        .forEach((_, i) => next.delete(parts.slice(0, i + 1).join("/")));
+      return next;
+    });
+    if (isHidden(shown, byId)) setBeginner(false);
+    setRowId(shown);
+    setScroll((s) => s + 1);
+  }, [shown]);
 
   useEffect(() => {
-    const fromHash = () => {
-      let path = "";
-      try {
-        path = decodeURIComponent(location.hash.slice(1));
-      } catch {
-        return;
-      }
-      // keep a selected repeat when the hash already names its path
-      if (cur.current && byId.get(cur.current)?.node.path === path) return;
-      const hit = all.find((r) => r.node.path === path);
-      if (!hit) return;
-      const parts = hit.id.split("/");
-      setCollapsed((c) => {
-        const next = new Set(c);
-        parts
-          .slice(0, -1)
-          .forEach((_, i) => next.delete(parts.slice(0, i + 1).join("/")));
-        return next;
-      });
-      if (isHidden(hit.id, byId)) setBeginner(false); // a link to a hidden element shows everything
-      setSelected(hit.id);
-      if (isMobile()) setSheet(true);
-      setScroll((s) => s + 1);
-    };
-    fromHash();
-    addEventListener("hashchange", fromHash);
-    return () => removeEventListener("hashchange", fromHash);
-  }, []);
-
-  useEffect(() => {
-    if (scroll && selected)
+    if (scroll && shown)
       document
-        .querySelector(`[data-id="${CSS.escape(selected)}"]`)
+        .querySelector(`[data-id="${CSS.escape(shown)}"]`)
         ?.scrollIntoView({ block: "nearest" });
   }, [scroll]);
 
-  function select(id: string, openSheet = true) {
-    setSelected(id);
-    if (openSheet && isMobile()) setSheet(true);
-    // replaceState: selecting does not fill the back button, and fires no hashchange
-    history.replaceState(null, "", `#${byId.get(id)!.node.path}`);
+  function select(id: string) {
+    setRowId(id);
+    onSelect(byId.get(id)!.node.path);
   }
 
   function showTip(id: string, el: HTMLElement) {
     clearTimeout(timer.current);
     pending.current = false;
-    if (matchMedia("(hover: none)").matches) return; // touch: the tap opens the sheet
+    if (matchMedia("(hover: none)").matches) return; // touch: the tap selects, no hover preview
     pending.current = true;
     timer.current = setTimeout(() => {
       pending.current = false;
-      if (dialog.current?.open) return; // never behind the modal sheet
       const r = el.getBoundingClientRect();
       const left = Math.max(8, Math.min(r.left, innerWidth - TIP_W - 8));
       setTip(
@@ -209,23 +167,20 @@ export default function AnnotatedXml({
   function setMode(next: boolean) {
     setBeginner(next);
     store.set(next ? "beginner" : "full");
-    if (!next || !selected || !isHidden(selected, byId)) return;
+    if (!next || !shown || !isHidden(shown, byId)) return;
     // the selection moves to the nearest visible ancestor, as when collapsing
-    const parts = selected.split("/");
+    const parts = shown.split("/");
     const top = parts.findIndex(
       (_, i) =>
         elementState(byId.get(parts.slice(0, i + 1).join("/"))!.node.info)
           .presence === "optional",
     );
-    if (top > 0) select(parts.slice(0, top).join("/"), false);
-    else {
-      setSelected(null);
-      history.replaceState(null, "", location.pathname + location.search);
-    }
+    if (top > 0) select(parts.slice(0, top).join("/"));
+    else onSelect(null);
   }
 
-  // Esc hides a tooltip first (WCAG 1.4.13); then, on desktop, it clears the selection (on mobile the dialog
-  // handles Esc). Listening on the window: focus can sit on body after a breadcrumb click.
+  // Esc hides a tooltip first (WCAG 1.4.13); then it clears the selection.
+  // Listening on the window: focus can sit on body after a breadcrumb click.
   function onEsc(e: KeyboardEvent) {
     if (e.key !== "Escape") return;
     if (e.defaultPrevented) return;
@@ -238,9 +193,7 @@ export default function AnnotatedXml({
     // only when focus is on body (e.g. after a breadcrumb click) or in this component
     const a = document.activeElement;
     if (a !== document.body && !root.current?.contains(a)) return;
-    if (!desktop || !cur.current) return;
-    setSelected(null);
-    history.replaceState(null, "", location.pathname + location.search);
+    if (cur.current) onSelect(null);
   }
 
   const esc = useRef(onEsc);
@@ -253,7 +206,7 @@ export default function AnnotatedXml({
 
   function toggle(id: string) {
     // a selection hidden inside a collapsing branch moves to that branch
-    if (!collapsed.has(id) && selected?.startsWith(id + "/")) select(id, false);
+    if (!collapsed.has(id) && shown?.startsWith(id + "/")) select(id);
     setCollapsed((c) => {
       const next = new Set(c);
       if (!next.delete(id)) next.add(id);
@@ -274,78 +227,45 @@ export default function AnnotatedXml({
     if (!next) return;
     e.preventDefault();
     next.focus();
-    select(next.dataset.id!, false);
+    select(next.dataset.id!);
   }
 
   return (
-    <div ref={root} class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-      <div class="min-w-0">
-        <dl
-          aria-label={labels.legend}
-          class="mb-1 grid gap-x-6 gap-y-1 rounded border border-line bg-surface p-3 text-sm sm:grid-cols-2"
+    <div ref={root} class="min-w-0">
+      <div class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+        <button
+          type="button"
+          aria-pressed={beginner}
+          onClick={() => setMode(!beginner)}
+          class={`min-h-6 rounded border px-3 py-1 ${beginner ? "border-accent bg-accent text-accent-fg" : "border-line"}`}
         >
-          {(["required", "optional", "choice", "repeats"] as const).map((k) => (
-            <div key={k} class="flex gap-2">
-              <dt class="flex shrink-0 gap-1 font-semibold">
-                <span aria-hidden="true" class={`w-4 text-center ${TONE[k]}`}>
-                  {GLYPH[k]}
-                </span>
-                {labels.states[k]}
-              </dt>
-              <dd class="text-muted">{labels.hints[k]}</dd>
-            </div>
-          ))}
-        </dl>
-        <p class="mb-3 text-sm text-muted">{labels.legendNote}</p>
-        <div class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-          <button
-            type="button"
-            aria-pressed={beginner}
-            onClick={() => setMode(!beginner)}
-            class={`min-h-6 rounded border px-3 py-1 ${beginner ? "border-accent bg-accent text-accent-fg" : "border-line"}`}
-          >
-            {labels.mode}
-          </button>
-          <span class="text-muted">{labels.modeHint}</span>
-          <span role="status" class="text-muted">
-            {beginner && hidden > 0
-              ? (hidden === 1 ? labels.hiddenOne : labels.hidden).replace(
-                  "{n}",
-                  String(hidden),
-                )
-              : ""}
-          </span>
-        </div>
-        <div
-          role="group"
-          aria-label={labels.tree}
-          onKeyDown={onKey}
-          class="font-mono text-sm leading-6"
-        >
-          {rows.map(({ id, node, depth, close }) => {
-            const branch = node.children.length > 0;
-            const open = !collapsed.has(id);
-            const on = id === selected;
-            const st = elementState(node.info);
-            if (close)
-              return (
-                <div key={id + "/close"} class="flex">
-                  <span class="w-9 shrink-0" aria-hidden="true" />
-                  {Array.from({ length: depth }, (_, i) => (
-                    <span
-                      key={i}
-                      aria-hidden="true"
-                      class="w-5 shrink-0 self-stretch border-l border-line"
-                    />
-                  ))}
-                  <span class="ml-6 px-1 text-accent">&lt;/{node.tag}&gt;</span>
-                </div>
-              );
+          {labels.mode}
+        </button>
+        <span class="text-muted">{labels.modeHint}</span>
+        <span role="status" class="text-muted">
+          {beginner && hidden > 0
+            ? (hidden === 1 ? labels.hiddenOne : labels.hidden).replace(
+                "{n}",
+                String(hidden),
+              )
+            : ""}
+        </span>
+      </div>
+      <div
+        role="group"
+        aria-label={labels.tree}
+        onKeyDown={onKey}
+        class="font-mono text-sm leading-6"
+      >
+        {rows.map(({ id, node, depth, close }) => {
+          const branch = node.children.length > 0;
+          const open = !collapsed.has(id);
+          const on = id === shown;
+          const st = elementState(node.info);
+          if (close)
             return (
-              <div
-                key={id}
-                class={`flex items-start ${on ? "bg-accent/10 shadow-[inset_3px_0_0_var(--accent)]" : ""}`}
-              >
+              <div key={id + "/close"} class="flex">
+                <span class="w-9 shrink-0" aria-hidden="true" />
                 {Array.from({ length: depth }, (_, i) => (
                   <span
                     key={i}
@@ -353,73 +273,87 @@ export default function AnnotatedXml({
                     class="w-5 shrink-0 self-stretch border-l border-line"
                   />
                 ))}
-                {branch ? (
-                  <button
-                    type="button"
-                    aria-expanded={open}
-                    aria-label={(open ? labels.collapse : labels.expand)
-                      .replace("{name}", node.info.isoName)
-                      .replace("{tag}", node.tag)}
-                    onClick={() => toggle(id)}
-                    class="flex size-6 shrink-0 items-center justify-center text-muted hover:text-fg"
-                  >
-                    <span aria-hidden="true">{open ? "▾" : "▸"}</span>
-                  </button>
-                ) : (
-                  <span class="size-6 shrink-0" aria-hidden="true" />
-                )}
-                <button
-                  type="button"
-                  data-id={id}
-                  aria-describedby={`${tipId}-${id}${tip?.id === id ? ` ${tipId}` : ""}`}
-                  onPointerEnter={(e) =>
-                    e.pointerType !== "touch" &&
-                    showTip(id, e.currentTarget as HTMLElement)
-                  }
-                  onPointerLeave={() => hideTip(150)}
-                  onFocus={(e) => showTip(id, e.currentTarget as HTMLElement)}
-                  onBlur={() => hideTip()}
-                  aria-current={on ? "true" : undefined}
-                  onClick={() => select(id)}
-                  class="min-h-6 min-w-0 flex-1 px-1 text-left break-all hover:bg-surface"
-                >
-                  <span class="text-accent">&lt;{node.tag}</span>
-                  <span class="text-muted">{attrText(node)}</span>
-                  <span class="text-accent">
-                    {branch || node.value !== undefined ? ">" : "/>"}
-                  </span>
-                  {!branch && node.value}
-                  {!branch && node.value !== undefined && (
-                    <span class="text-accent">&lt;/{node.tag}&gt;</span>
-                  )}
-                  {branch && !open && (
-                    <span class="text-muted">
-                      {" "}
-                      …{" "}
-                      {labels.count.replace(
-                        "{n}",
-                        String(node.children.length),
-                      )}{" "}
-                      <span class="text-accent">&lt;/{node.tag}&gt;</span>
-                    </span>
-                  )}
-                </button>
-                <span class="order-first flex w-9 shrink-0 text-center">
-                  <span aria-hidden="true" class={`w-4 ${TONE[st.presence]}`}>
-                    {GLYPH[st.presence]}
-                  </span>
-                  <span aria-hidden="true" class={`w-4 ${TONE.repeats}`}>
-                    {st.repeats ? GLYPH.repeats : ""}
-                  </span>
-                  <span class="sr-only" id={`${tipId}-${id}`}>
-                    {labels.states[st.presence]}
-                    {st.repeats ? `, ${labels.states.repeats}` : ""}
-                  </span>
-                </span>
+                <span class="ml-6 px-1 text-accent">&lt;/{node.tag}&gt;</span>
               </div>
             );
-          })}
-        </div>
+          return (
+            <div
+              key={id}
+              class={`flex items-start ${on ? "bg-accent/10 shadow-[inset_3px_0_0_var(--accent)]" : ""}`}
+            >
+              {Array.from({ length: depth }, (_, i) => (
+                <span
+                  key={i}
+                  aria-hidden="true"
+                  class="w-5 shrink-0 self-stretch border-l border-line"
+                />
+              ))}
+              {branch ? (
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  aria-label={(open ? labels.collapse : labels.expand)
+                    .replace("{name}", node.info.isoName)
+                    .replace("{tag}", node.tag)}
+                  onClick={() => toggle(id)}
+                  class="flex size-6 shrink-0 items-center justify-center text-muted hover:text-fg"
+                >
+                  <span aria-hidden="true">{open ? "▾" : "▸"}</span>
+                </button>
+              ) : (
+                <span class="size-6 shrink-0" aria-hidden="true" />
+              )}
+              <button
+                type="button"
+                data-id={id}
+                aria-describedby={`${tipId}-${id}${tip?.id === id ? ` ${tipId}` : ""}`}
+                onPointerEnter={(e) =>
+                  e.pointerType !== "touch" &&
+                  showTip(id, e.currentTarget as HTMLElement)
+                }
+                onPointerLeave={() => hideTip(150)}
+                onFocus={(e) => showTip(id, e.currentTarget as HTMLElement)}
+                onBlur={() => hideTip()}
+                aria-current={on ? "true" : undefined}
+                onClick={() => select(id)}
+                class="min-h-6 min-w-0 flex-1 px-1 text-left break-all hover:bg-surface"
+              >
+                <span class="text-accent">&lt;{node.tag}</span>
+                <span class="text-muted">{attrText(node)}</span>
+                <span class="text-accent">
+                  {branch || node.value !== undefined ? ">" : "/>"}
+                </span>
+                {!branch && node.value}
+                {!branch && node.value !== undefined && (
+                  <span class="text-accent">&lt;/{node.tag}&gt;</span>
+                )}
+                {branch && !open && (
+                  <span class="text-muted">
+                    {" "}
+                    …{" "}
+                    {labels.count.replace(
+                      "{n}",
+                      String(node.children.length),
+                    )}{" "}
+                    <span class="text-accent">&lt;/{node.tag}&gt;</span>
+                  </span>
+                )}
+              </button>
+              <span class="order-first flex w-9 shrink-0 text-center">
+                <span aria-hidden="true" class={`w-4 ${TONE[st.presence]}`}>
+                  {GLYPH[st.presence]}
+                </span>
+                <span aria-hidden="true" class={`w-4 ${TONE.repeats}`}>
+                  {st.repeats ? GLYPH.repeats : ""}
+                </span>
+                <span class="sr-only" id={`${tipId}-${id}`}>
+                  {labels.states[st.presence]}
+                  {st.repeats ? `, ${labels.states.repeats}` : ""}
+                </span>
+              </span>
+            </div>
+          );
+        })}
       </div>
       {tip && byId.get(tip.id) && (
         <div
@@ -433,59 +367,11 @@ export default function AnnotatedXml({
           <TipBody node={byId.get(tip.id)!.node} labels={labels} />
         </div>
       )}
-      {desktop && (
-        <aside
-          aria-label={labels.panel}
-          class="hidden h-fit max-h-[calc(100vh-2rem)] overflow-y-auto rounded border border-line bg-surface p-4 lg:sticky lg:top-4 lg:block"
-        >
-          <ElementPanel
-            id={selected}
-            node={sel}
-            labels={labels}
-            titleId={titleId}
-            onSelect={(id) => select(id, false)}
-          />
-        </aside>
-      )}
-      <dialog
-        ref={dialog}
-        aria-labelledby={titleId}
-        onClose={() => {
-          setSheet(false);
-          // the browser returns focus to the opener; deep links have none, so do it here
-          if (cur.current)
-            document
-              .querySelector<HTMLElement>(
-                `[data-id="${CSS.escape(cur.current)}"]`,
-              )
-              ?.focus();
-        }}
-        class="m-0 mt-auto max-h-[80vh] w-full max-w-none overflow-y-auto rounded-t-lg border-t border-line bg-bg p-4 pb-8 text-fg backdrop:bg-black/50"
-      >
-        {!desktop && sheet && (
-          <>
-            <button
-              type="button"
-              onClick={() => dialog.current?.close()}
-              class="mb-2 ml-auto block min-h-6 rounded border border-line px-3 py-1 text-sm"
-            >
-              {labels.close}
-            </button>
-            <ElementPanel
-              id={selected}
-              node={sel}
-              labels={labels}
-              titleId={titleId}
-              onSelect={(id) => select(id, false)}
-            />
-          </>
-        )}
-      </dialog>
     </div>
   );
 }
 
-function TipBody({ node, labels }: { node: XmlNode; labels: Labels }) {
+function TipBody({ node, labels }: { node: XmlNode; labels: XmlLabels }) {
   const st = elementState(node.info);
   return (
     <>

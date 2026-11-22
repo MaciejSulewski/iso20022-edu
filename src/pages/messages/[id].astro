@@ -1,8 +1,10 @@
 ---
 import { getCollection, getEntry } from "astro:content";
 import Base from "../../layouts/Base.astro";
-import AnnotatedXml from "../../components/AnnotatedXml";
+import Workspace from "../../components/Workspace";
 import { buildTree } from "../../lib/xml-tree";
+import { childRecords } from "../../lib/schema-tree";
+import { rootTypeName } from "../../lib/resolver";
 import { t } from "../../i18n/t";
 import type { Schema } from "../../../scripts/schema-model";
 
@@ -27,57 +29,91 @@ const schemas = import.meta.glob("../../data/schema/*.json", {
   import: "default",
   eager: true,
 }) as unknown as Record<string, Schema>;
-const overlay = (await getEntry("annotations", message.id))?.data;
+const a = (await getEntry("annotations", message.id))?.data;
 const file = `../../content/samples/${sample.data.file}`;
 const xml = xmls[file];
 const schema = schemas[`../../data/schema/${message.id}.json`];
 if (!xml) throw new Error(`Sample file missing for ${message.id}: ${file}`);
 if (!schema) throw new Error(`Schema JSON missing for ${message.id}`);
-const nodes = buildTree(xml, schema, overlay);
+const rootType = rootTypeName(schema);
+if (!rootType) throw new Error(`No root type in ${message.id}`);
+const nodes = buildTree(xml, schema, a);
+// only the overlay maps reach the island; the schema stays at build time
+const overlay = a && { byPath: a.byPath, byType: a.byType };
+const states = {
+  required: t("xml.state.required"),
+  optional: t("xml.state.optional"),
+  choice: t("xml.state.choice"),
+  repeats: t("xml.state.repeats"),
+};
 const labels = {
-  tree: t("xml.tree"),
-  panel: t("xml.panel"),
-  close: t("xml.panel.close"),
-  empty: t("xml.panel.empty"),
-  path: t("xml.panel.path"),
-  explanation: t("xml.panel.explanation"),
-  none: t("xml.panel.none"),
-  iso: t("xml.panel.iso"),
-  facts: t("xml.panel.facts"),
-  type: t("xml.fact.type"),
-  use: t("xml.fact.use"),
-  reqOnce: t("xml.occ.reqOnce"),
-  optOnce: t("xml.occ.optOnce"),
-  reqMany: t("xml.occ.reqMany"),
-  optMany: t("xml.occ.optMany"),
-  upTo: t("xml.occ.upTo"),
-  atLeast: t("xml.occ.atLeast"),
-  choiceMember: t("xml.panel.choiceMember"),
-  choice: t("xml.panel.choice"),
-  codes: t("xml.panel.codes"),
-  examples: t("xml.panel.examples"),
-  notes: t("xml.panel.notes"),
-  collapse: t("xml.collapse"),
-  expand: t("xml.expand"),
-  count: t("xml.count"),
+  aside: t("xml.panel"),
+  xmlTitle: t("xml.title"),
+  treeTitle: t("tree.title"),
+  treeLead: t("tree.lead"),
   legend: t("xml.legend"),
   legendNote: t("xml.legend.note"),
-  states: {
-    required: t("xml.state.required"),
-    optional: t("xml.state.optional"),
-    choice: t("xml.state.choice"),
-    repeats: t("xml.state.repeats"),
-  },
+  states,
   hints: {
     required: t("xml.state.required.hint"),
     optional: t("xml.state.optional.hint"),
     choice: t("xml.state.choice.hint"),
     repeats: t("xml.state.repeats.hint"),
   },
-  mode: t("xml.mode"),
-  modeHint: t("xml.mode.hint"),
-  hidden: t("xml.hidden"),
-  hiddenOne: t("xml.hidden.one"),
+  panel: {
+    empty: t("xml.panel.empty"),
+    path: t("xml.panel.path"),
+    explanation: t("xml.panel.explanation"),
+    none: t("xml.panel.none"),
+    iso: t("xml.panel.iso"),
+    facts: t("xml.panel.facts"),
+    type: t("xml.fact.type"),
+    use: t("xml.fact.use"),
+    reqOnce: t("xml.occ.reqOnce"),
+    optOnce: t("xml.occ.optOnce"),
+    reqMany: t("xml.occ.reqMany"),
+    optMany: t("xml.occ.optMany"),
+    upTo: t("xml.occ.upTo"),
+    atLeast: t("xml.occ.atLeast"),
+    choiceMember: t("xml.panel.choiceMember"),
+    choice: t("xml.panel.choice"),
+    codes: t("xml.panel.codes"),
+    examples: t("xml.panel.examples"),
+    notes: t("xml.panel.notes"),
+  },
+  xml: {
+    tree: t("xml.tree"),
+    collapse: t("xml.collapse"),
+    expand: t("xml.expand"),
+    count: t("xml.count"),
+    states,
+    mode: t("xml.mode"),
+    modeHint: t("xml.mode.hint"),
+    hidden: t("xml.hidden"),
+    hiddenOne: t("xml.hidden.one"),
+  },
+  tree: {
+    tree: t("tree.tree"),
+    occurs: t("tree.occurs"),
+    states,
+    required: t("tree.required"),
+    requiredHint: t("tree.required.hint"),
+    search: t("tree.search"),
+    searchHint: t("tree.search.hint"),
+    searchLoading: t("tree.search.loading"),
+    searchError: t("tree.search.error"),
+    searchCount: t("tree.search.count"),
+    searchOne: t("tree.search.one"),
+    searchMore: t("tree.search.more"),
+    searchNone: t("tree.search.none"),
+    searchResults: t("tree.search.results"),
+    loading: t("tree.loading"),
+    error: t("tree.error"),
+    retry: t("tree.retry"),
+    recursive: t("tree.recursive"),
+    any: t("tree.any"),
+    anyHint: t("tree.any.hint"),
+  },
 };
 ---
 
@@ -87,6 +123,36 @@ const labels = {
     <p class="mt-1 font-mono text-sm text-muted">{message.id}</p>
     <p class="mt-4">{sample.data.scenario}</p>
     <p class="mt-2 mb-6 text-muted">{t("xml.lead")}</p>
-    <AnnotatedXml client:load nodes={nodes} labels={labels} />
+  </div>
+  <div class="mx-auto max-w-5xl px-4 xl:max-w-none">
+    <Workspace
+      client:load
+      nodes={nodes}
+      id={message.id}
+      base={import.meta.env.BASE_URL}
+      rootType={rootType}
+      root={childRecords(schema, rootType)}
+      overlay={overlay}
+      labels={labels}
+    >
+      {schema.constraints && schema.constraints.length > 0 && (
+        <details class="mt-8 rounded border border-line">
+          <summary class="cursor-pointer px-4 py-2 font-semibold">
+            {t("tree.constraints")} ({schema.constraints.length})
+          </summary>
+          <div class="border-t border-line px-4 py-3">
+            <p class="mb-3 text-sm text-muted">{t("tree.constraints.lead")}</p>
+            <dl class="space-y-3 text-sm">
+              {schema.constraints.map((c) => (
+                <div>
+                  <dt class="font-mono font-semibold break-words">{c.name}</dt>
+                  <dd class="mt-0.5">{c.definition}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </details>
+      )}
+    </Workspace>
   </div>
 </Base>
