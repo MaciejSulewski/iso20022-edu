@@ -4,6 +4,19 @@ import type { XmlNode } from "./xml-tree.ts";
 export type Presence = "required" | "optional" | "choice";
 type Info = Pick<XmlNode["info"], "mandatory" | "choiceMember" | "repeating">;
 
+// One symbol per state. Colour only reinforces it: the symbol and the words carry the meaning.
+export const GLYPH: Record<Presence | "repeats", string> = {
+  required: "●",
+  optional: "○",
+  choice: "◆",
+  repeats: "↻",
+};
+export const TONE: Record<Presence | "repeats", string> = {
+  required: "text-fg",
+  optional: "text-muted",
+  choice: "text-accent",
+  repeats: "text-muted",
+};
 /** One presence state per element (choice members are never "optional"), plus repeating. */
 export function elementState(i: Info): {
   presence: Presence;
