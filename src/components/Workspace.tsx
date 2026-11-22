@@ -1,5 +1,5 @@
 import type { ComponentChildren } from "preact";
-import { useEffect, useId, useState } from "preact/hooks";
+import { useEffect, useId, useRef, useState } from "preact/hooks";
 import type { TreeChild } from "../lib/schema-tree.ts";
 import { parseHash } from "../lib/tree-view.ts";
 import { panelNode } from "../lib/workspace.ts";
@@ -53,6 +53,7 @@ export default function Workspace({
   const xmlId = useId();
   const treeId = useId();
   const node = panelNode(nodes, selected, record);
+  const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // an unknown path is kept but matches nothing, so nothing shows as selected
@@ -63,6 +64,22 @@ export default function Workspace({
     fromHash();
     addEventListener("hashchange", fromHash);
     return () => removeEventListener("hashchange", fromHash);
+  }, []);
+
+  // Esc clears the selection from anywhere in the workspace, or from body (after a breadcrumb click).
+  // Not while typing in a field, nor when a widget already used the key (the XML tooltip).
+  useEffect(() => {
+    const on = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      const a = document.activeElement;
+      if (
+        a === document.body ||
+        (box.current?.contains(a) && !(a instanceof HTMLInputElement))
+      )
+        select(null);
+    };
+    addEventListener("keydown", on);
+    return () => removeEventListener("keydown", on);
   }, []);
 
   function select(path: string | null) {
@@ -76,7 +93,7 @@ export default function Workspace({
   }
 
   return (
-    <div>
+    <div ref={box}>
       <dl
         aria-label={labels.legend}
         class="mb-1 grid gap-x-6 gap-y-1 rounded border border-line bg-surface p-3 text-sm sm:grid-cols-2 xl:grid-cols-4"

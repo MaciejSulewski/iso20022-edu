@@ -89,7 +89,6 @@ export default function AnnotatedXml({
   const [tip, setTip] = useState<Tip | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const pending = useRef(false); // a tooltip is waiting for its show delay
-  const root = useRef<HTMLDivElement>(null);
   const tipId = useId();
   const { rows: allRows, all } = flatten(nodes, collapsed);
   const { rows } = visibleRows(allRows, beginner);
@@ -100,8 +99,6 @@ export default function AnnotatedXml({
     : rowId && byId.get(rowId)?.node.path === selected
       ? rowId
       : (all.find((r) => r.node.path === selected)?.id ?? null);
-  const cur = useRef(selected);
-  cur.current = selected;
 
   useEffect(() => {
     setBeginner(store.get() === "beginner");
@@ -116,7 +113,11 @@ export default function AnnotatedXml({
 
   // a selection from another pane or the hash: open its branch, leave beginner mode if it hides it, scroll to it
   useEffect(() => {
-    if (!shown || shown === rowId) return;
+    if (!shown) {
+      setRowId(null); // the selection left this pane: coming back must open, unhide and scroll again
+      return;
+    }
+    if (shown === rowId) return;
     const parts = shown.split("/");
     setCollapsed((c) => {
       const next = new Set(c);
@@ -179,21 +180,16 @@ export default function AnnotatedXml({
     else onSelect(null);
   }
 
-  // Esc hides a tooltip first (WCAG 1.4.13); then it clears the selection.
-  // Listening on the window: focus can sit on body after a breadcrumb click.
+  // Esc hides a pending or visible tooltip first (WCAG 1.4.13) and consumes the key, so the
+  // workspace's Esc (clear the selection) does not also fire. This listener registers first.
   function onEsc(e: KeyboardEvent) {
     if (e.key !== "Escape") return;
     if (e.defaultPrevented) return;
-    // a pending or visible tooltip is dismissed first; the selection stays
     const had = tip || pending.current;
     clearTimeout(timer.current);
     pending.current = false;
     setTip(null);
-    if (had) return;
-    // only when focus is on body (e.g. after a breadcrumb click) or in this component
-    const a = document.activeElement;
-    if (a !== document.body && !root.current?.contains(a)) return;
-    if (cur.current) onSelect(null);
+    if (had) e.preventDefault();
   }
 
   const esc = useRef(onEsc);
@@ -231,7 +227,7 @@ export default function AnnotatedXml({
   }
 
   return (
-    <div ref={root} class="min-w-0">
+    <div class="min-w-0">
       <div class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
         <button
           type="button"
