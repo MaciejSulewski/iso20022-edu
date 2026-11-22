@@ -29,10 +29,9 @@ byPath:
     explanation:
       en: "The way the two banks settle the payments in this message. Each code names who settles or through what: the instructed bank, the instructing bank, a cover payment (a separate bank-to-bank payment that moves the funds alongside this message) or a clearing system."
     notes:
-      en: INDA means the bank that receives the instruction (the instructed agent) does the settling, as in the first sample. INGA means the bank that sends it (the instructing agent) does, as in the second.
+      en: With INDA, the bank that receives the instruction (the instructed agent) does the settling. Both samples use it. The other codes are INGA (the sending bank settles), COVE and CLRG.
     examples:
       - INDA
-      - INGA
   CdtTrfTxInf:
     explanation:
       en: "One block per individual credit transfer: a payment that moves money from a debtor (the payer) to a creditor (the payee). It carries everything specific to that payment: references, amount, date, the parties, their accounts and their banks. The message can repeat this block for many payments."
@@ -79,9 +78,6 @@ byPath:
     examples:
       - SHAR
       - DEBT
-  CdtTrfTxInf/InstgAgt:
-    explanation:
-      en: "The instructing agent: the bank that sends this message and so instructs the next bank in the chain to carry out the payment. It is optional. It names the sender of this one hop, which is not always the debtor's bank."
   CdtTrfTxInf/InstgAgt/FinInstnId:
     explanation:
       en: The block that identifies the instructing bank. It has the same shape as for the other banks in the payment. This sample uses only a BIC.
@@ -90,9 +86,6 @@ byPath:
       en: The BIC (ISO 9362) of the bank that sends this message. In this sample it is the same bank as the debtor's agent. The sample's BIC is fictional.
     examples:
       - TESTGB2LXXX
-  CdtTrfTxInf/InstdAgt:
-    explanation:
-      en: "The instructed agent: the bank that receives this message and is asked to carry out the payment instruction. It is optional. Like the instructing agent, it describes one hop only, so it is the next bank on the path, not necessarily the creditor's bank."
   CdtTrfTxInf/InstdAgt/FinInstnId:
     explanation:
       en: The block that identifies the instructed bank. It has the same shape as for the other banks in the payment. This sample uses only a BIC.
@@ -101,11 +94,6 @@ byPath:
       en: The BIC (ISO 9362) of the bank that receives this message. In this sample it is the intermediary agent, so the same BIC also appears in the intermediary agent block. The sample's BIC is fictional.
     examples:
       - TESTUS33XXX
-  CdtTrfTxInf/IntrmyAgt1:
-    explanation:
-      en: "The first intermediary agent: a bank that sits between the debtor's agent and the creditor's agent in the chain. Intermediary agents are used when those two banks have no direct link. If there are several, the elements IntrmyAgt2 and IntrmyAgt3 name the next ones in order. It is optional."
-    notes:
-      en: The instructed agent describes who receives this message. The intermediary agent names a bank the payment passes through on its way to the creditor's bank. In this sample they are the same bank.
   CdtTrfTxInf/IntrmyAgt1/FinInstnId:
     explanation:
       en: The block that identifies the intermediary bank. It has the same shape as for the other banks in the payment. This sample uses only a BIC.
@@ -223,7 +211,7 @@ byPath:
       en: In the external list, SCOR stands for a structured communication reference given by the creditor.
   CdtTrfTxInf/RmtInf/Strd/CdtrRefInf/Ref:
     explanation:
-      en: The reference itself, as the creditor assigned it, up to 35 characters. The creditor can match the incoming payment to the item it belongs to by this value. The value in the sample is made up.
+      en: The reference itself, as the creditor assigned it, up to 35 characters. The creditor can match the incoming payment to the item it belongs to by this value. The value in the sample is a published example creditor reference; it belongs to no party.
     examples:
       - RF18539007547034
 byType:

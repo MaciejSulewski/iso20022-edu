@@ -170,3 +170,14 @@ test("sharedTypes counts types used by two or more elements and those overlaid",
     total: 2,
   });
 });
+
+test("two samples of one message with the same order fail", () => {
+  const i = base();
+  const copy = structuredClone(sample(i));
+  (copy.data as { id: string }).id = "t";
+  copy.name = "t.yaml";
+  i.samples.push(copy);
+  assert.match(errs(i), /same order 1/);
+  (copy.data as { order: number }).order = 2;
+  assert.doesNotMatch(errs(i), /same order/);
+});

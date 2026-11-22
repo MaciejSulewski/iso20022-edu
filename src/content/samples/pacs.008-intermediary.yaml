@@ -7,7 +7,9 @@ scenario: >-
   A UK debtor pays a German supplier's invoice in USD. The debtor agent and the
   creditor agent have no direct relationship, so an intermediary agent in the
   US sits between them. This message goes from the debtor agent to that
-  intermediary, and the settlement method INGA says the sending bank does the
-  settling. Fees are all for the debtor (DEBT). The remittance information is
+  intermediary. The settlement method is INDA (the instructed bank settles): the
+  debtor agent holds a USD account with the US bank, which debits it. On the next
+  hop the US bank becomes the instructing agent and sends a new message to the
+  creditor agent. Fees are all for the debtor (DEBT). The remittance information is
   structured: an invoice number and a creditor reference. All parties are
   fictional.
