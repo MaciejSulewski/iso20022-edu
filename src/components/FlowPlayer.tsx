@@ -63,6 +63,8 @@ export default function FlowPlayer({
     setStep(h.step);
   }, []);
 
+  // set by go(): true when the step changes within a variant, so the marker travels (see the layout effect)
+  const hop = useRef(false);
   function go(v: number, s: number) {
     const n = clampStep(s, variants[v]!.steps.length);
     hop.current = v === vi;
@@ -91,7 +93,6 @@ export default function FlowPlayer({
   // places it on the sender with no transition, so CSS (if motion is allowed) carries it across; a load,
   // deep link or variant switch puts it in place without travelling.
   const marker = useRef<HTMLSpanElement>(null);
-  const hop = useRef(false);
   useLayoutEffect(() => {
     const m = marker.current!;
     m.style.transition = "none";

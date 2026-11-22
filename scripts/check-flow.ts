@@ -264,16 +264,18 @@ try {
       animationTime: c.animationDuration,
     };
   };
-  const onReceiver = () => {
+  // the card is named by the flow data (passed in), not by the page's own receiver role
+  const onCard = (id: string) => {
     const m = document
       .querySelector("[data-flow-marker]")!
       .getBoundingClientRect();
     const r = document
-      .querySelector("[data-role$=Receiver]")!
+      .querySelector(`[data-participant="${id}"]`)!
       .getBoundingClientRect();
-    const x = m.left + m.width / 2;
     return {
-      x,
+      counter:
+        document.querySelector("[data-flow-detail] p")?.textContent ?? "",
+      x: m.left + m.width / 2,
       left: r.left,
       right: r.right,
       top: r.top,
@@ -294,11 +296,17 @@ try {
             parseFloat(x.animationTime) > 0,
     );
     await next(a).click();
+    const to = VARIANTS[0]!.steps[1]!.to;
     await settle(
       a,
-      `${mode}: after Next the marker ends on the receiving card`,
-      onReceiver,
-      (x) => x.x > x.left && x.x < x.right && Math.abs(x.y - x.top) < 2,
+      `${mode}: after Next serial step 2 shows and the marker ends on its receiver (${to})`,
+      onCard,
+      (x) =>
+        x.counter === "Step 2 of 4" &&
+        x.x > x.left &&
+        x.x < x.right &&
+        Math.abs(x.y - x.top) < 2,
+      to,
     );
   }
 
