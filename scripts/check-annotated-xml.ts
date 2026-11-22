@@ -75,8 +75,53 @@ try {
   await d.keyboard.press("Escape");
   check(
     (await d.locator("[aria-current='true']").count()) === 0,
+    "Esc clears the selection after a breadcrumb click (focus on body)",
+  );
+  // Esc from other places in the workspace; the click leaves a tooltip, so move focus and wait it out
+  const escFrom = async (focus: () => Promise<void>) => {
+    await d.click(el(MSGID));
+    await focus();
+    await d.locator("[role=tooltip]").waitFor({ state: "detached" });
+    const where = await d.evaluate(() => {
+      const a = document.activeElement!;
+      return a.closest("aside")
+        ? "aside"
+        : a.closest("[role=tree]")
+          ? "tree"
+          : a.tagName;
+    });
+    await d.keyboard.press("Escape");
+    // the clear lands a render later: poll for it (false on timeout)
+    const cleared = await d
+      .locator(sel(MSGID))
+      .waitFor({ state: "detached", timeout: 1000 })
+      .then(
+        () => true,
+        () => false,
+      );
+    return { where, cleared };
+  };
+  const inAside = await escFrom(async () => {
+    await d.getByText("Business rules").focus(); // the element just before the panel
+    await d.keyboard.press("Tab");
+  });
+  check(
+    inAside.where === "aside" && inAside.cleared,
     "Esc clears the selection with focus in the aside",
   );
+  const inTree = await escFrom(() =>
+    d.locator("[role=treeitem][tabindex='0']").focus(),
+  );
+  check(
+    inTree.where === "tree" && inTree.cleared,
+    "Esc clears the selection with focus in the tree pane",
+  );
+  const inSearch = await escFrom(() => d.getByLabel("Find an element").focus());
+  check(
+    inSearch.where === "INPUT" && !inSearch.cleared,
+    "Esc in the search box keeps the selection",
+  );
+  await d.keyboard.press("Tab"); // leave the box; the next checks start from the XML pane
   await d.click(el(MSGID));
   await d.locator("[role=tooltip]").waitFor({ state: "visible" });
   await d.keyboard.press("Escape"); // the first Esc dismisses the tooltip
@@ -286,14 +331,8 @@ try {
   });
   // same-document hash change: the mode switches a render after the selection, so poll (false on timeout)
   const full2 = await l
-    .waitForFunction(
-      () =>
-        document
-          .querySelector("[aria-pressed]")
-          ?.getAttribute("aria-pressed") === "false",
-      null,
-      { timeout: 2000 },
-    )
+    .getByRole("button", { name: "Beginner view", pressed: false })
+    .waitFor({ timeout: 2000 })
     .then(
       () => true,
       () => false,
@@ -369,6 +408,31 @@ try {
       (await xAside.innerText()).includes("PaymentIdentification") &&
       (await x.locator(treeSel(MSGID)).count()) === 0,
     "tree pane: selecting PmtId marks it in the XML pane and shows it in the panel",
+  );
+
+  // leaving the XML pane and coming back: the XML pane must open, unhide and mark the row again
+  const INSTR = "CdtTrfTxInf/PmtId/InstrId"; // optional, in the sample
+  const XPRY = "GrpHdr/XpryDtTm"; // not in the sample
+  const b = await open(1280, 900);
+  await b.click(el(INSTR));
+  await b
+    .locator('[role=treeitem][data-path="GrpHdr"]')
+    .getByText("▸", { exact: true })
+    .click();
+  await b.locator(`[role=treeitem][data-path="${XPRY}"]`).click();
+  await b.locator(treeSel(XPRY)).waitFor({ timeout: 3000 });
+  await b.getByRole("button", { name: "Beginner view" }).click();
+  await b.locator(`[role=treeitem][data-path="${INSTR}"]`).click();
+  const back = await b
+    .getByRole("button", { name: "Beginner view", pressed: false })
+    .waitFor({ timeout: 2000 })
+    .then(
+      () => true,
+      () => false,
+    );
+  check(
+    back && (await b.locator(sel(INSTR)).count()) === 1,
+    "back to an element the XML pane had selected: it leaves beginner view and marks the row",
   );
 } finally {
   await browser.close();
