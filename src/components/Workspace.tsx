@@ -2,6 +2,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import type { TreeChild } from "../lib/schema-tree.ts";
 import { parseHash } from "../lib/tree-view.ts";
+import { reveal } from "../lib/reveal.ts";
 import { panelNode } from "../lib/workspace.ts";
 import type { Overlay, XmlNode } from "../lib/xml-tree.ts";
 import { GLYPH, TONE, type Presence } from "../lib/xml-view.ts";
@@ -82,14 +83,28 @@ export default function Workspace({
 
   // The picked row's pane is now hidden, so focus goes to the Details tab, and the panel is scrolled into view
   // under the sticky tab bar.
+  // no deps: the flag is cleared after every render, so a stale one never fires later
   useEffect(() => {
     if (!toDetails.current) return;
     toDetails.current = false;
+    if (tab !== DETAILS) return;
     const t = document.getElementById(`tab-${TABS[DETAILS]}`);
     const top = grid.current!.getBoundingClientRect().top;
     const bar = t?.parentElement?.offsetHeight ?? 0;
     if (top < bar) scrollBy(0, top - bar);
     t?.focus({ preventScroll: true });
+  });
+
+  // Opening the XML or Tree tab shows its selected row: the selection may have moved while the pane was hidden.
+  useEffect(() => {
+    if (tab === DETAILS) return;
+    reveal(
+      document
+        .getElementById(`panel-${TABS[tab]}`)
+        ?.querySelector(
+          "[aria-current='true'], [role=treeitem][aria-selected='true']",
+        ),
+    );
   }, [tab]);
 
   useEffect(() => {
@@ -278,13 +293,20 @@ function Separator({
     onChange(next);
   }
   function onDown(e: PointerEvent) {
+    if (e.button !== 0) return;
+    e.preventDefault(); // no text selection or native drag from the press
     const el = e.currentTarget as HTMLElement;
     el.setPointerCapture(e.pointerId);
+    document.body.classList.add("select-none");
     el.onpointermove = (m) => {
       const r = grid.current!.getBoundingClientRect();
       onChange(((m.clientX - r.left) / r.width) * 100);
     };
-    el.onpointerup = () => (el.onpointermove = null);
+    // release, or capture lost (pointercancel, a touch taken over by the browser): stop dragging
+    el.onpointerup = el.onlostpointercapture = () => {
+      el.onpointermove = null;
+      document.body.classList.remove("select-none");
+    };
   }
   return (
     <div
