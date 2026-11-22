@@ -3,6 +3,7 @@ import { readdirSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "playwright";
 import { DIST, serveDist } from "./serve-dist.ts";
+import { settled } from "./ui-wait.ts";
 
 const pages = (readdirSync(DIST, { recursive: true }) as string[])
   .filter((f) => f.endsWith(".html"))
@@ -49,6 +50,35 @@ try {
         const { violations } = await new AxeBuilder({ page: tab }).analyze();
         console.log(
           `${violations.length ? "FAIL" : "ok  "} ${page} (${width}px ${theme}${stage ? ", " + stage : ""}): ${violations.length} violation(s)`,
+        );
+        for (const v of violations) {
+          bad++;
+          console.log(`  ${v.id} [${v.impact}] ${v.help}`);
+          for (const n of v.nodes) console.log(`    ${n.target.join(" ")}`);
+        }
+      }
+      // The palette open: empty (no listbox rows), with element rows, and with a Pages row.
+      await tab.getByRole("button", { name: "Search" }).click();
+      for (const [stage, query, group] of [
+        ["palette, empty", "", ""],
+        ["palette, elements", "Id", "Elements"],
+        ["palette, pages", "money", "Pages"],
+      ] as const) {
+        await tab.getByRole("combobox").fill(query);
+        // the expected group must be listed before the scan (the empty state lists none)
+        await settled(
+          tab,
+          `${page} ${stage}: group shown`,
+          (g) =>
+            [...document.querySelectorAll("dialog[open] [role=group]")].some(
+              (e) => e.firstElementChild?.textContent === g,
+            ) || g === "",
+          (v) => v,
+          group,
+        );
+        const { violations } = await new AxeBuilder({ page: tab }).analyze();
+        console.log(
+          `${violations.length ? "FAIL" : "ok  "} ${page} (${width}px ${theme}, ${stage}): ${violations.length} violation(s)`,
         );
         for (const v of violations) {
           bad++;
