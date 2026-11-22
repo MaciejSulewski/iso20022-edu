@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   elementResults,
+  excerptParts,
   pageResults,
   shouldOpen,
   splitName,
@@ -165,4 +166,15 @@ test("only the first of repeated matches is marked", () => {
     { text: "Agent", match: true },
     { text: "Agent", match: false },
   ]);
+});
+
+test("an excerpt keeps only text and mark; other markup is dropped", () => {
+  assert.deepEqual(
+    excerptParts('a <mark>b</mark> <img src=x onerror="y">c &lt;i&gt; &amp; d'),
+    [
+      { text: "a ", match: false },
+      { text: "b", match: true },
+      { text: " c <i> & d", match: false },
+    ],
+  );
 });

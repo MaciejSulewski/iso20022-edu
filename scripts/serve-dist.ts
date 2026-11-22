@@ -10,6 +10,9 @@ const types: Record<string, string> = {
   ".js": "text/javascript",
   ".css": "text/css",
   ".svg": "image/svg+xml",
+  ".json": "application/json",
+  ".wasm": "application/wasm",
+  ".pf_meta": "application/octet-stream", // pagefind binary parts: .pf_meta, .pf_index, .pf_fragment, .pf_filter
 };
 
 export async function serveDist() {

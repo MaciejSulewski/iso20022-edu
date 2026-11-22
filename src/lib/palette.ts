@@ -112,3 +112,29 @@ export function status(
               : "palette.count";
   return { key, n: total, shown };
 }
+
+const ENTITIES: Record<string, string> = {
+  "&lt;": "<",
+  "&gt;": ">",
+  "&amp;": "&",
+  "&quot;": '"',
+  "&#39;": "'",
+  "&#x27;": "'",
+};
+
+/** A Pagefind excerpt as text runs: only `<mark>` is kept (as `match`), any other tag is dropped and basic entities decoded, so it renders as plain text nodes and never as HTML. */
+export function excerptParts(excerpt: string): Part[] {
+  const parts: Part[] = [];
+  let match = false;
+  for (const chunk of excerpt.split(/(<\/?mark>)/i)) {
+    if (/^<mark>$/i.test(chunk)) match = true;
+    else if (/^<\/mark>$/i.test(chunk)) match = false;
+    else {
+      const text = chunk
+        .replace(/<[^>]*>/g, "")
+        .replace(/&(?:lt|gt|amp|quot|#39|#x27);/g, (e) => ENTITIES[e]!);
+      if (text) parts.push({ text, match });
+    }
+  }
+  return parts;
+}
