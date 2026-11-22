@@ -7,7 +7,7 @@ import { verifying } from "./ui-wait.ts";
 const { server, url } = await serveDist();
 const BASE = "/iso20022-edu/";
 const WORKSPACE = `${BASE}messages/pacs.008.001.14/`;
-// the lessons built so far, with the step each belongs to
+// the six lessons in step order, with the step each belongs to
 const LESSONS = [
   { step: "lesson", slug: "what-is-pacs008", title: "What is pacs.008?" },
   { step: "xml", slug: "read-the-xml", title: "Reading the annotated XML" },
@@ -16,7 +16,16 @@ const LESSONS = [
     slug: "explore-the-tree",
     title: "Exploring the schema tree",
   },
+  {
+    step: "flow",
+    slug: "follow-the-flow",
+    title: "Following a payment from bank to bank",
+  },
+  { step: "mapping", slug: "from-mt103", title: "From MT 103 to pacs.008" },
+  { step: "quiz", slug: "check-yourself", title: "Check yourself: a recap" },
 ];
+// steps that have a tool; the others show only their lesson link
+const TOOLS = ["xml", "tree"];
 const LESSON = `${url}lessons/${LESSONS[0]!.slug}/`;
 const TITLE = LESSONS[0]!.title;
 const PHRASE = "debtor agent";
@@ -57,13 +66,13 @@ try {
       s.all[0] === "/iso20022-edu/lessons/",
   );
 
-  // 1b. steps with a tool keep the tool link and also link their lesson
+  // 1b. every step links its lesson; steps with a tool also keep the tool link; the others link nothing else
   await settle(
     home,
-    "Start here: steps xml and tree link the workspace and their lesson",
+    "Start here: every step links its lesson (and only xml and tree also the workspace)",
     () =>
       Object.fromEntries(
-        ["xml", "tree"].map((id) => [
+        ["lesson", "xml", "tree", "flow", "mapping", "quiz"].map((id) => [
           id,
           [...document.querySelectorAll(`#step-${id} ~ div a`)].map(
             (a) => (a as HTMLAnchorElement).pathname,
@@ -71,14 +80,31 @@ try {
         ]),
       ),
     (s) =>
-      LESSONS.slice(1).every((l) => {
+      LESSONS.every((l) => {
         const links = s[l.step] ?? [];
-        return (
-          links.length === 2 &&
-          links.includes(WORKSPACE) &&
-          links.includes(`${BASE}lessons/${l.slug}/`)
-        );
+        const lesson = `${BASE}lessons/${l.slug}/`;
+        return TOOLS.includes(l.step)
+          ? links.length === 2 &&
+              links.includes(WORKSPACE) &&
+              links.includes(lesson)
+          : links.length === 1 && links[0] === lesson;
       }),
+  );
+
+  // 1c. the lesson links appear in step order
+  await settle(
+    home,
+    "Start here: the six lesson links are in step order",
+    () =>
+      [...document.querySelectorAll("a")]
+        .map((a) => (a as HTMLAnchorElement).pathname)
+        .filter(
+          (h) =>
+            /\/lessons\/[^/]+\/$/.test(h) && h !== "/iso20022-edu/lessons/",
+        ),
+    (hrefs) =>
+      [...new Set(hrefs)].join() ===
+      LESSONS.map((l) => `${BASE}lessons/${l.slug}/`).join(),
   );
 
   for (const l of LESSONS) {
@@ -133,6 +159,33 @@ try {
       (s) =>
         s.tree && s.url === `/iso20022-edu/messages/pacs.008.001.14/#${first}`,
       first,
+    );
+  }
+
+  // 3b. previous/next walk 1 to 6 and back
+  const w = await page(1280, `${url}lessons/${LESSONS[0]!.slug}/`);
+  const nav = (rel: string) =>
+    document.querySelectorAll(`a[rel=${rel}]`).length;
+  await settle(w, "lesson 1 has no previous link", nav, (n) => n === 0, "prev");
+  for (const l of LESSONS.slice(1)) {
+    await w.locator("a[rel=next]").click();
+    await w.waitForURL(`${url}lessons/${l.slug}/`).catch(() => {});
+    await settle(
+      w,
+      `Next walks to ${l.slug}`,
+      () => location.pathname,
+      (p) => p === `${BASE}lessons/${l.slug}/`,
+    );
+  }
+  await settle(w, "lesson 6 has no next link", nav, (n) => n === 0, "next");
+  for (const l of LESSONS.slice(0, -1).reverse()) {
+    await w.locator("a[rel=prev]").click();
+    await w.waitForURL(`${url}lessons/${l.slug}/`).catch(() => {});
+    await settle(
+      w,
+      `Previous walks back to ${l.slug}`,
+      () => location.pathname,
+      (p) => p === `${BASE}lessons/${l.slug}/`,
     );
   }
 
