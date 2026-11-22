@@ -96,7 +96,7 @@ export const MappingSchema = z.strictObject({
   rows: z.array(
     z.strictObject({
       // YAML reads an unquoted 70 as a number
-      field: z.coerce.string().min(1),
+      field: z.string().min(1),
       fieldName: z.string().optional(),
       paths: z.array(z.string()).min(1),
       codeList: z.string().optional(),

@@ -68,7 +68,7 @@ rows:
     paths: [CdtTrfTxInf/InstrForCdtrAgt]
     note: Instructions to the creditor agent, such as holding the cash for the creditor.
     sources: [0]
-  - field: 70
+  - field: "70"
     fieldName: Remittance Information
     paths: [CdtTrfTxInf/RmtInf/Ustrd]
     note: Only Ripple's table gives this pairing.
