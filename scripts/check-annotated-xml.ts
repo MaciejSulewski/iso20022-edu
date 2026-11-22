@@ -630,7 +630,9 @@ try {
     await s.mouse.down();
     await s.mouse.move(toX, b.y + 100, { steps: 4 });
     await s.mouse.up();
-    await s.mouse.move(left + g * 0.1, b.y + 100); // released: moving on changes nothing
+    // released: moving over the separator again changes nothing (10px would be about 1 %)
+    const after = (await s1.boundingBox())!;
+    await s.mouse.move(after.x + after.width / 2 - 10, after.y + 100);
   };
   await drag(left + g * 0.4);
   check(
