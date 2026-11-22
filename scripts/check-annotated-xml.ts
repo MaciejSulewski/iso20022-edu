@@ -486,6 +486,21 @@ try {
       (await m.evaluate(() => scrollY)) === y0,
     "mobile: arrow keys select in the XML pane, stay on the XML tab and do not scroll the window",
   );
+  // a pick far down the page: the Details tab and the top of the panel come into view
+  await m.click(el("CdtTrfTxInf/CdtrAcct/Id/IBAN"));
+  await until(m.getByRole("tab", { name: "Details", selected: true }));
+  check(
+    await mAside.evaluate((a) => {
+      const r = a.getBoundingClientRect();
+      const bar = document.querySelector("[role=tablist]")!;
+      return (
+        r.top >= bar.getBoundingClientRect().bottom &&
+        r.top < innerHeight &&
+        bar.getBoundingClientRect().top >= 0
+      );
+    }),
+    "mobile: a pick far down the XML pane shows the tab bar and the top of the panel",
+  );
   const mh = await open(390, 800, `#${MSGID}`);
   check(
     (await until(mh.getByRole("tab", { name: "Details", selected: true }))) &&
