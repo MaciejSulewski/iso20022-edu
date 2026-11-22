@@ -1,6 +1,7 @@
 id: pacs.008-basic
 message: pacs.008.001.14
 file: pacs.008-basic.xml
+order: 1
 title: Basic single credit transfer
 scenario: >-
   A debtor agent sends one EUR credit transfer to a creditor agent, charges

@@ -38,7 +38,14 @@ const base = (): Input => ({
   samples: [
     {
       name: "s.yaml",
-      data: { id: "s", message: id, file: "s.xml", title: "t", scenario: "s" },
+      data: {
+        id: "s",
+        message: id,
+        file: "s.xml",
+        title: "t",
+        scenario: "s",
+        order: 1,
+      },
       xml: `<Document><${schema.root}><GrpHdr><MsgId>1</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr></${schema.root}></Document>`,
     },
   ],
