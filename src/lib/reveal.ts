@@ -16,4 +16,8 @@ export function reveal(el: Element | null | undefined) {
   if (r.top < top) pane.scrollTop += r.top - top;
   else if (r.bottom > bottom)
     pane.scrollTop += Math.min(r.bottom - bottom, r.top - top);
+  // the pane hit its end with the row still off screen: only then does the window move, as little as it can
+  const after = el.getBoundingClientRect();
+  if (after.top < 0 || after.bottom > innerHeight)
+    el.scrollIntoView({ block: "nearest" });
 }
