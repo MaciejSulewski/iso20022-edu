@@ -1,0 +1,125 @@
+id: pacs.008-agent-chain
+message: pacs.008.001.14
+title: One customer payment across three banks
+summary: Follow a payment from a debtor in the UK to a creditor in Germany through an intermediary bank, in the serial and the cover method.
+lesson: follow-the-flow
+sample: pacs.008-intermediary
+sources:
+  - title: ISO 20022 Handbook (Bank of England)
+    url: https://www.bankofengland.co.uk/payments/rtgs-renewal-programme/iso-20022-handbook
+    retrieved: "2026-11-22"
+  - title: MT202 COV (Wikipedia)
+    url: https://en.wikipedia.org/wiki/MT202_COV
+    retrieved: "2026-11-22"
+  - title: Cover Matching (Oracle Banking Payments documentation)
+    url: https://docs.oracle.com/en/industries/financial-services/banking-payments/14.7.0.0.0/crbug/cover-matching.html
+    retrieved: "2026-11-22"
+lastReviewed:
+  date: "2026-11-22"
+  by: unreviewed (AI-drafted, pending T-093)
+participants:
+  - id: debtor
+    role: Debtor
+    who: Sample Importer Ltd
+  - id: debtorAgent
+    role: Debtor agent
+    who: TESTGB2LXXX
+  - id: intermediary
+    role: Intermediary agent
+    who: TESTUS33XXX
+  - id: creditorAgent
+    role: Creditor agent
+    who: TESTDEFFXXX
+  - id: creditor
+    role: Creditor
+    who: Sample Supplier GmbH
+variants:
+  - id: serial
+    title: Serial
+    intro: Each bank sends its own pacs.008 to the next bank in the chain. Here the payment crosses three banks, so two pacs.008 messages carry it.
+    steps:
+      - from: debtor
+        to: debtorAgent
+        title: The customer asks their bank to pay
+        text: >-
+          The debtor tells their bank to pay the creditor. This instruction is
+          outside this site, so we do not show it. The next step is where the
+          pacs.008 starts.
+      - from: debtorAgent
+        to: intermediary
+        title: The debtor agent sends the first pacs.008
+        text: >-
+          The debtor agent sends a pacs.008 to the intermediary agent. This
+          message is the second sample on this site. The settlement method is
+          INDA, so the intermediary settles by debiting the debtor agent's
+          account with it, as the sample's scenario says.
+        message: pacs.008 #1
+        elements:
+          - GrpHdr/MsgId
+          - GrpHdr/SttlmInf/SttlmMtd
+          - CdtTrfTxInf/PmtId/EndToEndId
+          - CdtTrfTxInf/PmtId/UETR
+          - CdtTrfTxInf/InstgAgt
+          - CdtTrfTxInf/InstdAgt
+          - CdtTrfTxInf/IntrmyAgt1
+        settlement: INDA
+      - from: intermediary
+        to: creditorAgent
+        title: The intermediary sends a new pacs.008
+        text: >-
+          The intermediary sends a second pacs.008 to the creditor agent. It
+          has a new MsgId, but the same EndToEndId and UETR as the first, and
+          the intermediary is now the instructing agent. The settlement code
+          here depends on how these two banks settle. It can be INDA, INGA,
+          COVE or CLRG.
+        message: pacs.008 #2
+      - from: creditorAgent
+        to: creditor
+        title: The creditor agent credits the creditor
+        text: >-
+          The creditor agent credits the creditor. This is the end of the
+          chain. We show no booking detail here.
+  - id: cover
+    title: Cover
+    intro: The customer payment message goes toward the creditor agent, and a second message moves the funds through the banks in between.
+    notice: This outline rests on public sources weaker than the schema. See lesson 4 for what we read and what we did not.
+    steps:
+      - from: debtor
+        to: debtorAgent
+        title: The customer asks their bank to pay
+        text: >-
+          The debtor tells their bank to pay the creditor. This instruction is
+          outside this site, so we do not show it.
+      - from: debtorAgent
+        to: creditorAgent
+        title: The customer payment message goes toward the creditor agent
+        text: >-
+          The debtor agent sends a pacs.008 toward the creditor agent. Its
+          settlement method is COVE, which means a separate cover payment
+          settles. This message does not move the funds between the banks in
+          the chain.
+        message: pacs.008
+        elements:
+          - GrpHdr/SttlmInf/SttlmMtd
+        settlement: COVE
+      - from: debtorAgent
+        to: intermediary
+        title: A second message tells the banks in between to move the funds
+        text: >-
+          The debtor agent also sends a cover payment, which tells the banks in
+          between to move the funds. Public sources point to a pacs.009 usage
+          for this. We did not read a source that sets it out in ISO 20022
+          terms.
+        message: cover payment
+      - from: intermediary
+        to: creditorAgent
+        title: The funds arrive through the banks in between
+        text: >-
+          The funds reach the creditor agent through the banks in between. We
+          show no more detail than that.
+      - from: creditorAgent
+        to: creditor
+        title: The creditor agent matches the two messages and credits
+        text: >-
+          The creditor agent matches the two messages by amount, currency and
+          date. Then it credits the creditor.
