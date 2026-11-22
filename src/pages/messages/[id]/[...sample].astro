@@ -1,38 +1,49 @@
 ---
 import { getCollection, getEntry } from "astro:content";
-import Base from "../../layouts/Base.astro";
-import Workspace from "../../components/Workspace";
-import { buildTree } from "../../lib/xml-tree";
-import { childRecords } from "../../lib/schema-tree";
-import { rootTypeName } from "../../lib/resolver";
-import { t } from "../../i18n/t";
-import type { Schema } from "../../../scripts/schema-model";
+import Base from "../../../layouts/Base.astro";
+import Workspace from "../../../components/Workspace";
+import { buildTree } from "../../../lib/xml-tree";
+import { childRecords } from "../../../lib/schema-tree";
+import { rootTypeName } from "../../../lib/resolver";
+import { t } from "../../../i18n/t";
+import type { Schema } from "../../../../scripts/schema-model";
 
+// The lowest order is the default sample, served at /messages/<id>/; the others at /messages/<id>/<sampleId>/.
 export async function getStaticPaths() {
-  const samples = await getCollection("samples");
-  return (await getCollection("messages"))
-    .filter((m) => samples.some((s) => s.data.message === m.id))
-    .map((message) => ({ params: { id: message.id }, props: { message } }));
+  const samples = (await getCollection("samples")).sort(
+    (x, y) => x.data.order - y.data.order,
+  );
+  return (await getCollection("messages")).flatMap((message) =>
+    samples
+      .filter((s) => s.data.message === message.id)
+      .map((s, i) => ({
+        params: { id: message.id, sample: i ? s.id : undefined },
+        props: {
+          message,
+          sample: s,
+          samples: samples.filter((o) => o.data.message === message.id),
+        },
+      })),
+  );
 }
 
-const { message } = Astro.props;
-const sample = (await getCollection("samples")).find(
-  (s) => s.data.message === message.id,
-)!;
+const { message, sample, samples } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const isDefault = sample.id === samples[0]!.id;
 // Vite ?raw keeps paths independent of the working directory.
-const xmls = import.meta.glob("../../content/samples/*.xml", {
+const xmls = import.meta.glob("../../../content/samples/*.xml", {
   query: "?raw",
   import: "default",
   eager: true,
 }) as Record<string, string>;
-const schemas = import.meta.glob("../../data/schema/*.json", {
+const schemas = import.meta.glob("../../../data/schema/*.json", {
   import: "default",
   eager: true,
 }) as unknown as Record<string, Schema>;
 const a = (await getEntry("annotations", message.id))?.data;
-const file = `../../content/samples/${sample.data.file}`;
+const file = `../../../content/samples/${sample.data.file}`;
 const xml = xmls[file];
-const schema = schemas[`../../data/schema/${message.id}.json`];
+const schema = schemas[`../../../data/schema/${message.id}.json`];
 if (!xml) throw new Error(`Sample file missing for ${message.id}: ${file}`);
 if (!schema) throw new Error(`Schema JSON missing for ${message.id}`);
 const rootType = rootTypeName(schema);
@@ -127,19 +138,45 @@ const labels = {
 };
 ---
 
-<Base title={`${message.data.name} · ${t("xml.title")}`}>
+<Base
+  title={`${message.data.name} · ${isDefault ? "" : `${sample.data.title} · `}${t("xml.title")}`}
+  pagefind={isDefault}
+>
   <div class="mx-auto max-w-5xl px-4">
     <h1 class="text-3xl font-bold break-words">{message.data.name}</h1>
     <p class="mt-1 font-mono text-sm text-muted">{message.id}</p>
     <p class="mt-4">{sample.data.scenario}</p>
     <p class="mt-2 mb-6 text-muted">{t("xml.lead")}</p>
+    {samples.length > 1 && (
+      <nav aria-label={t("xml.samples")} class="mb-6">
+        <p class="mb-2 text-sm font-semibold">{t("xml.samples")}</p>
+        <ul class="grid gap-2 sm:grid-cols-2">
+          {samples.map((s, i) => (
+            <li>
+              <a
+                href={`${base}messages/${message.id}/${i ? `${s.id}/` : ""}`}
+                aria-current={s.id === sample.id ? "page" : undefined}
+                class="block h-full rounded border border-line px-3 py-2 hover:bg-line/30 aria-[current=page]:border-l-4 aria-[current=page]:font-semibold"
+              >
+                <span class="block">{s.data.title}</span>
+                {s.id === sample.id && (
+                  <span class="block text-sm font-normal text-muted">
+                    {t("xml.samples.current")}
+                  </span>
+                )}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
   </div>
   <div class="mx-auto max-w-5xl px-4 xl:max-w-none">
     <Workspace
       client:load
       nodes={nodes}
       id={message.id}
-      base={import.meta.env.BASE_URL}
+      base={base}
       rootType={rootType}
       root={childRecords(schema, rootType)}
       overlay={overlay}

@@ -10,11 +10,13 @@ byPath:
       en: Do not confuse it with the end-to-end identification, which follows the payment, not the message.
     examples:
       - MSG-2026-0001
+      - MSG-2026-0042
   GrpHdr/CreDtTm:
     explanation:
       en: The moment the sending bank created the message, as a date and a time. It records when the message was made. It does not say when the money moves; that is the interbank settlement date.
     examples:
       - "2026-11-21T09:30:00Z"
+      - "2026-11-23T10:15:00Z"
   GrpHdr/NbOfTxs:
     explanation:
       en: How many individual payments the message contains. The receiving bank can compare it with the payment blocks it actually received. This sample carries one.
@@ -27,7 +29,7 @@ byPath:
     explanation:
       en: "The way the two banks settle the payments in this message. Each code names who settles or through what: the instructed bank, the instructing bank, a cover payment (a separate bank-to-bank payment that moves the funds alongside this message) or a clearing system."
     notes:
-      en: In this sample the code INDA means the bank that receives the instruction (the instructed agent) carries out the settlement.
+      en: With INDA, the bank that receives the instruction (the instructed agent) does the settling. Both samples use it. The other codes are INGA (the sending bank settles), COVE and CLRG.
     examples:
       - INDA
   CdtTrfTxInf:
@@ -41,35 +43,65 @@ byPath:
       en: A reference the instructing agent (the bank sending this message) assigns to this one instruction, for use between it and the bank it instructs. They can use it to refer to the instruction in later messages. It is optional.
     examples:
       - INSTR-0001
+      - INSTR-0042
   CdtTrfTxInf/PmtId/EndToEndId:
     explanation:
       en: A reference set by the party that started the payment and passed on unchanged through the whole chain of banks. It lets the parties match this payment to their own records for reconciliation. It is mandatory.
     examples:
       - E2E-0001
+      - E2E-INV-0457
   CdtTrfTxInf/PmtId/UETR:
     explanation:
       en: A universally unique identifier (a UUID, version 4) that references the payment from start to end. A version 4 UUID is generated at random, so two payments practically never get the same value even without a central numbering scheme, and every bank in the chain can use the same value to find the payment. It is optional.
     examples:
       - 8a562c67-ca16-48ba-b074-65581be6f011
+      - 3f1d7c52-9b8e-4a6d-8c4f-2e7a15d0b9c3
   CdtTrfTxInf/IntrBkSttlmAmt:
     explanation:
-      en: The money that passes from the instructing agent (the bank sending this message) to the instructed agent (the bank receiving it) for this payment. The Ccy attribute gives the currency as a three-letter ISO 4217 code, here EUR, and the element's value is the amount in that currency.
+      en: The money that passes from the instructing agent (the bank sending this message) to the instructed agent (the bank receiving it) for this payment. The Ccy attribute gives the currency as a three-letter ISO 4217 code, for example EUR or USD, and the element's value is the amount in that currency.
     notes:
       en: This is the amount between the banks, not necessarily the amount the debtor originally ordered.
     examples:
       - Ccy="EUR", value 1000.00
+      - Ccy="USD", value 2450.50
   CdtTrfTxInf/IntrBkSttlmDt:
     explanation:
       en: "The day the two banks settle: the money leaves the paying bank's balance and reaches the receiving bank's. It is optional."
     notes:
-      en: It is not the creation date-time. The message is created at one moment (CreDtTm) and settlement can fall on the same day or a later one. In the sample, creation is on 2026-11-21 and settlement on 2026-11-23.
+      en: It is not the creation date-time. The message is created at one moment (CreDtTm) and settlement can fall on the same day or a later one. In the first sample, creation is on 2026-11-21 and settlement on 2026-11-23.
     examples:
       - "2026-11-23"
+      - "2026-11-24"
   CdtTrfTxInf/ChrgBr:
     explanation:
-      en: "Says who pays the fees for processing the payment. The sample uses SHAR (shared): the debtor pays the fees on the sending side and the creditor pays those on the receiving side. The other codes put all fees on the debtor (DEBT), all on the creditor (CRED), or follow the rules agreed for the service level or payment scheme in use (SLEV)."
+      en: "Says who pays the fees for processing the payment. SHAR (shared) means the debtor pays the fees on the sending side and the creditor pays those on the receiving side. The other codes put all fees on the debtor (DEBT), all on the creditor (CRED), or follow the rules agreed for the service level or payment scheme in use (SLEV)."
     examples:
       - SHAR
+      - DEBT
+  CdtTrfTxInf/InstgAgt/FinInstnId:
+    explanation:
+      en: The block that identifies the instructing bank. It has the same shape as for the other banks in the payment. This sample uses only a BIC.
+  CdtTrfTxInf/InstgAgt/FinInstnId/BICFI:
+    explanation:
+      en: The BIC (ISO 9362) of the bank that sends this message. In this sample it is the same bank as the debtor's agent. The sample's BIC is fictional.
+    examples:
+      - TESTGB2LXXX
+  CdtTrfTxInf/InstdAgt/FinInstnId:
+    explanation:
+      en: The block that identifies the instructed bank. It has the same shape as for the other banks in the payment. This sample uses only a BIC.
+  CdtTrfTxInf/InstdAgt/FinInstnId/BICFI:
+    explanation:
+      en: The BIC (ISO 9362) of the bank that receives this message. In this sample it is the intermediary agent, so the same BIC also appears in the intermediary agent block. The sample's BIC is fictional.
+    examples:
+      - TESTUS33XXX
+  CdtTrfTxInf/IntrmyAgt1/FinInstnId:
+    explanation:
+      en: The block that identifies the intermediary bank. It has the same shape as for the other banks in the payment. This sample uses only a BIC.
+  CdtTrfTxInf/IntrmyAgt1/FinInstnId/BICFI:
+    explanation:
+      en: The BIC (ISO 9362) of the intermediary bank that passes the payment from the debtor's bank towards the creditor's bank. The sample's BIC is fictional.
+    examples:
+      - TESTUS33XXX
   CdtTrfTxInf/Dbtr:
     explanation:
       en: "The debtor: the party that owes the money and whose account is debited. It is the payer. The block identifies the payer, here by name."
@@ -78,6 +110,7 @@ byPath:
       en: The payer's name as written in the payment, for example a company's registered name. The banks and the creditor read it to see who is paying. It is optional.
     examples:
       - Example Debtor Ltd
+      - Sample Importer Ltd
   CdtTrfTxInf/DbtrAcct:
     explanation:
       en: The debtor's account, the one to be debited because of this payment. The block holds the account identification. It is optional.
@@ -89,6 +122,7 @@ byPath:
       en: The International Bank Account Number of the debtor's account, an account identifier used internationally and defined in the standard ISO 13616. It identifies the account to debit.
     examples:
       - GB82WEST12345698765432
+      - GB29NWBK60161331926819
   CdtTrfTxInf/DbtrAgt:
     explanation:
       en: "The debtor's agent: the bank that services the debtor's account, so the bank the payer uses to send the payment. The bank is identified inside the block."
@@ -119,6 +153,7 @@ byPath:
       en: The payee's name as written in the payment, for example a company's registered name. The banks and the debtor read it to see who is being paid. It is optional.
     examples:
       - Example Creditor GmbH
+      - Sample Supplier GmbH
   CdtTrfTxInf/CdtrAcct:
     explanation:
       en: The creditor's account, the one to be credited because of this payment. The block holds the account identification. It is optional.
@@ -130,6 +165,55 @@ byPath:
       en: The International Bank Account Number of the creditor's account, an account identifier used internationally and defined in the standard ISO 13616. It identifies the account to credit.
     examples:
       - DE89370400440532013000
+      - DE02120300000000202051
+  CdtTrfTxInf/RmtInf:
+    explanation:
+      en: "The remittance information: details meant for the creditor, so that it can match the incoming money to what the payment is for, such as an invoice. It comes in two forms. Ustrd is free text and Strd is split into fields a computer can read. It is optional."
+  CdtTrfTxInf/RmtInf/Strd:
+    explanation:
+      en: One structured remittance block. Instead of free text it gives separate fields for the documents the payment refers to, a creditor reference, the invoicer and invoicee, tax and other data, so the creditor's system can reconcile the payment automatically. The element can repeat. This sample uses the referred document and the creditor reference.
+  CdtTrfTxInf/RmtInf/Strd/RfrdDocInf:
+    explanation:
+      en: "A document the payment refers to, for example an invoice. It gives the document's type and number and can add a date and the document's lines. It can repeat, one block per document."
+  CdtTrfTxInf/RmtInf/Strd/RfrdDocInf/Tp:
+    explanation:
+      en: The type of the referred document. Its main part is the code or proprietary choice, and it can also name who issued the type.
+  CdtTrfTxInf/RmtInf/Strd/RfrdDocInf/Tp/CdOrPrtry:
+    explanation:
+      en: A choice between two ways to give the document type. Use a code from an external code list (Cd) or a text the parties have agreed between themselves (Prtry), never both.
+  CdtTrfTxInf/RmtInf/Strd/RfrdDocInf/Tp/CdOrPrtry/Cd:
+    explanation:
+      en: The document type as a code from an external list that is kept outside this message's schema. The schema only requires one to four characters, so which codes are valid depends on that list.
+    examples:
+      - CINV
+    notes:
+      en: In the external document type list, CINV stands for a commercial invoice.
+  CdtTrfTxInf/RmtInf/Strd/RfrdDocInf/Nb:
+    explanation:
+      en: The number that identifies the referred document, for example an invoice number. The creditor uses it to find the document in its own records.
+    examples:
+      - INV-2026-0457
+  CdtTrfTxInf/RmtInf/Strd/CdtrRefInf:
+    explanation:
+      en: "A reference the creditor created so that it can recognise what the payment is for. It has a type and the reference itself, and both are optional."
+  CdtTrfTxInf/RmtInf/Strd/CdtrRefInf/Tp:
+    explanation:
+      en: The kind of creditor reference that follows. Its main part is the code or proprietary choice, and it can also name the party that assigns this kind of reference.
+  CdtTrfTxInf/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry:
+    explanation:
+      en: A choice between two ways to give the reference type. Use a code from an external code list (Cd) or a text the parties have agreed between themselves (Prtry), never both.
+  CdtTrfTxInf/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Cd:
+    explanation:
+      en: The reference type as a code from an external list that is kept outside this message's schema. The schema only requires one to four characters, so which codes are valid depends on that list.
+    examples:
+      - SCOR
+    notes:
+      en: In the external list, SCOR stands for a structured communication reference given by the creditor.
+  CdtTrfTxInf/RmtInf/Strd/CdtrRefInf/Ref:
+    explanation:
+      en: The reference itself, as the creditor assigned it, up to 35 characters. The creditor can match the incoming payment to the item it belongs to by this value. The value in the sample is a published example creditor reference; it belongs to no party.
+    examples:
+      - RF18539007547034
 byType:
   BranchAndFinancialInstitutionIdentification8:
     explanation:

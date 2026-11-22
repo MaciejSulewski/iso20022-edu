@@ -1,0 +1,15 @@
+id: pacs.008-intermediary
+message: pacs.008.001.14
+file: pacs.008-intermediary.xml
+order: 2
+title: Intermediary agent and structured remittance
+scenario: >-
+  A UK debtor pays a German supplier's invoice in USD. The debtor agent and the
+  creditor agent have no direct relationship, so an intermediary agent in the
+  US sits between them. This message goes from the debtor agent to that
+  intermediary. The settlement method is INDA (the instructed bank settles): the
+  debtor agent holds a USD account with the US bank, which debits it. On the next
+  hop the US bank becomes the instructing agent and sends a new message to the
+  creditor agent. Fees are all for the debtor (DEBT). The remittance information is
+  structured: an invoice number and a creditor reference. All parties are
+  fictional.

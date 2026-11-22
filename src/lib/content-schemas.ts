@@ -37,4 +37,5 @@ export const SampleSchema = z.strictObject({
   file: z.string(),
   title: z.string(),
   scenario: z.string(),
+  order: z.number().int(),
 });

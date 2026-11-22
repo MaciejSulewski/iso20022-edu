@@ -94,9 +94,16 @@ export function checkContent({
     }
   }
 
+  const orders = new Set<string>();
   for (const f of samples) {
     const s = parsed(f, SampleSchema);
     if (!s) continue;
+    const key = `${s.message}#${s.order}`;
+    if (orders.has(key))
+      errors.push(
+        `${f.name}: another sample of ${s.message} has the same order ${s.order}`,
+      );
+    orders.add(key);
     idMatches(f, s.id);
     if (!ids.has(s.message))
       errors.push(

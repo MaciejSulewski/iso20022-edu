@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { AnnotationSchema, MessageSchema } from "./content-schemas.ts";
+import {
+  AnnotationSchema,
+  MessageSchema,
+  SampleSchema,
+} from "./content-schemas.ts";
 
 const message = {
   id: "pacs.008.001.14",
@@ -33,4 +37,19 @@ test("annotation with empty byPath passes, localized text needs en", () => {
   assert.ok(AnnotationSchema.safeParse({ message: "m", byPath: {} }).success);
   const bad = { message: "m", byPath: { "A/B": { explanation: { pl: "x" } } } };
   assert.ok(!AnnotationSchema.safeParse(bad).success);
+});
+
+const sample = {
+  id: "s",
+  message: "m",
+  file: "s.xml",
+  title: "t",
+  scenario: "x",
+  order: 1,
+};
+
+test("sample needs an integer order", () => {
+  assert.ok(SampleSchema.safeParse(sample).success);
+  assert.ok(!SampleSchema.safeParse({ ...sample, order: undefined }).success);
+  assert.ok(!SampleSchema.safeParse({ ...sample, order: 1.5 }).success);
 });

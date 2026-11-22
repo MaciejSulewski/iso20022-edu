@@ -38,7 +38,14 @@ const base = (): Input => ({
   samples: [
     {
       name: "s.yaml",
-      data: { id: "s", message: id, file: "s.xml", title: "t", scenario: "s" },
+      data: {
+        id: "s",
+        message: id,
+        file: "s.xml",
+        title: "t",
+        scenario: "s",
+        order: 1,
+      },
       xml: `<Document><${schema.root}><GrpHdr><MsgId>1</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr></${schema.root}></Document>`,
     },
   ],
@@ -162,4 +169,15 @@ test("sharedTypes counts types used by two or more elements and those overlaid",
     overlaid: 1,
     total: 2,
   });
+});
+
+test("two samples of one message with the same order fail", () => {
+  const i = base();
+  const copy = structuredClone(sample(i));
+  (copy.data as { id: string }).id = "t";
+  copy.name = "t.yaml";
+  i.samples.push(copy);
+  assert.match(errs(i), /same order 1/);
+  (copy.data as { order: number }).order = 2;
+  assert.doesNotMatch(errs(i), /same order/);
 });
