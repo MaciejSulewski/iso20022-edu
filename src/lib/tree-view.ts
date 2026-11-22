@@ -118,6 +118,19 @@ export function toXmlNode(
   return { path, tag: c.tag, children: [], info };
 }
 
+/** `A/B/C` -> `A/B`; "" for a top-level path. */
+export const parentOf = (path: string) => {
+  const k = path.lastIndexOf("/");
+  return k > 0 ? path.slice(0, k) : "";
+};
+
+/** `A/B/C` -> [`A`, `A/B`]: the paths to expand to show it. */
+export const ancestors = (path: string) =>
+  path
+    .split("/")
+    .slice(0, -1)
+    .map((_, i, a) => a.slice(0, i + 1).join("/"));
+
 /** `#GrpHdr/MsgId` -> `GrpHdr/MsgId`; undefined for an empty or malformed hash. */
 export function parseHash(hash: string): string | undefined {
   try {

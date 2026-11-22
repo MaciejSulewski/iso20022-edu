@@ -2,7 +2,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { TreeChild } from "./schema-tree.ts";
 import {
+  ancestors,
   chainOf,
+  parentOf,
   parseHash,
   searchTree,
   toXmlNode,
@@ -135,4 +137,11 @@ test("searchTree matches path or ISO name, case-insensitive, with a limit", () =
   });
   assert.deepEqual(searchTree(index, "  "), { hits: [], total: 0 });
   assert.equal(searchTree(index, "Message Ident").total, 1);
+});
+
+test("parentOf and ancestors", () => {
+  assert.equal(parentOf("A/B/C"), "A/B");
+  assert.equal(parentOf("GrpHdr"), "");
+  assert.deepEqual(ancestors("A/B/C"), ["A", "A/B"]);
+  assert.deepEqual(ancestors("A"), []);
 });
