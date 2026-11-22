@@ -1,28 +1,28 @@
-# Next session prompt: Phase 5 (pacs.008 depth)
+# Next session prompt: Phase 6 (flow)
 
 Paste the block below into a new Claude Code session. Replace this note when the work is done.
 
 ```text
-Continue the ISO 20022 learning site (repo: iso20022-edu). Start Phase 5 using
+Continue the ISO 20022 learning site (repo: iso20022-edu). Start Phase 6 using
 /superpowers:subagent-driven-development, same as the last sessions.
 
 Start: read CLAUDE.md, docs/Home.md, docs/plan/Ledger.md and the last session note
-docs/sessions/2026-11-22.md (all of it, including "Phase 4 close": calls, deferred minors).
+docs/sessions/2026-11-22.md (all of it, including "Phase 5 run": calls, deferred minors).
 Invoke superpowers:using-superpowers as CLAUDE.md says.
 
-State: Phase 4 is done. T-050 (PR #42), T-051 (PR #43) and T-052 (PR #45) are merged.
-Workspace at /messages/pacs.008.001.14/ (XML | tree | details, tabs below 1280px), Ctrl+K
-palette on every page (elements from the tree index, pages from Pagefind). CI `build` is
-green on main.
+State: Phase 5 is done. T-060 (PR #47), T-061 (PR #48) and T-092 (PR #49) are merged. Two
+samples at /messages/pacs.008.001.14/ (default) and /messages/pacs.008.001.14/pacs.008-intermediary/,
+six lessons under /lessons/ linked from Start here, shared-type and code overlays. CI `build`
+is green on main. T-093 (lesson accuracy review) is mine and still open; lessons, overlay text
+and the second sample are AI-drafted and unreviewed.
 
-Phase 5 tasks for you: T-060 (overlay by type for shared components, plus code
-explanations), T-061 (second sample: intermediary agent, structured remittance; it must pass
-xmllint and check-content; check:xml validates every sample against the pacs.008 XSD) and
-T-092 (draft lessons from public sources in own wording, recorded in docs/sources.md; the
-"Start here" path must link a lesson at each step; lessons must show up in the Ctrl+K
-palette via Pagefind after a build). Decide the order and which are complex (spec first,
-ADR-011). Use frontend-design:frontend-design for UI.
-Skip #me tasks (T-093 lesson accuracy review is mine). Do not start Phase 6.
+Phase 6 tasks for you: T-070 (FlowPlayer + pacs.008 agent-chain flow, serial and cover
+described; COMPLEX: brainstorm, spec, plan first per ADR-011; Next/Prev steps through every
+participant, mobile shows a step list) and T-071 (animate the flow diagram, respecting
+prefers-reduced-motion). Use frontend-design:frontend-design for UI. Lesson 4 (follow-the-flow)
+already describes serial and cover from weak public sources: the flow must stay consistent with
+it and with the schema's SettlementMethod1Code (INDA, INGA, COVE, CLRG), and may link to it.
+Skip #me tasks. Do not start Phase 7.
 
 Rules (same as before):
 - One branch and PR per task off an up-to-date main, Conventional Commits, small commits,
@@ -55,8 +55,9 @@ Rules (same as before):
 Facts:
 - Workspace: src/components/Workspace.tsx owns selection (one path string), hash and the
   details panel (ADR-014). Palette: src/components/Palette.tsx, src/lib/palette.ts
-  (ADR-015); Pagefind runs in `npm run build` after astro build. Page JS 21.9 KB gzip on
-  the workspace page, budget 100 KB.
+  (ADR-015); Pagefind runs in `npm run build` after astro build. Page JS about 22 KB gzip on
+  the workspace page, budget 100 KB. Lessons: src/content/lessons/en/*.md, pages src/pages/lessons/
+  (ADR-016); samples carry `order`, page src/pages/messages/[id]/[...sample].astro.
 - Tree data: static JSON under /tree/<id>/types/<Type>.json and /tree/<id>/index.json
   (src/pages/tree/[id]/), built from src/lib/schema-tree.ts.
 - Carry-over minors (chore PR when convenient): scripts/check-js-size.ts import-parser
