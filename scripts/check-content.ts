@@ -265,9 +265,10 @@ export function checkContent({
           errors.push(
             `${f.name}: ${e.where}: path "${p}" does not resolve in ${schema.id}`,
           );
-        if (seenPaths.has(p))
+        const key = resolvePath(schema, p)?.path ?? p;
+        if (seenPaths.has(key))
           errors.push(`${f.name}: path "${p}" appears twice`);
-        seenPaths.add(p);
+        seenPaths.add(key);
       }
       for (const s of e.sources) {
         if (s >= m.sources.length)
@@ -280,7 +281,7 @@ export function checkContent({
       if (seenFields.has(e.field))
         errors.push(`${f.name}: field "${e.field}" appears twice`);
       seenFields.add(e.field);
-      if (!e.codes) continue;
+      if (!e.codes && !e.codeList) continue;
       const known = e.codeList ? schema.simpleTypes[e.codeList]?.codes : null;
       if (!known) {
         errors.push(
@@ -289,7 +290,7 @@ export function checkContent({
         continue;
       }
       const values = known.map((c) => (typeof c === "string" ? c : c.code));
-      for (const c of e.codes)
+      for (const c of e.codes ?? [])
         if (!values.includes(c.iso))
           errors.push(
             `${f.name}: ${e.where}: "${c.iso}" is not a code of ${e.codeList}`,
@@ -297,7 +298,9 @@ export function checkContent({
     }
     m.sources.forEach((s, n) => {
       if (!used.has(n))
-        errors.push(`${f.name}: source ${n} "${s.title}" is used by no row`);
+        errors.push(
+          `${f.name}: source ${n} "${s.title}" is used by no row or addition`,
+        );
     });
   }
 

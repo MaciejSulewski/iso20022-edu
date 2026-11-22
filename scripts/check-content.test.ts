@@ -517,7 +517,22 @@ test("mapping source index must be in the sources list", () => {
   assert.match(errs(i), /m\.yaml: row "20": source 5 is not in the sources/);
 });
 
+test("mapping codeList without codes must still be a known simple type", () => {
+  const i = withMapping((d) => {
+    delete d.rows[1]!.codes;
+    d.rows[1]!.codeList = "Nope";
+  });
+  assert.match(errs(i), /row "71a": codeList "Nope" is not a simple type/);
+});
+
+test("mapping paths that resolve to the same element count as duplicates", () => {
+  const i = withMapping(
+    (d) => (d.additions[0]!.paths = ["FIToFICstmrCdtTrf/GrpHdr/MsgId"]),
+  );
+  assert.match(errs(i), /appears twice/);
+});
+
 test("every mapping source must be used", () => {
   const i = withMapping((d) => (d.additions[0]!.sources = [0]));
-  assert.match(errs(i), /m\.yaml: source 1 "u" is used by no row/);
+  assert.match(errs(i), /m\.yaml: source 1 "u" is used by no row or addition/);
 });

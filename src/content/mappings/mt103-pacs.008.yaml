@@ -34,7 +34,7 @@ rows:
     sources: [0]
   - field: 50a
     paths: [CdtTrfTxInf/Dbtr]
-    note: Ripple's table, which targets its own payment object and not a pacs.008, takes the debtor name from 50K and the address from 50K or 50F.
+    note: Ripple's table, which targets its own payment object and not a pacs.008, takes the debtor name and address from 50K or 50F.
     sources: [0, 1]
   - field: 52a
     paths: [CdtTrfTxInf/DbtrAgt]
@@ -54,7 +54,7 @@ rows:
     sources: [0]
   - field: 56a
     paths: [CdtTrfTxInf/IntrmyAgt1]
-    note: The first intermediary agent. pacs.008 also has second and third intermediary agents, which have no MT field (see the second table).
+    note: The first intermediary agent. pacs.008 also has second and third intermediary agents, which have no dedicated MT field (see the second table).
     sources: [0]
   - field: 57a
     paths: [CdtTrfTxInf/CdtrAgt]
@@ -62,7 +62,7 @@ rows:
     sources: [0]
   - field: 59a
     paths: [CdtTrfTxInf/Cdtr]
-    note: Ripple's table takes the creditor name from 59 and the address from 59 or 59F.
+    note: Ripple's table takes the creditor name and address from 59 or 59F.
     sources: [0, 1]
   - field: 23E
     paths: [CdtTrfTxInf/InstrForCdtrAgt]
@@ -85,7 +85,7 @@ rows:
     sources: [0, 1]
 additions:
   - paths: [CdtTrfTxInf/UltmtDbtr, CdtTrfTxInf/UltmtCdtr, CdtTrfTxInf/InitgPty]
-    note: The ultimate debtor, the ultimate creditor and the initiating party. The BNY paper says three of the five parties are new and names the two ultimate parties as new. It gives no MT field for the initiating party, the party at whose initiative the payment data is established.
+    note: The ultimate debtor, the ultimate creditor and the initiating party. The BNY paper says three of the five parties are new and names the two ultimate parties as new. It gives no MT field for the initiating party, the party that starts the payment.
     sources: [0]
   - paths: [CdtTrfTxInf/IntrmyAgt2, CdtTrfTxInf/IntrmyAgt3]
     note: Second and third intermediary agents. The BNY paper says MT messages have no dedicated field for them.
