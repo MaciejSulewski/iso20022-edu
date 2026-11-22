@@ -528,11 +528,18 @@ try {
     await onScreen(sel(CA)),
     "mobile: opening the XML tab shows the row selected in the tree",
   );
-  await m.evaluate(() => scrollBy(0, 3000));
-  await m.focus(el("GrpHdr/CreDtTm"));
+  // a row above the window scrolled into view the way reveal does it: it must clear the sticky tab bar
+  await m.getByRole("tab", { name: "Tree" }).click();
+  await m.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+  const up = await m.evaluate((q) => {
+    const e = document.querySelector(q)!;
+    const before = e.getBoundingClientRect().top;
+    e.scrollIntoView({ block: "nearest" });
+    return before;
+  }, '[role=treeitem][data-path="GrpHdr"]');
   check(
-    await onScreen(el("GrpHdr/CreDtTm")),
-    "mobile: a row focused from above the fold lands below the sticky tab bar",
+    up < 0 && (await onScreen('[role=treeitem][data-path="GrpHdr"]')),
+    "mobile: a row scrolled up into view lands below the sticky tab bar",
   );
   const mh = await open(390, 800, `#${MSGID}`);
   check(
