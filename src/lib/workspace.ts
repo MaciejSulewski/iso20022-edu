@@ -20,3 +20,20 @@ export function panelNode(
   if (!path) return undefined;
   return findNode(nodes, path) ?? (record?.path === path ? record : undefined);
 }
+
+/** Repeated siblings share a path, so rows are keyed "A/B[2]/C": the row id of one element under its parent id. */
+export const rowKey = (parent: string, node: XmlNode): string =>
+  `${parent}${parent ? "/" : ""}${node.tag}${node.repeatIndex ? `[${node.repeatIndex}]` : ""}`;
+
+/** The row a selected path marks: the current row if it has that path, else the first row with it. */
+export function shownRow(
+  rows: { id: string; node: XmlNode }[],
+  current: string | null,
+  selected: string | null,
+): string | null {
+  if (!selected) return null;
+  const cur = current ? rows.find((r) => r.id === current) : undefined;
+  return cur?.node.path === selected
+    ? cur.id
+    : (rows.find((r) => r.node.path === selected)?.id ?? null);
+}

@@ -10,6 +10,7 @@ import {
   type Presence,
 } from "../lib/xml-view.ts";
 import { reveal } from "../lib/reveal.ts";
+import { rowKey, shownRow } from "../lib/workspace.ts";
 
 export type XmlLabels = {
   tree: string;
@@ -55,7 +56,7 @@ function flatten(
   const rows: Row[] = [];
   const all: Row[] = [];
   for (const node of nodes) {
-    const id = `${parent}${parent ? "/" : ""}${node.tag}${node.repeatIndex ? `[${node.repeatIndex}]` : ""}`;
+    const id = rowKey(parent, node);
     const row = { id, node, depth };
     rows.push(row);
     all.push(row);
@@ -95,11 +96,7 @@ export default function AnnotatedXml({
   const { rows } = visibleRows(allRows, beginner);
   const { hidden } = visibleRows(all, true);
   const byId = new Map(all.map((r) => [r.id, r]));
-  const shown = !selected
-    ? null
-    : rowId && byId.get(rowId)?.node.path === selected
-      ? rowId
-      : (all.find((r) => r.node.path === selected)?.id ?? null);
+  const shown = shownRow(all, rowId, selected);
 
   useEffect(() => {
     setBeginner(store.get() === "beginner");
