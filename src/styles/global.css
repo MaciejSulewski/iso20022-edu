@@ -58,3 +58,51 @@
     @apply max-xl:scroll-pt-10;
   }
 }
+
+/* Lesson prose (Markdown rendered inside .lesson): ~65ch measure, sans body, mono for element paths. */
+@layer components {
+  .lesson {
+    @apply max-w-[65ch] text-base leading-7;
+  }
+  .lesson h2 {
+    @apply mt-10 mb-3 text-xl leading-snug font-semibold;
+  }
+  .lesson h3 {
+    @apply mt-6 mb-2 text-lg font-semibold;
+  }
+  .lesson p,
+  .lesson ul,
+  .lesson ol,
+  .lesson table {
+    @apply my-4;
+  }
+  .lesson ul {
+    @apply list-disc pl-6;
+  }
+  .lesson ol {
+    @apply list-decimal pl-6;
+  }
+  .lesson li {
+    @apply my-1;
+  }
+  .lesson :not(pre) > code {
+    @apply rounded bg-surface px-1 py-0.5 text-[0.9em] break-words;
+  }
+  .lesson pre {
+    @apply overflow-x-auto rounded border border-line bg-surface p-3 text-sm;
+  }
+  .lesson blockquote {
+    @apply my-4 border-l-4 border-line pl-4 text-muted;
+  }
+  /* wide tables scroll inside the lesson column instead of the page */
+  .lesson table {
+    @apply block overflow-x-auto border-collapse text-sm;
+  }
+  .lesson th,
+  .lesson td {
+    @apply border border-line px-3 py-2 text-left align-top;
+  }
+  .lesson th {
+    @apply bg-surface font-semibold;
+  }
+}
