@@ -40,8 +40,23 @@ const chevron = (p: Page, path: string) =>
   p.locator(row(path)).getByText("▸", { exact: true });
 const aside = (p: Page) =>
   p.getByRole("complementary", { name: "Element details" });
-const focusedPath = (p: Page) =>
-  p.evaluate(() => (document.activeElement as HTMLElement).dataset.path);
+// Polls, so a late focus move is not read too early; throws on timeout.
+const focusIs = (p: Page, path: string) =>
+  p
+    .waitForFunction(
+      (x) => (document.activeElement as HTMLElement).dataset.path === x,
+      path,
+      { timeout: 3000 },
+    )
+    .then(() => true);
+// Rejects when the promise does not settle in time, so a wrong pattern fails fast instead of hanging.
+const within = <T>(pr: Promise<T>, ms: number, what: string) =>
+  Promise.race([
+    pr,
+    new Promise<never>((_, no) =>
+      setTimeout(() => no(new Error(`timed out waiting for ${what}`)), ms),
+    ),
+  ]);
 // The sheet must really be on screen: visible, inside the viewport and on top.
 async function sheetShown(p: Page) {
   const dialog = p.locator("dialog[open]");
@@ -60,8 +75,9 @@ async function slowDeepLink(file: string, ms: number, hashPart: string) {
     viewport: { width: 1280, height: 900 },
   });
   const p = await ctx.newPage();
+  const re = new RegExp(`/types/${file}\\.json$`);
   const released = new Promise<void>((done) => {
-    void p.route(`**/types/${file}.json`, async (r) => {
+    void p.route(re, async (r) => {
       await sleep(ms);
       await r.continue();
       done();
@@ -70,7 +86,7 @@ async function slowDeepLink(file: string, ms: number, hashPart: string) {
   const asked = p.waitForRequest(new RegExp(`/types/${file}\\.json$`));
   await p.goto(page + hashPart, { waitUntil: "domcontentloaded" });
   await asked; // the island is hydrated and the deep link is waiting on the file
-  return { p, released };
+  return { p, released: within(released, ms + 5000, "the delayed file") };
 }
 
 try {
@@ -129,7 +145,7 @@ try {
   await d.locator(sel(`${HDR}/InstgAgt`)).waitFor({ timeout: 3000 });
   check(
     (await expanded(d, HDR)) === "true" &&
-      (await focusedPath(d)) === `${HDR}/InstgAgt` &&
+      (await focusIs(d, `${HDR}/InstgAgt`)) &&
       (await hash(d)) === `#${HDR}/InstgAgt` &&
       (await aside(d).innerText()).includes("Agent that instructs the next"),
     "search by ISO name, picking the result selects the element, focuses it and shows the panel",
@@ -160,15 +176,22 @@ try {
   );
   const nope = await open(1280, 900, "#Nope/Thing");
   check(
-    (await nope.locator("[aria-selected='true']").count()) === 0,
-    "an unknown deep link selects nothing",
+    (await nope.locator("[aria-selected='true']").count()) === 0 &&
+      (await nope.getByText("This branch did not load.").count()) === 0,
+    "an unknown deep link selects nothing and shows no error",
+  );
+  await nope.evaluate((h) => (location.hash = h), `#${HDR}/MsgId`);
+  await nope.locator(sel(`${HDR}/MsgId`)).waitFor({ timeout: 5000 });
+  check(
+    (await nope.locator("[aria-selected='true']").count()) === 1,
+    "after an unknown link the hash listener still opens a valid one",
   );
 
   // keyboard
   const k = await open(1280, 900);
   await k.locator(row(HDR)).focus();
   await k.keyboard.press("ArrowDown");
-  check((await focusedPath(k)) === TX, "ArrowDown moves focus to the next row");
+  check(await focusIs(k, TX), "ArrowDown moves focus to the next row");
   const kgot = k.waitForResponse(new RegExp(`/types/${TXT}\\.json$`), {
     timeout: 5000,
   });
@@ -180,18 +203,16 @@ try {
     "ArrowRight expands the row and fetches exactly its type file",
   );
   await k.keyboard.press("ArrowRight");
-  check(
-    (await focusedPath(k)) === `${TX}/PmtId`,
-    "ArrowRight enters the branch",
-  );
+  check(await focusIs(k, `${TX}/PmtId`), "ArrowRight enters the branch");
   await k.keyboard.press("Enter");
+  await k.locator(sel(`${TX}/PmtId`)).waitFor({ timeout: 3000 });
   check(
     (await k.locator(sel(`${TX}/PmtId`)).count()) === 1 &&
       (await hash(k)) === `#${TX}/PmtId`,
     "Enter selects the focused row and writes the hash",
   );
   await k.keyboard.press("ArrowLeft");
-  check((await focusedPath(k)) === TX, "ArrowLeft goes to the parent row");
+  check(await focusIs(k, TX), "ArrowLeft goes to the parent row");
 
   // mobile sheet
   const m = await open(390, 800);
@@ -209,9 +230,17 @@ try {
     ),
     "mobile: the deep-linked sheet shows the ISO definition",
   );
+  const noSideways = () =>
+    md.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
   check(
-    await md.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
-    "mobile: page does not scroll sideways",
+    await noSideways(),
+    "mobile: page does not scroll sideways, sheet open",
+  );
+  await md.keyboard.press("Escape");
+  await md.locator("dialog[open]").waitFor({ state: "detached" });
+  check(
+    await noSideways(),
+    "mobile: page does not scroll sideways, sheet closed",
   );
 
   // races, with type files delayed or failed by request interception
@@ -237,7 +266,7 @@ try {
   await r2.evaluate((h) => (location.hash = h), `#${HDR}/MsgId`); // slow
   await r2.evaluate((h) => (location.hash = h), `#${TX}/PmtId`); // fast
   await r2.locator(sel(`${TX}/PmtId`)).waitFor({ timeout: 5000 });
-  await held;
+  await within(held, 6500, "the delayed file");
   await sleep(400);
   check(
     (await r2.locator(sel(`${TX}/PmtId`)).count()) === 1 &&
