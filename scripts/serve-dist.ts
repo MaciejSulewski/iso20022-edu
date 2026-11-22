@@ -27,10 +27,18 @@ export async function serveDist() {
       res.end();
       return;
     }
-    res.writeHead(200, {
-      "content-type": types[extname(file)] ?? "application/octet-stream",
-    });
-    createReadStream(file).pipe(res);
+    // UI_DELAY_MS=300 holds back every schema-tree file, to try the checks on a slow network
+    const hold = p.includes("/tree/")
+      ? Number(process.env.UI_DELAY_MS ?? 0)
+      : 0;
+    const send = () => {
+      res.writeHead(200, {
+        "content-type": types[extname(file)] ?? "application/octet-stream",
+      });
+      createReadStream(file).pipe(res);
+    };
+    if (hold) setTimeout(send, hold);
+    else send();
   });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const port = (server.address() as { port: number }).port;

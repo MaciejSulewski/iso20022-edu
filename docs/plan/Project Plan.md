@@ -51,7 +51,7 @@ iso20022-edu/
     lib/                      # typed schema resolver shared by islands and check-content.ts
     components/ AnnotatedXml, ElementPanel, SchemaTree, Workspace, CommandPalette, FlowPlayer, MappingTable, Quiz, GlossaryTerm   # .tsx islands + .astro shells
     components/ui/ Button, Badge, Tabs, Sheet, ThemeToggle
-    pages/ index, messages/[id], messages/[id]/tree, flows/[id], mappings/[id], glossary, quizzes/[id]
+    pages/ index, messages/[id] (the workspace: XML, tree and details panes; the tree has no page of its own), flows/[id], mappings/[id], glossary, quizzes/[id]
   scripts/
     import-xsd.ts             # XSD → data/schema/<id>.json
     check-content.ts          # cross-reference and coverage checks

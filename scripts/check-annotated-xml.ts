@@ -1,8 +1,10 @@
-// Browser check for the annotated XML page: click, deep link, keyboard, the mobile sheet and axe.
+// Browser check for the XML pane of the workspace page: click, deep link, keyboard, tooltip, beginner mode,
+// cross-pane selection and axe.
 // Needs a built dist (npm run build).
 import AxeBuilder from "@axe-core/playwright";
-import { chromium, type Page } from "playwright";
+import { chromium, type Locator, type Page } from "playwright";
 import { serveDist } from "./serve-dist.ts";
+import { throttle, verifying } from "./ui-wait.ts";
 
 const { server, url } = await serveDist();
 const page = `${url}messages/pacs.008.001.14/`;
@@ -30,25 +32,35 @@ const check = (ok: boolean, what: string) => {
   console.log(`${ok ? "ok  " : "FAIL"} ${what}`);
   if (!ok) bad++;
 };
+const settle = verifying(check);
+// Pane widths in pixels, measured; the panes are the grid items #panel-ws-*.
+const widths = (p: Page) =>
+  p.evaluate(() => {
+    const w = (id: string) =>
+      document.getElementById(`panel-ws-${id}`)!.getBoundingClientRect().width;
+    return {
+      grid: document
+        .getElementById("panel-ws-xml")!
+        .parentElement!.getBoundingClientRect().width,
+      xml: w("xml"),
+      tree: w("tree"),
+      details: w("details"),
+    };
+  });
+const near = (x: number, y: number) => Math.abs(x - y) <= 1;
+const frames = (p: Page) =>
+  p.evaluate(
+    () =>
+      new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+  );
 const open = async (width: number, height: number, hash = "") => {
   const p = await (
     await browser.newContext({ viewport: { width, height } })
   ).newPage();
+  await throttle(p);
   await p.goto(page + hash, { waitUntil: "networkidle" });
   return p;
 };
-// The sheet must really be on screen: visible, inside the viewport and on top.
-async function sheetShown(p: Page) {
-  const dialog = p.locator("dialog[open]");
-  await dialog.waitFor({ state: "visible", timeout: 3000 });
-  const box = (await dialog.boundingBox())!;
-  const vh = p.viewportSize()!.height;
-  const top = await p.evaluate(
-    ([x, y]) => !!document.elementFromPoint(x!, y!)?.closest("dialog[open]"),
-    [box.x + box.width / 2, box.y + box.height / 2],
-  );
-  return box.height > 0 && box.y + box.height <= vh + 0.5 && top;
-}
 async function axe(p: Page, what: string) {
   for (const theme of ["light", "dark"]) {
     await p.evaluate(
@@ -83,8 +95,52 @@ try {
   await d.keyboard.press("Escape");
   check(
     (await d.locator("[aria-current='true']").count()) === 0,
+    "Esc clears the selection after a breadcrumb click (focus on body)",
+  );
+  // Esc from other places in the workspace; the click leaves a tooltip, so move focus and wait it out
+  const escFrom = async (focus: () => Promise<void>) => {
+    await d.click(el(MSGID));
+    await focus();
+    await d.locator("[role=tooltip]").waitFor({ state: "detached" });
+    const where = await d.evaluate(() => {
+      const a = document.activeElement!;
+      return a.closest("aside")
+        ? "aside"
+        : a.closest("[role=tree]")
+          ? "tree"
+          : a.tagName;
+    });
+    await d.keyboard.press("Escape");
+    // the clear lands a render later: poll for it (false on timeout)
+    const cleared = await d
+      .locator(sel(MSGID))
+      .waitFor({ state: "detached", timeout: 1000 })
+      .then(
+        () => true,
+        () => false,
+      );
+    return { where, cleared };
+  };
+  const inAside = await escFrom(() =>
+    aside.getByRole("button", { name: "<GrpHdr>" }).focus(),
+  );
+  check(
+    inAside.where === "aside" && inAside.cleared,
     "Esc clears the selection with focus in the aside",
   );
+  const inTree = await escFrom(() =>
+    d.locator("[role=treeitem][tabindex='0']").focus(),
+  );
+  check(
+    inTree.where === "tree" && inTree.cleared,
+    "Esc clears the selection with focus in the tree pane",
+  );
+  const inSearch = await escFrom(() => d.getByLabel("Find an element").focus());
+  check(
+    inSearch.where === "INPUT" && !inSearch.cleared,
+    "Esc in the search box keeps the selection",
+  );
+  await d.keyboard.press("Tab"); // leave the box; the next checks start from the XML pane
   await d.click(el(MSGID));
   await d.locator("[role=tooltip]").waitFor({ state: "visible" });
   await d.keyboard.press("Escape"); // the first Esc dismisses the tooltip
@@ -139,7 +195,11 @@ try {
     );
   const l = await open(1280, 900);
   check(
-    (await l.locator("dl dt").allTextContents())
+    (
+      await l
+        .locator("dl[aria-label='Key to the element markers'] dt")
+        .allTextContents()
+    )
       .map((x) => x.slice(1))
       .join() === "Required,Optional,Choice,Repeats",
     "legend lists the four states",
@@ -243,13 +303,23 @@ try {
       isMobile: true,
     })
   ).newPage();
+  await throttle(touch);
   await touch.goto(page, { waitUntil: "networkidle" });
   await touch.tap(el(MSGID));
   await touch.waitForTimeout(600);
   check(
-    (await touch.getByRole("tooltip").count()) === 0 &&
-      (await sheetShown(touch)),
-    "touch: no tooltip, the tap opens the sheet",
+    (await touch.getByRole("tooltip").count()) === 0,
+    "touch: no tooltip after the tap",
+  );
+  await settle(
+    touch,
+    "touch: the tap selects the row and opens the Details tab",
+    () => ({
+      tab: document.querySelector("[role=tab][aria-selected=true]")
+        ?.textContent,
+      marked: document.querySelectorAll("[aria-current='true']").length,
+    }),
+    (v) => v.tab === "Details" && v.marked === 1,
   );
 
   const rowCount = (p: Page) => p.locator("[data-id]").count();
@@ -261,7 +331,10 @@ try {
   await l.click(el("CdtTrfTxInf/PmtId/InstrId"));
   await l.getByRole("button", { name: "Beginner view" }).click();
   const beginner = await rowCount(l);
-  const note = await l.getByRole("status").innerText();
+  const note = await l
+    .getByRole("region", { name: "Annotated XML" })
+    .getByRole("status")
+    .innerText();
   check(
     (await pressed(l)) === "true" &&
       beginner < full &&
@@ -284,8 +357,17 @@ try {
   await l.goto(`${page}#CdtTrfTxInf/PmtId/InstrId`, {
     waitUntil: "networkidle",
   });
+  // same-document hash change: the mode switches a render after the selection, so poll (false on timeout)
+  const full2 = await l
+    .getByRole("button", { name: "Beginner view", pressed: false })
+    .waitFor({ timeout: 2000 })
+    .then(
+      () => true,
+      () => false,
+    );
   check(
-    (await pressed(l)) === "false" &&
+    full2 &&
+      (await pressed(l)) === "false" &&
       (await l.locator(sel("CdtTrfTxInf/PmtId/InstrId")).count()) === 1,
     "a deep link to a hidden element switches to full mode",
   );
@@ -297,69 +379,566 @@ try {
   );
   await axe(l, "beginner mode");
 
-  // mobile
+  // mobile: XML | Tree | Details tabs, one pane at a time
   const m = await open(390, 800);
-  await m.click(el(MSGID));
-  check(
-    await sheetShown(m),
-    "mobile: click opens a visible sheet in the viewport",
-  );
-  const dialog = m.locator("dialog[open]");
-  check(
-    (await dialog.innerText()).includes(ISO),
-    "mobile: sheet shows the ISO definition",
-  );
-  const label = await m.evaluate(() => {
-    const d = document.querySelector("dialog[open]")!;
-    return (
-      document.getElementById(d.getAttribute("aria-labelledby")!)
-        ?.textContent ?? ""
-    );
+  // What the page shows, in one read: each tab's name, aria-selected and tabindex, the visible panes, where
+  // focus is, the panel text and the panel's position.
+  const view = () => ({
+    tabs: [...document.querySelectorAll<HTMLElement>("[role=tab]")]
+      .map(
+        (t) =>
+          `${t.textContent}:${t.getAttribute("aria-selected")}:${t.tabIndex}`,
+      )
+      .join(),
+    panes: ["xml", "tree", "details"]
+      .filter((x) =>
+        document.getElementById(`panel-ws-${x}`)?.checkVisibility(),
+      )
+      .join(),
+    focusId: document.activeElement?.id ?? "",
+    focusRow: document.activeElement?.getAttribute("data-id") ?? "",
+    roving: `${document.activeElement?.getAttribute("role") === "tab" ? document.activeElement.textContent : "-"}/${document.querySelector("[role=tab][aria-selected=true]")?.textContent}`,
+    text: document.querySelector("aside")?.textContent ?? "",
+    asideTop: document.querySelector("aside")?.getBoundingClientRect().top ?? 0,
+    innerHeight,
+    marked: document.querySelectorAll("[aria-current='true']").length,
+    treeSel:
+      document
+        .querySelector("[role=treeitem][aria-selected=true]")
+        ?.getAttribute("data-path") ?? "",
+    xmlSel:
+      document
+        .querySelector("[aria-current='true']")
+        ?.getAttribute("data-id") ?? "",
+    fits: document.documentElement.scrollWidth <= innerWidth,
+    scrollY,
   });
-  check(
-    label === "MessageIdentification",
-    "mobile: sheet label points at the element name",
+  const XML_FIRST = "XML:true:0,Tree:false:-1,Details:false:-1";
+  const DETAILS_ON = "XML:false:-1,Tree:false:-1,Details:true:0";
+  await settle(
+    m,
+    "mobile: the XML tab is open first and only its pane shows",
+    view,
+    (v) => v.tabs === XML_FIRST && v.panes === "xml",
   );
-  await axe(m, "mobile sheet, MsgId selected");
+  await settle(
+    m,
+    "mobile: each tab controls its pane, a tab panel labelled by that tab",
+    () => ({
+      lists: document.querySelectorAll(
+        "[role=tablist][aria-label='Workspace panes']",
+      ).length,
+      wired: [...document.querySelectorAll("[role=tab]")].every((t) => {
+        const p = document.getElementById(t.getAttribute("aria-controls")!);
+        return (
+          p?.getAttribute("role") === "tabpanel" &&
+          p.getAttribute("aria-labelledby") === t.id
+        );
+      }),
+    }),
+    (v) => v.lists === 1 && v.wired,
+  );
+  await m.click(el(MSGID));
+  await settle(
+    m,
+    "mobile: a click in the XML pane opens the Details tab, with the panel in view",
+    view,
+    (v) =>
+      v.tabs === DETAILS_ON &&
+      v.panes === "details" &&
+      v.text.includes(ISO) &&
+      v.asideTop >= 0 &&
+      v.asideTop < v.innerHeight,
+  );
+  await settle(
+    m,
+    "mobile: after the switch, focus is on the Details tab",
+    view,
+    (v) => v.focusId === "tab-ws-details",
+  );
+  await axe(m, "mobile, MsgId selected");
+  await settle(m, "mobile: page does not scroll sideways", view, (v) => v.fits);
   await m.keyboard.press("Escape");
-  check(
-    (await m.locator("dialog[open]").count()) === 0,
-    "mobile: Esc closes the sheet",
+  await settle(
+    m,
+    "mobile: Esc clears the selection and keeps the Details tab",
+    view,
+    (v) =>
+      v.marked === 0 &&
+      v.tabs === DETAILS_ON &&
+      v.text.includes("Select an element to see what it is."),
   );
-  check((await focused(m)) === MSGID, "mobile: focus returns to the element");
-  check(
-    await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
-    "mobile: page does not scroll sideways",
+  const roving: string[] = [];
+  for (const [key, want] of [
+    ["ArrowLeft", "Tree/Tree"],
+    ["ArrowRight", "Details/Details"],
+    ["ArrowRight", "XML/XML"],
+  ] as const) {
+    await m.keyboard.press(key);
+    roving.push(
+      (
+        await settle(
+          m,
+          `mobile: ${key} moves focus and selection to ${want}`,
+          view,
+          (v) => v.roving === want,
+        )
+      )?.roving ?? "",
+    );
+  }
+  await settle(
+    m,
+    "mobile: arrow keys move focus along the tabs and show that pane (roving, wraps)",
+    view,
+    (v) =>
+      v.panes === "xml" &&
+      roving.join() === "Tree/Tree,Details/Details,XML/XML",
   );
+  await m
+    .locator(el(MSGID))
+    .evaluate((e) => e.scrollIntoView({ block: "center" }));
+  await m.focus(el(MSGID));
+  const y0 = await m.evaluate(() => scrollY);
   await m.keyboard.press("ArrowDown");
+  // the hidden tree pane follows the selection: wait for it, then for its scroll frame
+  await settle(
+    m,
+    "mobile: arrow keys select in the XML pane, stay on the XML tab and do not scroll the window",
+    view,
+    (v) =>
+      v.treeSel === "GrpHdr/CreDtTm" &&
+      v.xmlSel === "GrpHdr/CreDtTm" &&
+      v.focusRow === "GrpHdr/CreDtTm" &&
+      v.panes === "xml" &&
+      v.scrollY === y0,
+  );
+  // a pick far down the page: the Details tab and the top of the panel come into view.
+  // Half a pixel above the workspace gives fractional positions, as other font metrics do (CI on Linux).
+  await m.addStyleTag({ content: "h1 { margin-top: 0.5px }" });
+  // Two readings: the layout at the moment the Details tab becomes selected (a poll can land in any frame,
+  // so the switch must already be in view then), and the layout once two frames in a row agree.
+  type Layout = Record<string, string | number | undefined>;
+  await m.evaluate(() => {
+    const w = window as unknown as { layout: () => Layout; atSwitch?: Layout };
+    w.layout = () => {
+      const bar = document
+        .querySelector("[role=tablist]")!
+        .getBoundingClientRect();
+      const a = document.querySelector("aside")!.getBoundingClientRect();
+      return {
+        tab:
+          document.querySelector("[role=tab][aria-selected=true]")
+            ?.textContent ?? "",
+        focus: document.activeElement?.id,
+        scrollY,
+        innerHeight,
+        barTop: bar.top,
+        barBottom: bar.bottom,
+        asideTop: a.top,
+        asideBottom: a.bottom,
+        fonts: document.fonts.status,
+        dpr: devicePixelRatio,
+      };
+    };
+    const t = document.getElementById("tab-ws-details")!;
+    const o = new MutationObserver(() => {
+      if (t.getAttribute("aria-selected") !== "true") return;
+      o.disconnect();
+      w.atSwitch = w.layout();
+    });
+    o.observe(t, { attributes: true, attributeFilter: ["aria-selected"] });
+  });
+  await m.click(el("CdtTrfTxInf/CdtrAcct/Id/IBAN"));
+  // throws (with the last layout) when the tab, focus and layout do not settle in 5 s
+  const settledLayout = await settle(
+    m,
+    "mobile: the far pick ends on the Details tab with focus on it",
+    () => (window as unknown as { layout: () => Layout }).layout(),
+    (l) => l.tab === "Details" && l.focus === "tab-ws-details",
+  );
+  const atSwitch = await m.evaluate(
+    () => (window as unknown as { atSwitch?: Layout }).atSwitch,
+  );
+  const inView = (l?: Layout) =>
+    !!l &&
+    l.tab === "Details" &&
+    l.focus === "tab-ws-details" &&
+    (l.barTop as number) >= 0 &&
+    (l.asideTop as number) >= (l.barBottom as number) &&
+    (l.asideTop as number) < (l.innerHeight as number);
+  const farOk = inView(atSwitch) && inView(settledLayout);
   check(
-    (await focused(m)) === "GrpHdr/CreDtTm" &&
-      (await m.locator("dialog[open]").count()) === 0,
-    "mobile: arrow keys select without opening the sheet",
+    farOk,
+    "mobile: a pick far down the XML pane shows the tab bar and the top of the panel, from the switch on",
+  );
+  if (!farOk)
+    console.log(
+      `  at switch: ${JSON.stringify(atSwitch)}
+  settled:   ${JSON.stringify(settledLayout)}`,
+    );
+  // the row is on screen and not under the sticky tab bar (null while the row is not in the page)
+  const rowBox = (q: string) => {
+    const r = document.querySelector(q)?.getBoundingClientRect();
+    return r
+      ? {
+          top: r.top,
+          bottom: r.bottom,
+          barBottom: document
+            .querySelector("[role=tablist]")!
+            .getBoundingClientRect().bottom,
+          innerHeight,
+        }
+      : null;
+  };
+  const below = (r: ReturnType<typeof rowBox>) =>
+    !!r && r.top >= r.barBottom - 1 && r.bottom <= r.innerHeight + 1;
+  const CA = "CdtTrfTxInf/CdtrAcct";
+  const tRow = (path: string) =>
+    `[role=treeitem][data-path="${path}"][aria-selected='true']`;
+  await m.getByRole("tab", { name: "Tree" }).click();
+  await settle(
+    m,
+    "mobile: opening the Tree tab shows the row selected in the XML pane",
+    rowBox,
+    below,
+    tRow("CdtTrfTxInf/CdtrAcct/Id/IBAN"),
+  );
+  await m.locator(`[role=treeitem][data-path="${CA}"]`).click();
+  await settle(
+    m,
+    "mobile: the tree pick opens Details",
+    view,
+    (v) => v.tabs === DETAILS_ON,
+  );
+  await m.getByRole("tab", { name: "XML" }).click();
+  await settle(
+    m,
+    "mobile: opening the XML tab shows the row selected in the tree",
+    rowBox,
+    below,
+    sel(CA),
+  );
+  // a row above the window scrolled into view the way reveal does it: it must clear the sticky tab bar
+  await m.getByRole("tab", { name: "Tree" }).click();
+  await settle(
+    m,
+    "mobile: the Tree tab is open and settled",
+    view,
+    (v) => v.panes === "tree",
+  );
+  await m.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+  const GH = '[role=treeitem][data-path="GrpHdr"]';
+  const up = await m.evaluate((q) => {
+    const e = document.querySelector(q)!;
+    const before = e.getBoundingClientRect().top;
+    e.scrollIntoView({ block: "nearest" });
+    return before;
+  }, GH);
+  check(
+    up < 0 && below(await m.evaluate(rowBox, GH)),
+    "mobile: a row scrolled up into view lands below the sticky tab bar",
+  );
+  const mh = await open(390, 800, `#${MSGID}`);
+  await settle(
+    mh,
+    "mobile: a hash on load opens the Details tab",
+    view,
+    (v) =>
+      v.panes === "details" && v.tabs === DETAILS_ON && v.text.includes(ISO),
+  );
+  await mh.waitForTimeout(500); // a late focus move would land inside this dwell
+  await settle(
+    mh,
+    "mobile: a hash on load does not move focus",
+    () => document.activeElement === document.body,
+    (v) => v,
+  );
+  await mh.setViewportSize({ width: 1280, height: 900 });
+  await settle(
+    mh,
+    "resize up to 1280px: the tab panels go and the tab bar hides",
+    () => ({
+      panels: document.querySelectorAll("[role=tabpanel]").length,
+      bar: !!document.querySelector("[role=tablist]")?.checkVisibility(),
+      panes: ["xml", "tree", "details"]
+        .filter((x) =>
+          document.getElementById(`panel-ws-${x}`)?.checkVisibility(),
+        )
+        .join(),
+      separators: document.querySelectorAll("[role=separator]").length,
+    }),
+    (v) =>
+      v.panels === 0 &&
+      !v.bar &&
+      v.panes === "xml,tree,details" &&
+      v.separators === 2,
+  );
+  check(
+    await mh.getByRole("region", { name: "Annotated XML" }).isVisible(),
+    "resize up to 1280px: the tab bar hides, the three panes show as columns with separators",
+  );
+  await mh.setViewportSize({ width: 390, height: 800 });
+  await settle(
+    mh,
+    "resize back down: the tab bar comes back on the same tab",
+    () => ({
+      panels: document.querySelectorAll("[role=tabpanel]").length,
+      bar: !!document.querySelector("[role=tablist]")?.checkVisibility(),
+      tabs: [...document.querySelectorAll<HTMLElement>("[role=tab]")]
+        .map(
+          (t) =>
+            `${t.textContent}:${t.getAttribute("aria-selected")}:${t.tabIndex}`,
+        )
+        .join(),
+      panes: ["xml", "tree", "details"]
+        .filter((x) =>
+          document.getElementById(`panel-ws-${x}`)?.checkVisibility(),
+        )
+        .join(),
+    }),
+    (v) =>
+      v.panels === 3 &&
+      v.bar &&
+      v.tabs === "XML:false:-1,Tree:false:-1,Details:true:0" &&
+      v.panes === "details",
   );
 
-  const dl = await open(390, 800, `#${MSGID}`);
-  check(await sheetShown(dl), "mobile: deep link opens the sheet");
-  await dl.keyboard.press("Escape");
+  // separators (1280px and up): keyboard, limits, drag, measured pane widths
+  const s = await open(1280, 900);
+  const s1 = s.getByRole("separator", {
+    name: "Resize the annotated XML and the schema tree",
+  });
+  const s2 = s.getByRole("separator", {
+    name: "Resize the schema tree and the element details",
+  });
+  const aria = (l: Locator) =>
+    l.evaluate((e) =>
+      [
+        "aria-valuenow",
+        "aria-valuemin",
+        "aria-valuemax",
+        "aria-orientation",
+        "tabindex",
+      ]
+        .map((a) => e.getAttribute(a))
+        .join(),
+    );
+  const now = (l: Locator) => l.getAttribute("aria-valuenow");
   check(
-    (await focused(dl)) === MSGID,
-    "mobile: deep link, focus returns to the element after Esc",
+    (await s.getByRole("separator").count()) === 2 &&
+      (await aria(s1)) === "36,20,52,vertical,0" &&
+      (await aria(s2)) === "72,56,80,vertical,0",
+    "two vertical, focusable separators with value and limits in percent",
+  );
+  const text = (l: Locator) => l.getAttribute("aria-valuetext");
+  check(
+    (await text(s1)) === "XML 36 %, Tree 36 %" &&
+      (await text(s2)) === "Tree 36 %, Details 28 %",
+    "each separator's value text names both pane widths",
+  );
+  const w0 = await widths(s);
+  const g = w0.grid;
+  check(
+    near(w0.xml, g * 0.36 - 12) &&
+      near(w0.tree, g * 0.36 - 24) &&
+      near(w0.details, g * 0.28 - 12),
+    "pane widths follow the separator positions (measured)",
+  );
+  await s1.focus();
+  await s.keyboard.press("ArrowRight");
+  const w1 = await widths(s);
+  check(
+    (await now(s1)) === "38" &&
+      (await text(s1)) === "XML 38 %, Tree 34 %" &&
+      near(w1.xml - w0.xml, g * 0.02) &&
+      near(w0.tree - w1.tree, g * 0.02) &&
+      near(w1.details, w0.details),
+    "ArrowRight moves the first separator 2 %: the XML pane grows and the tree shrinks by that many pixels",
+  );
+  await s.keyboard.press("Shift+ArrowLeft");
+  check(
+    (await now(s1)) === "28" && near((await widths(s)).xml, g * 0.28 - 12),
+    "Shift+ArrowLeft moves it 10 % (measured)",
+  );
+  await s.keyboard.press("Home");
+  await s.keyboard.press("ArrowLeft");
+  check(
+    (await now(s1)) === "20" && near((await widths(s)).xml, g * 0.2 - 12),
+    "Home goes to the lower limit and it holds: the XML pane stays at 20 % (measured)",
+  );
+  await s.keyboard.press("End");
+  await s.keyboard.press("ArrowRight");
+  check(
+    (await now(s1)) === "52" && near((await widths(s)).tree, g * 0.2 - 24),
+    "End goes to the upper limit and it holds: the tree keeps 20 % (measured)",
+  );
+  await s2.focus();
+  await s.keyboard.press("End");
+  await s.keyboard.press("ArrowRight");
+  check(
+    (await aria(s2)) === "80,72,80,vertical,0" &&
+      (await s1.getAttribute("aria-valuemax")) === "60" &&
+      near((await widths(s)).details, g * 0.2 - 12),
+    "the second separator stops at 20 % for the details and widens the first one's range",
+  );
+  const left = (await s.locator("#panel-ws-xml").boundingBox())!.x;
+  const drag = async (toX: number) => {
+    const b = (await s1.boundingBox())!;
+    await s.mouse.move(b.x + b.width / 2, b.y + 100);
+    await s.mouse.down();
+    await s.mouse.move(toX, b.y + 100, { steps: 4 });
+    await s.mouse.up();
+    // released: moving over the separator again changes nothing (10px would be about 1 %)
+    const after = (await s1.boundingBox())!;
+    await s.mouse.move(after.x + after.width / 2 - 10, after.y + 100);
+  };
+  await drag(left + g * 0.4);
+  check(
+    (await now(s1)) === "40" && near((await widths(s)).xml, g * 0.4 - 12),
+    "dragging the separator moves it to the pointer and stops on release (measured)",
+  );
+  await drag(left + 5);
+  check(
+    (await now(s1)) === "20" && near((await widths(s)).xml, g * 0.2 - 12),
+    "dragging past the limit stops at 20 % (measured)",
+  );
+  // lost capture (as on pointercancel) ends the drag, even with the button still down
+  const c = (await s1.boundingBox())!;
+  await s.mouse.move(c.x + c.width / 2, c.y + 100);
+  await s.mouse.down();
+  // headless Chromium does not fire it for a scripted releasePointerCapture, so send the event itself
+  await s1.evaluate((e) =>
+    e.dispatchEvent(new PointerEvent("lostpointercapture", { pointerId: 1 })),
+  );
+  await s.mouse.move(c.x + c.width / 2 + 10, c.y + 100);
+  await s.mouse.up();
+  check(
+    (await now(s1)) === "20",
+    "after the pointer capture is lost, moving over the separator does not resize",
   );
 
-  const r = await open(390, 800);
-  await r.click(el(MSGID));
-  await r.locator("dialog[open]").waitFor({ state: "visible" });
-  await r.setViewportSize({ width: 1280, height: 900 });
-  await r.locator("aside").waitFor({ state: "visible" });
+  // 1280px: a selection scrolls the other pane inside itself, never the window
+  const j = await open(1280, 900);
+  const inPane = (q: string) =>
+    j.evaluate((q) => {
+      const e = document.querySelector(q)!;
+      const r = e.getBoundingClientRect();
+      const p = e.closest("[data-pane]")!.getBoundingClientRect();
+      // the part of the pane that is on screen
+      return (
+        r.top >= Math.max(p.top, 0) - 1 &&
+        r.bottom <= Math.min(p.bottom, innerHeight) + 1
+      );
+    }, q);
+  // a script click: Playwright's own click would first scroll the target into view
+  const jClick = (q: string) =>
+    j.evaluate((q) => (document.querySelector(q) as HTMLElement).click(), q);
+  const IBAN = "CdtTrfTxInf/CdtrAcct/Id/IBAN";
+  const tIban = `[role=treeitem][data-path="${IBAN}"][aria-selected='true']`;
+  await jClick(el(IBAN));
+  await j.locator(tIban).waitFor({ timeout: 5000 });
+  await frames(j);
   check(
-    (await r.locator("dialog[open]").count()) === 0,
-    "resize up closes the sheet",
+    (await j.evaluate(() => scrollY)) === 0 && (await inPane(tIban)),
+    "1280px: selecting in the XML pane scrolls the tree pane to the row, not the window",
   );
-  await r.setViewportSize({ width: 390, height: 800 });
-  await r.waitForTimeout(300);
+  await j.locator("#panel-ws-xml").evaluate((e) => (e.scrollTop = 0));
+  const DA = "CdtTrfTxInf/DbtrAgt"; // low in the XML pane, but within its reach
+  await jClick(`[role=treeitem][data-path="${DA}"]`);
+  await j.locator(sel(DA)).waitFor({ timeout: 3000 });
+  await frames(j);
   check(
-    (await r.locator("dialog[open]").count()) === 0,
-    "resize back down does not pop the sheet",
+    (await j.evaluate(() => scrollY)) === 0 &&
+      (await j.locator("#panel-ws-xml").evaluate((e) => e.scrollTop)) > 0 &&
+      (await inPane(sel(DA))),
+    "1280px: selecting in the tree scrolls the XML pane to the row, not the window",
+  );
+  // a short window: the sticky panes run past the fold, the rows must still land on screen
+  const shortLink = async (path: string) => {
+    const p = await open(1280, 720, `#${path}`);
+    await p
+      .locator(`[role=treeitem][data-path="${path}"][aria-selected='true']`)
+      .waitFor({ timeout: 5000 });
+    await frames(p);
+    return p.evaluate(
+      (qs) => ({
+        y: scrollY,
+        rows: qs.map((q) => {
+          const r = document.querySelector(q)!.getBoundingClientRect();
+          return { top: r.top, bottom: r.bottom, h: innerHeight };
+        }),
+      }),
+      [`[role=treeitem][data-path="${path}"]`, el(path)],
+    );
+  };
+  const onWin = (r: { top: number; bottom: number; h: number }) =>
+    r.top >= 0 && r.bottom <= r.h + 1;
+  const low = await shortLink("CdtTrfTxInf/DbtrAcct/Id/IBAN");
+  check(
+    low.y === 0 && low.rows.every(onWin),
+    "1280x720: a deep link to a low row shows it on screen in both panes, without moving the window",
+  );
+  // the last rows: the XML pane cannot scroll far enough, so the window moves just enough
+  const last = await shortLink(IBAN);
+  check(
+    last.y > 0 &&
+      last.rows.every(onWin) &&
+      Math.abs(last.rows[1]!.bottom - last.rows[1]!.h) <= 1,
+    "1280x720: a row the pane cannot bring on screen moves the window just enough",
+  );
+
+  // cross-pane: one selection drives the XML pane, the tree and the panel
+  const x = await open(1280, 900);
+  const treeSel = (path: string) =>
+    `[role=treeitem][data-path="${path}"][aria-selected='true']`;
+  const xAside = x.getByRole("complementary", { name: "Element details" });
+  await x.click(el(MSGID));
+  await x.locator(treeSel(MSGID)).waitFor({ timeout: 5000 });
+  check(
+    (await x.locator("[role=treeitem][aria-selected='true']").count()) === 1 &&
+      (await xAside.innerText()).includes(ISO) &&
+      (await x.evaluate(() => location.hash)) === `#${MSGID}`,
+    "XML pane: selecting MsgId marks it in the tree and shows it in the panel",
+  );
+  const PMT = "CdtTrfTxInf/PmtId";
+  await x
+    .locator('[role=treeitem][data-path="CdtTrfTxInf"]')
+    .getByText("▸", { exact: true })
+    .click();
+  await x.locator(`[role=treeitem][data-path="${PMT}"]`).click();
+  await x.locator(sel(PMT)).waitFor({ timeout: 3000 });
+  check(
+    (await x.locator("[aria-current='true']").count()) === 1 &&
+      (await xAside.innerText()).includes("PaymentIdentification") &&
+      (await x.locator(treeSel(MSGID)).count()) === 0,
+    "tree pane: selecting PmtId marks it in the XML pane and shows it in the panel",
+  );
+
+  // leaving the XML pane and coming back: the XML pane must open, unhide and mark the row again
+  const INSTR = "CdtTrfTxInf/PmtId/InstrId"; // optional, in the sample
+  const XPRY = "GrpHdr/XpryDtTm"; // not in the sample
+  const b = await open(1280, 900);
+  await b.click(el(INSTR));
+  // the tree opens the branch to it first: a later pick would make that open give up
+  await b.locator(treeSel(INSTR)).waitFor({ timeout: 5000 });
+  await b
+    .locator('[role=treeitem][data-path="GrpHdr"]')
+    .getByText("▸", { exact: true })
+    .click();
+  await b.locator(`[role=treeitem][data-path="${XPRY}"]`).click();
+  await b.locator(treeSel(XPRY)).waitFor({ timeout: 3000 });
+  await b.getByRole("button", { name: "Beginner view" }).click();
+  await b.locator(`[role=treeitem][data-path="${INSTR}"]`).click();
+  const back = await b
+    .getByRole("button", { name: "Beginner view", pressed: false })
+    .waitFor({ timeout: 2000 })
+    .then(
+      () => true,
+      () => false,
+    );
+  check(
+    back && (await b.locator(sel(INSTR)).count()) === 1,
+    "back to an element the XML pane had selected: it leaves beginner view and marks the row",
   );
 } finally {
   await browser.close();

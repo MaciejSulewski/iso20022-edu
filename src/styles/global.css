@@ -53,4 +53,8 @@
   pre {
     @apply font-mono;
   }
+  /* below 1280px the workspace tab bar is sticky (38px): rows scrolled or focused into view stay below it */
+  html:has(#tab-ws-xml) {
+    @apply max-xl:scroll-pt-10;
+  }
 }

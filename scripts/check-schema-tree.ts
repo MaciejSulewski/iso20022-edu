@@ -1,10 +1,11 @@
-// Browser check for the schema tree page: lazy loading, search, filter, deep links, races, keyboard, mobile sheet.
+// Browser check for the tree pane of the workspace page: lazy loading, search, filter, deep links, races, keyboard.
 // Needs a built dist (npm run build).
 import { chromium, type Page } from "playwright";
 import { serveDist } from "./serve-dist.ts";
+import { throttle, verifying } from "./ui-wait.ts";
 
 const { server, url } = await serveDist();
-const page = `${url}tree/pacs.008.001.14/`;
+const page = `${url}messages/pacs.008.001.14/`;
 const row = (path: string) => `[role=treeitem][data-path="${path}"]`;
 const sel = (path: string) => `${row(path)}[aria-selected='true']`;
 const HDR = "GrpHdr";
@@ -20,11 +21,13 @@ const check = (ok: boolean, what: string) => {
   console.log(`${ok ? "ok  " : "FAIL"} ${what}`);
   if (!ok) bad++;
 };
+const settle = verifying(check);
 // Fresh page that records every type-file request (by type name, in order).
 async function open(width: number, height: number, hash = "") {
   const p = await (
     await browser.newContext({ viewport: { width, height } })
   ).newPage();
+  await throttle(p);
   const typeReqs: string[] = [];
   p.on("request", (r) => {
     const m = /\/types\/([^/]+)\.json$/.exec(r.url());
@@ -57,18 +60,6 @@ const within = <T>(pr: Promise<T>, ms: number, what: string) =>
       setTimeout(() => no(new Error(`timed out waiting for ${what}`)), ms),
     ),
   ]);
-// The sheet must really be on screen: visible, inside the viewport and on top.
-async function sheetShown(p: Page) {
-  const dialog = p.locator("dialog[open]");
-  await dialog.waitFor({ state: "visible", timeout: 3000 });
-  const box = (await dialog.boundingBox())!;
-  const vh = p.viewportSize()!.height;
-  const top = await p.evaluate(
-    ([x, y]) => !!document.elementFromPoint(x!, y!)?.closest("dialog[open]"),
-    [box.x + box.width / 2, box.y + box.height / 2],
-  );
-  return box.height > 0 && box.y + box.height <= vh + 0.5 && top;
-}
 // A page opened on a deep link while one type file is held back; resolves once the page is hydrated and loading.
 async function slowDeepLink(file: string, ms: number, hashPart: string) {
   const ctx = await browser.newContext({
@@ -143,6 +134,12 @@ try {
     results.locator("button", { has: d.getByText(path, { exact: true }) });
   await hit(`${HDR}/InstgAgt`).click();
   await d.locator(sel(`${HDR}/InstgAgt`)).waitFor({ timeout: 3000 });
+  await settle(
+    d,
+    "the panel shows the picked element (its record lands a render after the row)",
+    () => document.querySelector("aside")?.textContent ?? "",
+    (t) => t.includes("Agent that instructs the next"),
+  );
   check(
     (await expanded(d, HDR)) === "true" &&
       (await focusIs(d, `${HDR}/InstgAgt`)) &&
@@ -157,7 +154,13 @@ try {
   check(
     d.typeReqs.length > before &&
       (await expanded(d, "GrpHdr/InstgAgt/FinInstnId")) === "true" &&
-      (await aside(d).innerText()).includes("BICFI"),
+      (await aside(d)
+        .getByRole("heading", { name: "BICFI" })
+        .waitFor({ timeout: 2000 })
+        .then(
+          () => true,
+          () => false,
+        )), // the record lands a render after the row: poll
     "an element absent from the sample is found, expanded to and selected",
   );
   check(
@@ -168,6 +171,12 @@ try {
   // deep link
   const dl = await open(1280, 900, `#${TX}/PmtId`);
   await dl.locator(sel(`${TX}/PmtId`)).waitFor({ timeout: 5000 });
+  await settle(
+    dl,
+    "the panel shows the deep-linked element",
+    () => document.querySelector("aside")?.textContent ?? "",
+    (t) => t.includes("PaymentIdentification"),
+  );
   check(
     (await expanded(dl, TX)) === "true" &&
       dl.typeReqs.join() === `${TXT}` &&
@@ -176,14 +185,14 @@ try {
   );
   const nope = await open(1280, 900, "#Nope/Thing");
   check(
-    (await nope.locator("[aria-selected='true']").count()) === 0 &&
-      (await nope.getByText("This branch did not load.").count()) === 0,
+    (await nope.locator("[role=treeitem][aria-selected='true']").count()) ===
+      0 && (await nope.getByText("This branch did not load.").count()) === 0,
     "an unknown deep link selects nothing and shows no error",
   );
   await nope.evaluate((h) => (location.hash = h), `#${HDR}/MsgId`);
   await nope.locator(sel(`${HDR}/MsgId`)).waitFor({ timeout: 5000 });
   check(
-    (await nope.locator("[aria-selected='true']").count()) === 1,
+    (await nope.locator("[role=treeitem][aria-selected='true']").count()) === 1,
     "after an unknown link the hash listener still opens a valid one",
   );
 
@@ -214,33 +223,80 @@ try {
   await k.keyboard.press("ArrowLeft");
   check(await focusIs(k, TX), "ArrowLeft goes to the parent row");
 
-  // mobile sheet
+  // mobile: XML | Tree | Details tabs
   const m = await open(390, 800);
-  await m.locator(row(HDR)).click();
-  check(await sheetShown(m), "mobile: tapping a row opens a visible sheet");
+  const sideways: boolean[] = [];
+  for (const name of ["Tree", "Details", "XML"]) {
+    await m.getByRole("tab", { name }).click();
+    const v = await settle(
+      m,
+      `mobile: the ${name} tab is selected and the page fits the width`,
+      () => ({
+        tab: document.querySelector("[role=tab][aria-selected=true]")
+          ?.textContent,
+        fits: document.documentElement.scrollWidth <= innerWidth,
+      }),
+      (v) => v.tab === name,
+    );
+    sideways.push(v?.fits ?? false);
+  }
   check(
-    (await m.locator("dialog[open]").innerText()).includes("GroupHeader"),
-    "mobile: the sheet shows the element",
+    sideways.every(Boolean),
+    "mobile: page does not scroll sideways on any tab",
+  );
+  // the Details tab, its panel text and where focus is, as the page shows them
+  const details = () => ({
+    tab: document.querySelector("[role=tab][aria-selected=true]")?.textContent,
+    asideShown: !!document.querySelector("aside")?.checkVisibility(),
+    treeShown: !!document.querySelector("[role=tree]")?.checkVisibility(),
+    text: document.querySelector("aside")?.textContent ?? "",
+    focus: document.activeElement?.id,
+  });
+  await m.getByRole("tab", { name: "Tree" }).click();
+  await m.locator(row(HDR)).click();
+  await settle(
+    m,
+    "mobile: tapping a tree row opens the Details tab with the element",
+    details,
+    (v) =>
+      v.tab === "Details" &&
+      v.asideShown &&
+      !v.treeShown &&
+      v.text.includes("GroupHeader"),
+  );
+  await m.getByRole("tab", { name: "Tree" }).click();
+  await m.getByLabel("Find an element").fill("InstructingAgent");
+  await m
+    .getByRole("list", { name: "Search results" })
+    .locator("button", { has: m.getByText(`${HDR}/InstgAgt`, { exact: true }) })
+    .click();
+  await settle(
+    m,
+    "mobile: a search pick opens the Details tab and puts focus on it",
+    details,
+    (v) =>
+      v.tab === "Details" &&
+      v.text.includes("Agent that instructs the next") &&
+      v.focus === "tab-ws-details",
   );
   const md = await open(390, 800, `#${HDR}/MsgId`);
-  check(await sheetShown(md), "mobile: a deep link opens the sheet");
-  check(
-    (await md.locator("dialog[open]").innerText()).includes(
-      "Point to point reference",
-    ),
-    "mobile: the deep-linked sheet shows the ISO definition",
+  await md
+    .locator(sel(`${HDR}/MsgId`))
+    .waitFor({ state: "attached", timeout: 5000 });
+  await settle(
+    md,
+    "mobile: a deep link opens the Details tab with the ISO definition",
+    details,
+    (v) =>
+      v.tab === "Details" &&
+      v.asideShown &&
+      v.text.includes("Point to point reference"),
   );
-  const noSideways = () =>
-    md.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
-  check(
-    await noSideways(),
-    "mobile: page does not scroll sideways, sheet open",
-  );
-  await md.keyboard.press("Escape");
-  await md.locator("dialog[open]").waitFor({ state: "detached" });
-  check(
-    await noSideways(),
-    "mobile: page does not scroll sideways, sheet closed",
+  await settle(
+    md,
+    "mobile: page does not scroll sideways",
+    () => document.documentElement.scrollWidth <= innerWidth,
+    (fits) => fits,
   );
 
   // races, with type files delayed or failed by request interception
@@ -251,8 +307,9 @@ try {
   check(
     (await r1.p.locator(sel(TX)).count()) === 1 &&
       (await hash(r1.p)) === `#${TX}` &&
-      (await r1.p.locator(sel(`${HDR}/MsgId`)).count()) === 0,
-    "race: a slow deep link does not steal a later click",
+      (await r1.p.locator(sel(`${HDR}/MsgId`)).count()) === 0 &&
+      (await expanded(r1.p, HDR)) === "false",
+    "race: a slow deep link does not steal a later click or open its branch",
   );
 
   const r2 = await open(1280, 900);
@@ -271,8 +328,9 @@ try {
   check(
     (await r2.locator(sel(`${TX}/PmtId`)).count()) === 1 &&
       (await hash(r2)) === `#${TX}/PmtId` &&
-      (await r2.locator(sel(`${HDR}/MsgId`)).count()) === 0,
-    "race: a slow earlier hash does not override a newer one",
+      (await r2.locator(sel(`${HDR}/MsgId`)).count()) === 0 &&
+      (await expanded(r2, HDR)) === "false",
+    "race: a slow earlier hash does not override a newer one or open its branch",
   );
 
   const ctx3 = await browser.newContext({
@@ -288,7 +346,7 @@ try {
   await errText.waitFor({ timeout: 5000 });
   check(
     (await expanded(r3, HDR)) === "true" &&
-      (await r3.locator("[aria-selected='true']").count()) === 0,
+      (await r3.locator("[role=treeitem][aria-selected='true']").count()) === 0,
     "failed ancestor: the branch opens with an error and nothing is selected",
   );
   failing = false;
