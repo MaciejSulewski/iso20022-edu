@@ -2,8 +2,10 @@ import { useEffect, useId, useRef, useState } from "preact/hooks";
 import type { XmlNode } from "../lib/xml-tree.ts";
 import {
   elementState,
+  GLYPH,
   isHidden,
   previewText,
+  TONE,
   visibleRows,
   type Presence,
 } from "../lib/xml-view.ts";
@@ -26,19 +28,6 @@ type Labels = PanelLabels & {
   hiddenOne: string;
 };
 
-// One symbol per state. Colour only reinforces it: the symbol and the words carry the meaning.
-const GLYPH: Record<Presence | "repeats", string> = {
-  required: "●",
-  optional: "○",
-  choice: "◆",
-  repeats: "↻",
-};
-const TONE: Record<Presence | "repeats", string> = {
-  required: "text-fg",
-  optional: "text-muted",
-  choice: "text-accent",
-  repeats: "text-muted",
-};
 const MODE_KEY = "xml.mode";
 const store = {
   get: () => {
