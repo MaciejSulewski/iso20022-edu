@@ -154,7 +154,13 @@ try {
   check(
     d.typeReqs.length > before &&
       (await expanded(d, "GrpHdr/InstgAgt/FinInstnId")) === "true" &&
-      (await aside(d).innerText()).includes("BICFI"),
+      (await aside(d)
+        .getByRole("heading", { name: "BICFI" })
+        .waitFor({ timeout: 2000 })
+        .then(
+          () => true,
+          () => false,
+        )), // the record lands a render after the row: poll
     "an element absent from the sample is found, expanded to and selected",
   );
   check(
