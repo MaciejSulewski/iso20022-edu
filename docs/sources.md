@@ -10,6 +10,7 @@ Public sources used for content and planning. Every source used must be listed h
 | iso20022.org Intellectual property rights | https://www.iso20022.org/intellectual-property-rights | Contributor IP and licence to users. Read in full from a browser-saved copy (T-104) | 2026-11-21 |
 | Swift standards end-user licence (September 2005) | https://www.iso20022.org/sites/default/files/documents/D7/SWIFTStandards_LIC_OUT_V5_.pdf | Swift-specific licence, linked from the IP page. Downloaded and read in full (T-104) | 2026-11-21 |
 | RFC 9562 (UUIDs; replaces RFC 4122) | https://www.rfc-editor.org/rfc/rfc9562 | Version 4 UUIDs are generated at random, for the UETR explanation (T-044). Cited from knowledge, not fetched in this session | not fetched |
+| ISO 20022 External code sets | https://www.iso20022.org/catalogue-messages/additional-content-messages/external-code-sets | Meaning of the document type code CINV and the creditor reference type code SCOR in the second sample (T-061). Cited from knowledge, not fetched in this session | not fetched |
 
 ## Not used
 
