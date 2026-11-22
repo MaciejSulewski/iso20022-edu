@@ -115,5 +115,20 @@
   "tree.any.hint": "an open slot where other XML can be added",
   "tree.occurs": "Numbers in brackets, such as [0..1] or [1..n], give the fewest and the most times an element can appear inside its parent; n means no upper limit.",
   "tree.constraints": "Business rules",
-  "tree.constraints.lead": "Rules that tie elements together, which the tree alone does not show. Each is given with its official name and definition."
+  "tree.constraints.lead": "Rules that tie elements together, which the tree alone does not show. Each is given with its official name and definition.",
+  "palette.open": "Search",
+  "palette.shortcut": "Ctrl K",
+  "palette.shortcut.mac": "⌘K",
+  "palette.title": "Search the site",
+  "palette.input": "Search elements and pages",
+  "palette.hint": "Type an element name or path, for example BICFI or debtor agent",
+  "palette.group.elements": "Elements",
+  "palette.group.pages": "Pages",
+  "palette.count": "{n} results",
+  "palette.count.one": "1 result",
+  "palette.none": "No results",
+  "palette.showing": "Showing {shown} of {n}",
+  "palette.loading": "Loading the index",
+  "palette.error": "The element index could not be loaded. Try again.",
+  "palette.retry": "Retry"
 }

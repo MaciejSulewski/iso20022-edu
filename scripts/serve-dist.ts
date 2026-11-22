@@ -10,6 +10,8 @@ const types: Record<string, string> = {
   ".js": "text/javascript",
   ".css": "text/css",
   ".svg": "image/svg+xml",
+  ".json": "application/json",
+  // pagefind's binary files (.pf_*, .pagefind) fall through to octet-stream
 };
 
 export async function serveDist() {

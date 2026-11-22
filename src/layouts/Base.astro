@@ -1,6 +1,8 @@
 ---
 import "../styles/global.css";
+import { getCollection } from "astro:content";
 import ThemeToggle from "../components/ui/ThemeToggle";
+import Palette from "../components/Palette";
 import { t } from "../i18n/t";
 
 const lang = Astro.currentLocale ?? "en";
@@ -8,9 +10,40 @@ const {
   title,
   description = t("site.description"),
   noindex = false,
+  pagefind = !noindex, // false keeps the page out of the Pagefind index
 } = Astro.props;
 const fullTitle = title ? `${title} · ${t("site.title")}` : t("site.title");
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const base = import.meta.env.BASE_URL;
+// messages that have a page (the ones with a sample); each also has a tree index
+const samples = await getCollection("samples");
+const messages = (await getCollection("messages"))
+  .filter((m) => samples.some((s) => s.data.message === m.id))
+  .map((m) => ({
+    id: m.id,
+    name: m.data.name,
+    url: `${base}messages/${m.id}/`,
+    indexUrl: `${base}tree/${m.id}/index.json`,
+  }));
+const labels = {
+  open: t("palette.open"),
+  shortcut: t("palette.shortcut"),
+  shortcutMac: t("palette.shortcut.mac"),
+  title: t("palette.title"),
+  input: t("palette.input"),
+  hint: t("palette.hint"),
+  groupElements: t("palette.group.elements"),
+  groupPages: t("palette.group.pages"),
+  retry: t("palette.retry"),
+  status: {
+    "palette.count": t("palette.count"),
+    "palette.count.one": t("palette.count.one"),
+    "palette.none": t("palette.none"),
+    "palette.showing": t("palette.showing"),
+    "palette.loading": t("palette.loading"),
+    "palette.error": t("palette.error"),
+  },
+};
 const ogImage = new URL(`${import.meta.env.BASE_URL}og.png`, Astro.site);
 ---
 
@@ -54,9 +87,21 @@ const ogImage = new URL(`${import.meta.env.BASE_URL}og.png`, Astro.site);
   <body>
     <header class="flex items-center justify-between gap-4 p-4">
       <a href={import.meta.env.BASE_URL}>{t("site.title")}</a>
-      <ThemeToggle client:load label={t("theme.toggle")} />
+      <div class="flex items-center gap-2">
+        <Palette
+          client:idle
+          messages={messages}
+          pagefindUrl={`${base}pagefind/pagefind.js`}
+          labels={labels}
+        />
+        <ThemeToggle client:load label={t("theme.toggle")} />
+      </div>
     </header>
-    <main>
+    <main
+      {...(pagefind
+        ? { "data-pagefind-body": "" }
+        : { "data-pagefind-ignore": "" })}
+    >
       <slot />
     </main>
     <footer class="mx-4 mt-8 mb-4 border-t border-line pt-4 text-sm text-muted">

@@ -3,7 +3,7 @@ import Base from "../layouts/Base.astro";
 import { t } from "../i18n/t";
 ---
 
-<Base title={t("notfound.title")}>
+<Base title={t("notfound.title")} pagefind={false}>
   <h1>{t("notfound.title")}</h1>
   <p>{t("notfound.body")}</p>
   <p>
