@@ -67,7 +67,7 @@ async function slowDeepLink(file: string, ms: number, hashPart: string) {
       done();
     });
   });
-  const asked = p.waitForRequest(new RegExp(`/types/${file}\.json$`));
+  const asked = p.waitForRequest(new RegExp(`/types/${file}\\.json$`));
   await p.goto(page + hashPart, { waitUntil: "domcontentloaded" });
   await asked; // the island is hydrated and the deep link is waiting on the file
   return { p, released };
