@@ -20,9 +20,15 @@ const check = (ok: boolean, what: string) => {
   console.log(`${ok ? "ok  " : "FAIL"} ${what}`);
   if (!ok) bad++;
 };
-// The mobile sheet is gone from the workspace page; Task 2 of T-051 replaces these with tab checks.
-const skip = (what: string) =>
-  console.log(`skip ${what} (no sheet on the workspace page, T-051 task 2)`);
+// Below 1280px: true once the Details tab is the selected one (false on timeout).
+const onDetails = (p: Page) =>
+  p
+    .getByRole("tab", { name: "Details", selected: true })
+    .waitFor({ timeout: 2000 })
+    .then(
+      () => true,
+      () => false,
+    );
 // Fresh page that records every type-file request (by type name, in order).
 async function open(width: number, height: number, hash = "") {
   const p = await (
@@ -167,14 +173,14 @@ try {
   );
   const nope = await open(1280, 900, "#Nope/Thing");
   check(
-    (await nope.locator("[aria-selected='true']").count()) === 0 &&
-      (await nope.getByText("This branch did not load.").count()) === 0,
+    (await nope.locator("[role=treeitem][aria-selected='true']").count()) ===
+      0 && (await nope.getByText("This branch did not load.").count()) === 0,
     "an unknown deep link selects nothing and shows no error",
   );
   await nope.evaluate((h) => (location.hash = h), `#${HDR}/MsgId`);
   await nope.locator(sel(`${HDR}/MsgId`)).waitFor({ timeout: 5000 });
   check(
-    (await nope.locator("[aria-selected='true']").count()) === 1,
+    (await nope.locator("[role=treeitem][aria-selected='true']").count()) === 1,
     "after an unknown link the hash listener still opens a valid one",
   );
 
@@ -205,26 +211,56 @@ try {
   await k.keyboard.press("ArrowLeft");
   check(await focusIs(k, TX), "ArrowLeft goes to the parent row");
 
-  // mobile: the panes stack, the panel sits below them (tabs come in T-051 task 2)
+  // mobile: XML | Tree | Details tabs
   const m = await open(390, 800);
-  await m.locator(row(HDR)).click();
-  skip("mobile: tapping a row opens a visible sheet");
+  const sideways: boolean[] = [];
+  for (const name of ["Tree", "Details", "XML"]) {
+    await m.getByRole("tab", { name }).click();
+    sideways.push(
+      await m.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    );
+  }
   check(
-    (await aside(m).innerText()).includes("GroupHeader"),
-    "mobile: tapping a row shows the element in the panel",
+    sideways.every(Boolean),
+    "mobile: page does not scroll sideways on any tab",
+  );
+  await m.getByRole("tab", { name: "Tree" }).click();
+  await m.locator(row(HDR)).click();
+  check(
+    (await onDetails(m)) &&
+      (await aside(m).isVisible()) &&
+      !(await m.getByRole("tree").isVisible()) &&
+      (await aside(m).innerText()).includes("GroupHeader"),
+    "mobile: tapping a tree row opens the Details tab with the element",
+  );
+  await m.getByRole("tab", { name: "Tree" }).click();
+  await m.getByLabel("Find an element").fill("InstructingAgent");
+  await m
+    .getByRole("list", { name: "Search results" })
+    .locator("button", { has: m.getByText(`${HDR}/InstgAgt`, { exact: true }) })
+    .click();
+  check(
+    (await onDetails(m)) &&
+      (await aside(m).innerText()).includes("Agent that instructs the next") &&
+      (await m.evaluate(() => document.activeElement?.id)) === "tab-ws-details",
+    "mobile: a search pick opens the Details tab and puts focus on it",
   );
   const md = await open(390, 800, `#${HDR}/MsgId`);
-  skip("mobile: a deep link opens the sheet");
-  await md.locator(sel(`${HDR}/MsgId`)).waitFor({ timeout: 5000 });
+  await md
+    .locator(sel(`${HDR}/MsgId`))
+    .waitFor({ state: "attached", timeout: 5000 });
   check(
-    (await aside(md).innerText()).includes("Point to point reference"),
-    "mobile: a deep link shows the ISO definition in the panel",
+    (await onDetails(md)) &&
+      (await aside(md).isVisible()) &&
+      (await aside(md).innerText()).includes("Point to point reference"),
+    "mobile: a deep link opens the Details tab with the ISO definition",
   );
   check(
     await md.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
     "mobile: page does not scroll sideways",
   );
-  skip("mobile: page does not scroll sideways, sheet closed");
 
   // races, with type files delayed or failed by request interception
   const r1 = await slowDeepLink(GH, 1500, `#${HDR}/MsgId`);
@@ -273,7 +309,7 @@ try {
   await errText.waitFor({ timeout: 5000 });
   check(
     (await expanded(r3, HDR)) === "true" &&
-      (await r3.locator("[aria-selected='true']").count()) === 0,
+      (await r3.locator("[role=treeitem][aria-selected='true']").count()) === 0,
     "failed ancestor: the branch opens with an error and nothing is selected",
   );
   failing = false;
