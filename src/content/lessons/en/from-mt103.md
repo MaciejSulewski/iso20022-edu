@@ -1,6 +1,6 @@
 ---
 title: From MT 103 to pacs.008
-summary: What an MT 103 is, why pacs.008 breaks information into more parts, and two examples of how that looks in the schema.
+summary: What an MT 103 is, why pacs.008 breaks information into more parts, two examples of how that looks in the schema, and where to find the MT 103 mapping table.
 step: mapping
 order: 5
 relatedElements:
@@ -16,6 +16,9 @@ sources:
   - title: ISO 20022 Handbook (Bank of England)
     url: https://www.bankofengland.co.uk/payments/rtgs-renewal-programme/iso-20022-handbook
     retrieved: "2026-11-22"
+  - title: A deep dive on pacs.008 (BNY, February 2021)
+    url: https://www.bny.com/content/dam/bnymellon/documents/pdf/iso-20022/learning-guide-module4.pdf
+    retrieved: "2026-11-23"
 lastReviewed:
   date: "2026-11-22"
   by: unreviewed (AI-drafted, pending T-093)
@@ -25,7 +28,7 @@ lastReviewed:
 
 An MT 103 is a message from Swift's older "MT" family. An encyclopedia article on Swift message types describes it as the message for one customer's credit transfer, filed under customer payments, and says it is used to instruct the transfer of funds. In day-to-day talk, the MT 103 is the message that pacs.008 replaces. The Bank of England's handbook sets them side by side in its table for CHAPS, the UK's high-value payment system, and says Swift planned to retire MT messaging for payments.
 
-This lesson does not list MT 103 fields. We found no public source that we could read and cite for them, and the field-by-field comparison is a later task (T-080) that needs a human reviewer.
+A table that pairs MT 103 fields with pacs.008 elements is on its own page, linked at the end of this lesson. It rests on two public sources, a bank's explainer and a vendor's table, and neither is an official mapping. The table is partial and stays unreviewed by a person until T-081. This lesson itself still gives no MT 103 field facts: for those, use the table and its sources.
 
 ## Why ISO 20022 has more parts
 
@@ -49,4 +52,4 @@ A pacs.008 still says who pays whom, how much, through which banks. Lesson 1 and
 
 - Which element holds a free-format address line, and how many can a message have?
 - Why might a bank prefer structured remittance information?
-- Why does this site not yet show an MT 103 field table?
+- In the mapping table, which source supports pairing MT 103 field 70 with `CdtTrfTxInf/RmtInf/Ustrd`, and why does the table call itself partial?
