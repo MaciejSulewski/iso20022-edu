@@ -20,6 +20,7 @@ type Labels = {
   tab: { xml: string; tree: string; details: string };
   resizeXmlTree: string;
   resizeTreeDetails: string;
+  resizeValue: string; // {left} {l} and {right} {r}: the two pane widths in percent
   xmlTitle: string;
   treeTitle: string;
   treeLead: string;
@@ -157,6 +158,12 @@ export default function Workspace({
     role: wide ? undefined : ("tabpanel" as const),
     "aria-labelledby": wide ? undefined : `tab-${TABS[i]}`,
   });
+  const size = (left: string, l: number, right: string, r: number) =>
+    labels.resizeValue
+      .replace("{left}", left)
+      .replace("{l}", String(l))
+      .replace("{right}", right)
+      .replace("{r}", String(r));
   const hide = (i: number) => (i === tab ? "" : "max-xl:hidden");
 
   return (
@@ -210,6 +217,7 @@ export default function Workspace({
         </div>
         <Separator
           label={labels.resizeXmlTree}
+          text={size(labels.tab.xml, a, labels.tab.tree, b - a)}
           value={a}
           min={MIN}
           max={b - MIN}
@@ -238,6 +246,7 @@ export default function Workspace({
         </div>
         <Separator
           label={labels.resizeTreeDetails}
+          text={size(labels.tab.tree, b - a, labels.tab.details, 100 - b)}
           value={b}
           min={a + MIN}
           max={100 - MIN}
@@ -267,6 +276,7 @@ export default function Workspace({
 // arrows move 2 (Shift: 10), Home and End go to the limits, and it can be dragged.
 function Separator({
   label,
+  text,
   value,
   min,
   max,
@@ -274,6 +284,7 @@ function Separator({
   grid,
 }: {
   label: string;
+  text: string;
   value: number;
   min: number;
   max: number;
@@ -314,6 +325,7 @@ function Separator({
       aria-orientation="vertical"
       aria-label={label}
       aria-valuenow={value}
+      aria-valuetext={text}
       aria-valuemin={min}
       aria-valuemax={max}
       tabIndex={0}

@@ -92,6 +92,7 @@
   "ws.tab.details": "Details",
   "ws.resize.xmlTree": "Resize the annotated XML and the schema tree",
   "ws.resize.treeDetails": "Resize the schema tree and the element details",
+  "ws.resize.value": "{left} {l} %, {right} {r} %",
   "tree.title": "Full schema tree",
   "tree.lead": "Every element the message can carry, including the many the sample leaves out. Open a branch to load what sits inside it. Link straight to an element with its path, for example #GrpHdr/MsgId.",
   "tree.tree": "Message schema",
