@@ -136,7 +136,7 @@ export function sharedTypes(schema: Schema, byType: Set<string>) {
   const uses = new Map<string, number>();
   for (const t of Object.values(schema.complexTypes))
     for (const e of t.elements)
-      if (schema.complexTypes[e.type])
+      if ("type" in e && schema.complexTypes[e.type])
         uses.set(e.type, (uses.get(e.type) ?? 0) + 1);
   const shared = [...uses].filter(([, n]) => n >= 2).map(([k]) => k);
   return {
