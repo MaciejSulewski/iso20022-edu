@@ -11,8 +11,7 @@ const types: Record<string, string> = {
   ".css": "text/css",
   ".svg": "image/svg+xml",
   ".json": "application/json",
-  ".wasm": "application/wasm",
-  ".pf_meta": "application/octet-stream", // pagefind binary parts: .pf_meta, .pf_index, .pf_fragment, .pf_filter
+  // pagefind's binary files (.pf_*, .pagefind) fall through to octet-stream
 };
 
 export async function serveDist() {

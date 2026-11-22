@@ -79,10 +79,12 @@ export default function Palette({
   const [active, setActive] = useState(0);
   const [index, setIndex] = useState<Index | "loading" | "error">();
   const [pf, setPf] = useState<Pagefind | null>();
+  const [searching, setSearching] = useState(false);
   const [pages, setPages] = useState<PageRow[]>([]);
   const [mac, setMac] = useState(false);
 
   function loadIndex() {
+    input.current?.focus(); // the Retry button goes away: keep focus in the palette
     setIndex("loading");
     Promise.all(
       messages.map(async (m) => {
@@ -127,21 +129,28 @@ export default function Palette({
 
   useEffect(() => {
     const mine = ++seq.current;
+    setPages([]); // rows of the previous query must not be pickable meanwhile
     if (!q || !pf) {
-      setPages([]);
+      setSearching(false);
       return;
     }
+    setSearching(true);
     pf.debouncedSearch(q)
       .then(async (s) => {
         if (!s || mine !== seq.current) return; // superseded by a newer query
         const data = await Promise.all(
           s.results.slice(0, 5).map((r) => r.data()),
         );
-        if (mine === seq.current)
+        if (mine === seq.current) {
           setPages(pageResults(data).map((p) => ({ kind: "page", ...p })));
+          setSearching(false);
+        }
       })
       .catch(() => {
-        if (mine === seq.current) setPages([]);
+        if (mine === seq.current) {
+          setPages([]);
+          setSearching(false);
+        }
       });
   }, [q, pf]);
 
@@ -190,8 +199,9 @@ export default function Palette({
     el.hits.length + pages.length,
     index === "loading" ? "loading" : index === "error" ? "error" : "ready",
   );
+  const pending = pf === undefined || searching; // Pagefind may still add rows
   const statusText =
-    q || index === "error"
+    (q || index === "error") && !(s.key === "palette.none" && pending)
       ? (labels.status[s.key] ?? "")
           .replace("{n}", String(s.n))
           .replace("{shown}", String(s.shown))
@@ -269,6 +279,8 @@ export default function Palette({
         ref={dialog}
         data-palette=""
         aria-labelledby={`${ids}-t`}
+        // Esc closes the dialog natively; it must not also clear the Workspace selection
+        onKeyDown={(e) => e.key === "Escape" && e.stopPropagation()}
         onClick={(e) => e.target === e.currentTarget && dialog.current?.close()}
         onClose={() => {
           setQuery("");
@@ -309,7 +321,7 @@ export default function Palette({
           <p role="status" aria-live="polite">
             {statusText}
           </p>
-          {q && index === "error" && (
+          {index === "error" && (
             <button
               type="button"
               onClick={loadIndex}
