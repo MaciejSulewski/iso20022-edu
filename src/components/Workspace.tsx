@@ -1,5 +1,11 @@
 import type { ComponentChildren } from "preact";
-import { useEffect, useId, useRef, useState } from "preact/hooks";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "preact/hooks";
 import type { TreeChild } from "../lib/schema-tree.ts";
 import { parseHash } from "../lib/tree-view.ts";
 import { reveal } from "../lib/reveal.ts";
@@ -84,8 +90,9 @@ export default function Workspace({
 
   // The picked row's pane is now hidden, so focus goes to the Details tab, and the panel is scrolled into view
   // under the sticky tab bar.
-  // no deps: the flag is cleared after every render, so a stale one never fires later
-  useEffect(() => {
+  // no deps: the flag is cleared after every render, so a stale one never fires later.
+  // Layout effect: it runs in the same commit as the tab switch, so no frame shows Details scrolled out of view.
+  useLayoutEffect(() => {
     if (!toDetails.current) return;
     toDetails.current = false;
     if (tab !== DETAILS) return;
@@ -98,7 +105,8 @@ export default function Workspace({
   });
 
   // Opening the XML or Tree tab shows its selected row: the selection may have moved while the pane was hidden.
-  useEffect(() => {
+  // Layout effect, for the same reason as above.
+  useLayoutEffect(() => {
     if (tab === DETAILS) return;
     reveal(
       document
