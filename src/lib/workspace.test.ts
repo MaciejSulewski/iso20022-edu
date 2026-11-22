@@ -46,3 +46,12 @@ test("panelNode prefers the sample node, else a record for the same path", () =>
   assert.equal(panelNode(nodes, null, rec), undefined);
   assert.equal(panelNode(nodes, "A/Z", undefined), undefined);
 });
+
+test("repeated siblings share a path: the panel uses the first copy, whatever its repeat index", () => {
+  const rep = [
+    { ...node("T", [], "one"), repeatIndex: 1 },
+    { ...node("T", [], "two"), repeatIndex: 2 },
+  ];
+  assert.equal(findNode(rep, "T")?.info.isoName, "one");
+  assert.equal(panelNode(rep, "T", node("T", [], "rec"))?.info.isoName, "one");
+});
