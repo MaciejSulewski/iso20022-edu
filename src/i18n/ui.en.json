@@ -47,6 +47,8 @@
   "home.step.quiz.title": "Take the quiz",
   "home.step.quiz.desc": "Test what you remember.",
   "xml.title": "Annotated XML",
+  "xml.samples": "Example messages",
+  "xml.samples.current": "Showing now",
   "xml.lead": "Select any element to see what it is. Link straight to one with its path, for example #GrpHdr/MsgId.",
   "xml.tree": "Sample message XML",
   "xml.panel": "Element details",
