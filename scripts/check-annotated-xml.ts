@@ -489,20 +489,83 @@ try {
   // a pick far down the page: the Details tab and the top of the panel come into view.
   // Half a pixel above the workspace gives fractional positions, as other font metrics do (CI on Linux).
   await m.addStyleTag({ content: "h1 { margin-top: 0.5px }" });
+  // Two readings: the layout at the moment the Details tab becomes selected (a poll can land in any frame,
+  // so the switch must already be in view then), and the layout once two frames in a row agree.
+  type Layout = Record<string, string | number | undefined>;
+  await m.evaluate(() => {
+    const w = window as unknown as { layout: () => Layout; atSwitch?: Layout };
+    w.layout = () => {
+      const bar = document
+        .querySelector("[role=tablist]")!
+        .getBoundingClientRect();
+      const a = document.querySelector("aside")!.getBoundingClientRect();
+      return {
+        tab:
+          document.querySelector("[role=tab][aria-selected=true]")
+            ?.textContent ?? "",
+        focus: document.activeElement?.id,
+        scrollY,
+        innerHeight,
+        barTop: bar.top,
+        barBottom: bar.bottom,
+        asideTop: a.top,
+        asideBottom: a.bottom,
+        fonts: document.fonts.status,
+        dpr: devicePixelRatio,
+      };
+    };
+    const t = document.getElementById("tab-ws-details")!;
+    const o = new MutationObserver(() => {
+      if (t.getAttribute("aria-selected") !== "true") return;
+      o.disconnect();
+      w.atSwitch = w.layout();
+    });
+    o.observe(t, { attributes: true, attributeFilter: ["aria-selected"] });
+  });
   await m.click(el("CdtTrfTxInf/CdtrAcct/Id/IBAN"));
-  await until(m.getByRole("tab", { name: "Details", selected: true }));
-  check(
-    await mAside.evaluate((a) => {
-      const r = a.getBoundingClientRect();
-      const bar = document.querySelector("[role=tablist]")!;
-      return (
-        r.top >= bar.getBoundingClientRect().bottom &&
-        r.top < innerHeight &&
-        bar.getBoundingClientRect().top >= 0
-      );
-    }),
-    "mobile: a pick far down the XML pane shows the tab bar and the top of the panel",
+  const picked = await until(
+    m.getByRole("tab", { name: "Details", selected: true }),
   );
+  const atSwitch = await m.evaluate(
+    () => (window as unknown as { atSwitch?: Layout }).atSwitch,
+  );
+  // throws when the layout keeps changing for 2s
+  const settled = await m.evaluate(
+    () =>
+      new Promise<Layout>((done, fail) => {
+        const w = window as unknown as { layout: () => Layout };
+        const end = performance.now() + 2000;
+        let last = "";
+        const tick = () => {
+          const now = w.layout();
+          const key = JSON.stringify(now);
+          if (key === last) return done(now);
+          if (performance.now() > end)
+            return fail(new Error(`layout did not settle in 2s: ${key}`));
+          last = key;
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }),
+  );
+  const inView = (l?: Layout) =>
+    !!l &&
+    l.tab === "Details" &&
+    l.focus === "tab-ws-details" &&
+    (l.barTop as number) >= 0 &&
+    (l.asideTop as number) >= (l.barBottom as number) &&
+    (l.asideTop as number) < (l.innerHeight as number);
+  const farOk = picked && inView(atSwitch) && inView(settled);
+  check(
+    farOk,
+    "mobile: a pick far down the XML pane shows the tab bar and the top of the panel, from the switch on",
+  );
+  if (!farOk)
+    console.log(
+      `  picked=${picked}
+  at switch: ${JSON.stringify(atSwitch)}
+  settled:   ${JSON.stringify(settled)}`,
+    );
   // the row is on screen and not under the sticky tab bar
   const onScreen = (q: string) =>
     m.evaluate((q) => {
