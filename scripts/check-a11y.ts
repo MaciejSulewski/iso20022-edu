@@ -30,14 +30,31 @@ try {
         (t) => document.documentElement.classList.toggle("dark", t === "dark"),
         theme,
       );
-      const { violations } = await new AxeBuilder({ page: tab }).analyze();
-      console.log(
-        `${violations.length ? "FAIL" : "ok  "} ${page} (${width}px ${theme}): ${violations.length} violation(s)`,
-      );
-      for (const v of violations) {
-        bad++;
-        console.log(`  ${v.id} [${v.impact}] ${v.help}`);
-        for (const n of v.nodes) console.log(`    ${n.target.join(" ")}`);
+      // The workspace page shows one pane at a time at 390: scan each tab, with an element selected.
+      const stages: [string, (() => Promise<unknown>) | null][] = [["", null]];
+      if (width === 390 && page.startsWith("messages/"))
+        stages.splice(
+          0,
+          1,
+          ["XML tab", null],
+          ["Details tab", () => tab.click('[data-id="GrpHdr/MsgId"]')],
+          ["Tree tab", () => tab.getByRole("tab", { name: "Tree" }).click()],
+          [
+            "XML tab, selected",
+            () => tab.getByRole("tab", { name: "XML" }).click(),
+          ],
+        );
+      for (const [stage, go] of stages) {
+        await go?.();
+        const { violations } = await new AxeBuilder({ page: tab }).analyze();
+        console.log(
+          `${violations.length ? "FAIL" : "ok  "} ${page} (${width}px ${theme}${stage ? ", " + stage : ""}): ${violations.length} violation(s)`,
+        );
+        for (const v of violations) {
+          bad++;
+          console.log(`  ${v.id} [${v.impact}] ${v.help}`);
+          for (const n of v.nodes) console.log(`    ${n.target.join(" ")}`);
+        }
       }
       await tab.context().close();
     }

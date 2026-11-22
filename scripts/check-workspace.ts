@@ -180,8 +180,9 @@ try {
       () => true,
       () => false,
     ); // the XML pane is hidden on the Details tab
+  // The click leaves a hover tooltip pending (the mouse stays over the row, which is then hidden); the first Esc cancels it.
   await m.keyboard.press("Escape");
-  await m.keyboard.press("Escape"); // the first Esc may only dismiss the click's tooltip
+  await m.keyboard.press("Escape");
   check(
     marked &&
       (await m
