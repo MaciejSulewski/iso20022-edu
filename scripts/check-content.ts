@@ -6,6 +6,7 @@ import {
   AnnotationSchema,
   FlowSchema,
   LessonSchema,
+  MappingSchema,
   MessageSchema,
   SampleSchema,
   STEPS,
@@ -23,6 +24,7 @@ export type Input = {
   /** name is the file name, data the front matter. */
   lessons?: File[];
   flows?: File[];
+  mappings?: File[];
   /** Turn "a step has no lesson" from a report into an error (on once all six lessons exist). */
   requireAllSteps?: boolean;
 };
@@ -34,6 +36,7 @@ export function checkContent({
   samples,
   lessons = [],
   flows = [],
+  mappings = [],
   requireAllSteps = false,
 }: Input) {
   const errors: string[] = [];
@@ -239,6 +242,65 @@ export function checkContent({
     }
   }
 
+  for (const f of mappings) {
+    const m = parsed(f, MappingSchema);
+    if (!m) continue;
+    idMatches(f, m.id);
+    if (m.message !== schema.id) {
+      errors.push(`${f.name}: no schema for message "${m.message}"`);
+      continue;
+    }
+    if (!lessonIds.has(m.lesson))
+      errors.push(`${f.name}: lesson "${m.lesson}" is not a lesson id`);
+    const seenPaths = new Set<string>();
+    const seenFields = new Set<string>();
+    const used = new Set<number>();
+    const entries = [
+      ...m.rows.map((r) => ({ ...r, where: `row "${r.field}"` })),
+      ...m.additions.map((a, n) => ({ ...a, where: `addition ${n + 1}` })),
+    ];
+    for (const e of entries) {
+      for (const p of e.paths) {
+        if (!resolvePath(schema, p))
+          errors.push(
+            `${f.name}: ${e.where}: path "${p}" does not resolve in ${schema.id}`,
+          );
+        if (seenPaths.has(p))
+          errors.push(`${f.name}: path "${p}" appears twice`);
+        seenPaths.add(p);
+      }
+      for (const s of e.sources) {
+        if (s >= m.sources.length)
+          errors.push(
+            `${f.name}: ${e.where}: source ${s} is not in the sources list`,
+          );
+        used.add(s);
+      }
+      if (!("field" in e)) continue;
+      if (seenFields.has(e.field))
+        errors.push(`${f.name}: field "${e.field}" appears twice`);
+      seenFields.add(e.field);
+      if (!e.codes) continue;
+      const known = e.codeList ? schema.simpleTypes[e.codeList]?.codes : null;
+      if (!known) {
+        errors.push(
+          `${f.name}: ${e.where}: codeList "${e.codeList ?? ""}" is not a simple type with codes`,
+        );
+        continue;
+      }
+      const values = known.map((c) => (typeof c === "string" ? c : c.code));
+      for (const c of e.codes)
+        if (!values.includes(c.iso))
+          errors.push(
+            `${f.name}: ${e.where}: "${c.iso}" is not a code of ${e.codeList}`,
+          );
+    }
+    m.sources.forEach((s, n) => {
+      if (!used.has(n))
+        errors.push(`${f.name}: source ${n} "${s.title}" is used by no row`);
+    });
+  }
+
   const annotated = [...paths].filter((p) => {
     const r = resolvePath(schema, p);
     return r && (annotatedPaths.has(r.path) || annotatedTypes.has(r.typeName));
@@ -248,6 +310,7 @@ export function checkContent({
     coverage: { annotated, total: paths.size },
     lessons: { count: byStep.size, missingSteps },
     flows: flows.length,
+    mappings: mappings.length,
   };
 }
 
@@ -315,6 +378,7 @@ if (import.meta.main) {
     coverage,
     lessons: lessonInfo,
     flows: flowCount,
+    mappings: mappingCount,
   } = checkContent({
     schema,
     messages: load("messages"),
@@ -322,12 +386,14 @@ if (import.meta.main) {
     samples,
     lessons,
     flows: load("flows"),
+    mappings: load("mappings"),
     requireAllSteps: true,
   });
   console.log(
     `Coverage: ${coverage.annotated} of ${coverage.total} distinct sample element paths annotated`,
   );
   console.log(`Flows: ${flowCount}`);
+  console.log(`Mappings: ${mappingCount}`);
   console.log(`Lessons: ${lessonInfo.count} of ${STEPS.length} steps`);
   const byType = new Set(
     load("annotations").flatMap((f) =>
