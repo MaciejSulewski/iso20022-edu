@@ -250,3 +250,118 @@ test("a step without a lesson is an error only when required", () => {
     /step "xml" has no lesson/,
   );
 });
+
+const flowFile = () => ({
+  name: "f.yaml",
+  data: {
+    id: "f",
+    message: id,
+    title: "T",
+    summary: "S",
+    lesson: "l",
+    sample: "s",
+    sources: [
+      { title: "t", url: "https://example.com", retrieved: "2026-11-22" },
+    ],
+    lastReviewed: { date: "2026-11-22", by: "u" },
+    participants: [
+      { id: "a", role: "A", who: "x" },
+      { id: "b", role: "B", who: "y" },
+    ],
+    variants: [
+      {
+        id: "serial",
+        title: "T",
+        intro: "I",
+        steps: [
+          {
+            from: "a",
+            to: "b",
+            title: "t",
+            text: "x",
+            elements: ["GrpHdr/MsgId"],
+            settlement: "INDA",
+          },
+          { from: "b", to: "a", title: "t", text: "x" },
+        ],
+      },
+    ],
+  },
+});
+type FlowData = ReturnType<typeof flowFile>["data"];
+const withFlow = (edit?: (d: FlowData) => void) => {
+  const f = flowFile();
+  edit?.(f.data);
+  return {
+    ...base(),
+    lessons: [lessonFile("l.md", "lesson", 1)],
+    flows: [f],
+  };
+};
+
+test("clean flow passes and is counted", () => {
+  const r = checkContent(withFlow());
+  assert.deepEqual(r.errors, []);
+  assert.equal(r.flows, 1);
+});
+
+test("flow with bad data fails", () => {
+  assert.match(errs(withFlow((d) => (d.variants = []))), /f\.yaml/);
+});
+
+test("flow id must match file name", () => {
+  assert.match(
+    errs(withFlow((d) => (d.id = "g"))),
+    /f\.yaml: id "g" does not match/,
+  );
+});
+
+test("flow message must have a schema", () => {
+  assert.match(
+    errs(withFlow((d) => (d.message = "pacs.009.001.10"))),
+    /f\.yaml: no schema for message "pacs.009.001.10"/,
+  );
+});
+
+test("flow element that does not resolve fails", () => {
+  const i = withFlow((d) => (d.variants[0]!.steps[0]!.elements = ["Nope"]));
+  assert.match(errs(i), /f\.yaml: element "Nope" does not resolve/);
+});
+
+test("flow settlement must be a SettlementMethod1Code code", () => {
+  const i = withFlow((d) => (d.variants[0]!.steps[0]!.settlement = "XXXX"));
+  assert.match(errs(i), /f\.yaml: settlement "XXXX" is not a code of/);
+});
+
+test("flow step from and to must be participants", () => {
+  const i = withFlow((d) => (d.variants[0]!.steps[1]!.to = "z"));
+  assert.match(errs(i), /f\.yaml: step 2 "to" "z" is not a participant/);
+  const j = withFlow((d) => (d.variants[0]!.steps[0]!.from = "y"));
+  assert.match(errs(j), /f\.yaml: step 1 "from" "y" is not a participant/);
+});
+
+test("flow participant in no step of a variant fails", () => {
+  const i = withFlow((d) => {
+    d.participants.push({ id: "c", role: "C", who: "z" });
+  });
+  assert.match(
+    errs(i),
+    /f\.yaml: variant "serial": participant "c" is in no step/,
+  );
+});
+
+test("flow lesson and sample must exist for the message", () => {
+  assert.match(
+    errs(withFlow((d) => (d.lesson = "nope"))),
+    /f\.yaml: lesson "nope" is not a lesson/,
+  );
+  assert.match(
+    errs(withFlow((d) => (d.sample = "nope"))),
+    /f\.yaml: sample "nope" is not a sample of/,
+  );
+});
+
+test("flow variant ids must be unique", () => {
+  const i = withFlow((d) => d.variants.push({ ...d.variants[0]! }));
+  assert.match(errs(i), /f\.yaml: variant id "serial" is used twice/);
+});

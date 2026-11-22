@@ -4,6 +4,7 @@ import { parse as parseYaml } from "yaml";
 import type { Schema } from "./schema-model.ts";
 import {
   AnnotationSchema,
+  FlowSchema,
   LessonSchema,
   MessageSchema,
   SampleSchema,
@@ -21,6 +22,7 @@ export type Input = {
   samples: (File & { xml?: string | undefined })[];
   /** name is the file name, data the front matter. */
   lessons?: File[];
+  flows?: File[];
   /** Turn "a step has no lesson" from a report into an error (on once all six lessons exist). */
   requireAllSteps?: boolean;
 };
@@ -31,6 +33,7 @@ export function checkContent({
   annotations,
   samples,
   lessons = [],
+  flows = [],
   requireAllSteps = false,
 }: Input) {
   const errors: string[] = [];
@@ -103,6 +106,7 @@ export function checkContent({
   }
 
   const orders = new Set<string>();
+  const sampleMessage = new Map<string, string>();
   for (const f of samples) {
     const s = parsed(f, SampleSchema);
     if (!s) continue;
@@ -113,6 +117,7 @@ export function checkContent({
       );
     orders.add(key);
     idMatches(f, s.id);
+    sampleMessage.set(s.id, s.message);
     if (!ids.has(s.message))
       errors.push(
         `${f.name}: message "${s.message}" is not a known message id`,
@@ -169,6 +174,57 @@ export function checkContent({
   if (requireAllSteps)
     for (const s of missingSteps) errors.push(`step "${s}" has no lesson`);
 
+  const lessonIds = new Set(lessons.map((l) => l.name.replace(/\.md$/, "")));
+  const settlementCodes = (
+    schema.simpleTypes["SettlementMethod1Code"]?.codes ?? []
+  ).map((c) => (typeof c === "string" ? c : c.code));
+  for (const f of flows) {
+    const fl = parsed(f, FlowSchema);
+    if (!fl) continue;
+    idMatches(f, fl.id);
+    if (fl.message !== schema.id) {
+      errors.push(`${f.name}: no schema for message "${fl.message}"`);
+      continue;
+    }
+    if (!lessonIds.has(fl.lesson))
+      errors.push(`${f.name}: lesson "${fl.lesson}" is not a lesson id`);
+    if (sampleMessage.get(fl.sample) !== fl.message)
+      errors.push(
+        `${f.name}: sample "${fl.sample}" is not a sample of ${fl.message}`,
+      );
+    const people = new Set(fl.participants.map((p) => p.id));
+    const seen = new Set<string>();
+    for (const v of fl.variants) {
+      if (seen.has(v.id))
+        errors.push(`${f.name}: variant id "${v.id}" is used twice`);
+      seen.add(v.id);
+      const used = new Set<string>();
+      v.steps.forEach((st, n) => {
+        for (const end of ["from", "to"] as const) {
+          if (people.has(st[end])) used.add(st[end]);
+          else
+            errors.push(
+              `${f.name}: step ${n + 1} "${end}" "${st[end]}" is not a participant`,
+            );
+        }
+        for (const p of st.elements)
+          if (!resolvePath(schema, p))
+            errors.push(
+              `${f.name}: element "${p}" does not resolve in ${schema.id}`,
+            );
+        if (st.settlement && !settlementCodes.includes(st.settlement))
+          errors.push(
+            `${f.name}: settlement "${st.settlement}" is not a code of SettlementMethod1Code`,
+          );
+      });
+      for (const p of people)
+        if (!used.has(p))
+          errors.push(
+            `${f.name}: variant "${v.id}": participant "${p}" is in no step`,
+          );
+    }
+  }
+
   const annotated = [...paths].filter((p) => {
     const r = resolvePath(schema, p);
     return r && (annotatedPaths.has(r.path) || annotatedTypes.has(r.typeName));
@@ -177,6 +233,7 @@ export function checkContent({
     errors,
     coverage: { annotated, total: paths.size },
     lessons: { count: byStep.size, missingSteps },
+    flows: flows.length,
   };
 }
 
@@ -243,17 +300,20 @@ if (import.meta.main) {
     errors,
     coverage,
     lessons: lessonInfo,
+    flows: flowCount,
   } = checkContent({
     schema,
     messages: load("messages"),
     annotations: load("annotations"),
     samples,
     lessons,
+    flows: load("flows"),
     requireAllSteps: true,
   });
   console.log(
     `Coverage: ${coverage.annotated} of ${coverage.total} distinct sample element paths annotated`,
   );
+  console.log(`Flows: ${flowCount}`);
   console.log(`Lessons: ${lessonInfo.count} of ${STEPS.length} steps`);
   const byType = new Set(
     load("annotations").flatMap((f) =>

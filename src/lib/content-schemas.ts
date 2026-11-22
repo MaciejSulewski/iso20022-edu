@@ -50,20 +50,60 @@ export const STEPS = [
   "quiz",
 ] as const;
 
+const Sources = z
+  .array(
+    z.strictObject({
+      title: z.string(),
+      url: z.url({ protocol: /^https$/ }),
+      retrieved: day,
+    }),
+  )
+  .min(1);
+const Reviewed = z.strictObject({ date: day, by: z.string() });
+
 export const LessonSchema = z.strictObject({
   title: z.string().min(1),
   summary: z.string().min(1),
   step: z.enum(STEPS),
   order: z.number().int().min(1).max(STEPS.length),
   relatedElements: z.array(z.string()).default([]),
-  sources: z
+  sources: Sources,
+  lastReviewed: Reviewed,
+});
+
+const FlowStep = z.strictObject({
+  from: z.string(),
+  to: z.string(),
+  title: z.string().min(1),
+  text: z.string().min(1),
+  message: z.string().optional(),
+  elements: z.array(z.string()).default([]),
+  settlement: z.string().optional(),
+});
+
+export const FlowSchema = z.strictObject({
+  id: z.string(),
+  message: z.string(),
+  title: z.string().min(1),
+  summary: z.string().min(1),
+  lesson: z.string(),
+  sample: z.string(),
+  sources: Sources,
+  lastReviewed: Reviewed,
+  participants: z
+    .array(
+      z.strictObject({ id: z.string(), role: z.string(), who: z.string() }),
+    )
+    .min(2),
+  variants: z
     .array(
       z.strictObject({
-        title: z.string(),
-        url: z.url({ protocol: /^https$/ }),
-        retrieved: day,
+        id: z.enum(["serial", "cover"]),
+        title: z.string().min(1),
+        intro: z.string().min(1),
+        notice: z.string().optional(),
+        steps: z.array(FlowStep).min(2),
       }),
     )
     .min(1),
-  lastReviewed: z.strictObject({ date: day, by: z.string() }),
 });
