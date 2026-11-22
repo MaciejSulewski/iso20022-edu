@@ -92,7 +92,8 @@ export default function Workspace({
     const t = document.getElementById(`tab-${TABS[DETAILS]}`);
     const top = grid.current!.getBoundingClientRect().top;
     const bar = t?.parentElement?.offsetHeight ?? 0;
-    if (top < bar) scrollBy(0, top - bar);
+    // floor: the scroll snaps to whole pixels, and rounding up would leave the panel a fraction under the bar
+    if (top < bar) scrollBy(0, Math.floor(top - bar));
     t?.focus({ preventScroll: true });
   });
 
