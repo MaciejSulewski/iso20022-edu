@@ -152,3 +152,14 @@ test("flow needs two participants and a variant with two steps", () => {
   short.variants[0]!.steps.pop();
   assert.ok(!FlowSchema.safeParse(short).success);
 });
+
+test("flow sample is optional and a step may flag sample: true only", () => {
+  const f = flow();
+  assert.ok(FlowSchema.safeParse({ ...f, sample: undefined }).success);
+  const ok = flow();
+  Object.assign(ok.variants[0]!.steps[0]!, { sample: true });
+  assert.ok(FlowSchema.safeParse(ok).success);
+  const bad = flow();
+  Object.assign(bad.variants[0]!.steps[0]!, { sample: false });
+  assert.ok(!FlowSchema.safeParse(bad).success);
+});

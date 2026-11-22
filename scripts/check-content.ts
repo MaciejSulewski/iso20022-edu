@@ -188,9 +188,18 @@ export function checkContent({
     }
     if (!lessonIds.has(fl.lesson))
       errors.push(`${f.name}: lesson "${fl.lesson}" is not a lesson id`);
-    if (sampleMessage.get(fl.sample) !== fl.message)
+    if (fl.sample && sampleMessage.get(fl.sample) !== fl.message)
       errors.push(
         `${f.name}: sample "${fl.sample}" is not a sample of ${fl.message}`,
+      );
+    const flagged = fl.variants.flatMap((v) => v.steps).filter((s) => s.sample);
+    if (fl.sample && flagged.length !== 1)
+      errors.push(
+        `${f.name}: sample "${fl.sample}" needs exactly one step with sample: true, found ${flagged.length}`,
+      );
+    if (!fl.sample && flagged.length)
+      errors.push(
+        `${f.name}: a step sets sample: true but the flow has no sample`,
       );
     const people = new Set<string>();
     for (const p of fl.participants) {

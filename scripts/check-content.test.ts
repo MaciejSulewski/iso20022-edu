@@ -259,7 +259,7 @@ const flowFile = () => ({
     title: "T",
     summary: "S",
     lesson: "l",
-    sample: "s",
+    sample: "s" as string | undefined,
     sources: [
       { title: "t", url: "https://example.com", retrieved: "2026-11-22" },
     ],
@@ -281,6 +281,7 @@ const flowFile = () => ({
             text: "x",
             elements: ["GrpHdr/MsgId"],
             settlement: "INDA",
+            sample: true as boolean | undefined,
           },
           { from: "b", to: "a", title: "t", text: "x" },
         ],
@@ -369,4 +370,33 @@ test("flow variant ids must be unique", () => {
 test("flow participant ids must be unique", () => {
   const i = withFlow((d) => d.participants.push({ ...d.participants[0]! }));
   assert.match(errs(i), /f\.yaml: participant id "a" is used twice/);
+});
+
+test("a flow sample needs exactly one step flagged sample: true", () => {
+  const none = withFlow((d) => delete d.variants[0]!.steps[0]!.sample);
+  assert.match(
+    errs(none),
+    /f\.yaml: sample "s" needs exactly one step with sample: true, found 0/,
+  );
+  const two = withFlow((d) => {
+    (d.variants[0]!.steps[1]! as { sample?: boolean }).sample = true;
+  });
+  assert.match(errs(two), /exactly one step with sample: true, found 2/);
+});
+
+test("a step flagged sample: true needs a flow-level sample", () => {
+  const i = withFlow((d) => (d.sample = undefined));
+  assert.match(
+    errs(i),
+    /f\.yaml: a step sets sample: true but the flow has no sample/,
+  );
+  assert.deepEqual(
+    checkContent(
+      withFlow((d) => {
+        d.sample = undefined;
+        delete d.variants[0]!.steps[0]!.sample;
+      }),
+    ).errors,
+    [],
+  );
 });

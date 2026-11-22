@@ -63,6 +63,7 @@ variants:
           - CdtTrfTxInf/InstdAgt
           - CdtTrfTxInf/IntrmyAgt1
         settlement: INDA
+        sample: true
       - from: intermediary
         to: creditorAgent
         title: The intermediary sends a new pacs.008

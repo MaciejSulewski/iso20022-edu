@@ -79,6 +79,8 @@ const FlowStep = z.strictObject({
   message: z.string().optional(),
   elements: z.array(z.string()).default([]),
   settlement: z.string().optional(),
+  /** This step is the flow's `sample` message. */
+  sample: z.literal(true).optional(),
 });
 
 export const FlowSchema = z.strictObject({
@@ -87,7 +89,7 @@ export const FlowSchema = z.strictObject({
   title: z.string().min(1),
   summary: z.string().min(1),
   lesson: z.string(),
-  sample: z.string(),
+  sample: z.string().optional(),
   sources: Sources,
   lastReviewed: Reviewed,
   participants: z
