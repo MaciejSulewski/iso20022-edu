@@ -9,6 +9,7 @@ import {
   visibleRows,
   type Presence,
 } from "../lib/xml-view.ts";
+import { reveal } from "../lib/reveal.ts";
 
 export type XmlLabels = {
   tree: string;
@@ -80,7 +81,7 @@ export default function AnnotatedXml({
   nodes: XmlNode[];
   labels: XmlLabels;
   selected: string | null;
-  onSelect: (path: string | null) => void;
+  onSelect: (path: string | null, pick?: boolean) => void; // pick: the user chose it (click, Enter), not moved to it
 }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [rowId, setRowId] = useState<string | null>(null);
@@ -133,14 +134,12 @@ export default function AnnotatedXml({
 
   useEffect(() => {
     if (scroll && shown)
-      document
-        .querySelector(`[data-id="${CSS.escape(shown)}"]`)
-        ?.scrollIntoView({ block: "nearest" });
+      reveal(document.querySelector(`[data-id="${CSS.escape(shown)}"]`));
   }, [scroll]);
 
-  function select(id: string) {
+  function select(id: string, pick = false) {
     setRowId(id);
-    onSelect(byId.get(id)!.node.path);
+    onSelect(byId.get(id)!.node.path, pick);
   }
 
   function showTip(id: string, el: HTMLElement) {
@@ -311,7 +310,7 @@ export default function AnnotatedXml({
                 onFocus={(e) => showTip(id, e.currentTarget as HTMLElement)}
                 onBlur={() => hideTip()}
                 aria-current={on ? "true" : undefined}
-                onClick={() => select(id)}
+                onClick={() => select(id, true)}
                 class="min-h-6 min-w-0 flex-1 px-1 text-left break-all hover:bg-surface"
               >
                 <span class="text-accent">&lt;{node.tag}</span>

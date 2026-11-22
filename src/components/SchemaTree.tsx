@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import type { TreeChild } from "../lib/schema-tree.ts";
+import { reveal } from "../lib/reveal.ts";
 import type { Overlay, XmlNode } from "../lib/xml-tree.ts";
 import { elementState, GLYPH, TONE, type Presence } from "../lib/xml-view.ts";
 import {
@@ -62,7 +63,7 @@ export default function SchemaTree({
   overlay?: Overlay | undefined;
   labels: TreeLabels;
   selected: string | null;
-  onSelect: (path: string | null) => void;
+  onSelect: (path: string | null, pick?: boolean) => void; // pick: the user chose it (click, Enter, search)
   onRecord: (node: XmlNode | undefined) => void;
 }) {
   const [types, setTypes] = useState<Record<string, Load>>({});
@@ -109,9 +110,9 @@ export default function SchemaTree({
     return p;
   }
 
-  function select(path: string) {
+  function select(path: string, pick = false) {
     setFocus(path);
-    onSelect(path);
+    onSelect(path, pick);
   }
 
   // Expands every ancestor of `path` (fetching type files in order) and moves the tab stop to it. Unknown paths do nothing.
@@ -148,9 +149,7 @@ export default function SchemaTree({
     expand(segs.length);
     if (chain.some(isOptional)) setRequiredOnly(false); // a selection hidden by the filter shows everything
     setFocus(path);
-    requestAnimationFrame(() =>
-      rowEl(path)?.scrollIntoView({ block: "nearest" }),
-    );
+    requestAnimationFrame(() => reveal(rowEl(path)));
     return true;
   }
 
@@ -214,8 +213,8 @@ export default function SchemaTree({
         else if ((rows[i + 1]?.depth ?? 0) > r.depth) moveTo(rows[i + 1]!.path);
       },
       ArrowLeft: () => (r.open ? toggle(r) : moveTo(parent || undefined)),
-      Enter: () => !r.child.any && select(r.path),
-      " ": () => !r.child.any && select(r.path),
+      Enter: () => !r.child.any && select(r.path, true),
+      " ": () => !r.child.any && select(r.path, true),
     };
     const f = act[e.key];
     if (!f) return;
@@ -306,8 +305,8 @@ export default function SchemaTree({
                   setQuery("");
                   void openPath(path).then((ok) => {
                     if (!ok) return;
-                    select(path);
-                    rowEl(path)?.focus();
+                    select(path, true);
+                    rowEl(path)?.focus({ preventScroll: true }); // openPath reveals it inside the pane
                   });
                 }}
                 class="block min-h-9 w-full px-3 py-1 text-left hover:bg-surface"
@@ -356,7 +355,7 @@ export default function SchemaTree({
               onClick={(e) => {
                 if ((e.target as HTMLElement).closest("button")) return;
                 setFocus(r.path);
-                if (!c.any) select(r.path);
+                if (!c.any) select(r.path, true);
               }}
               class={`flex cursor-pointer items-start hover:bg-surface ${on ? "bg-accent/10 shadow-[inset_3px_0_0_var(--accent)]" : ""}`}
             >
