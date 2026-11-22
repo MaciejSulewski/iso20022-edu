@@ -53,7 +53,7 @@ variants:
           message is the second sample on this site. The settlement method is
           INDA, so the intermediary settles by debiting the debtor agent's
           account with it, as the sample's scenario says.
-        message: pacs.008 #1
+        message: "pacs.008 #1"
         elements:
           - GrpHdr/MsgId
           - GrpHdr/SttlmInf/SttlmMtd
@@ -72,7 +72,7 @@ variants:
           the intermediary is now the instructing agent. The settlement code
           here depends on how these two banks settle. It can be INDA, INGA,
           COVE or CLRG.
-        message: pacs.008 #2
+        message: "pacs.008 #2"
       - from: creditorAgent
         to: creditor
         title: The creditor agent credits the creditor
