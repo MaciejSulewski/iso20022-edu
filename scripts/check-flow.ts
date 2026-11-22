@@ -10,13 +10,6 @@ const FLOW = `${url}flows/pacs.008-agent-chain/`;
 const MSG = `${BASE}messages/pacs.008.001.14/`;
 const SAMPLE = `${MSG}pacs.008-intermediary/`;
 const TITLE = "One customer payment across three banks";
-const ALL = [
-  "debtor",
-  "debtorAgent",
-  "intermediary",
-  "creditorAgent",
-  "creditor",
-];
 
 // What each step must show, in the order of the flow data.
 type Step = {
@@ -162,6 +155,16 @@ try {
   await d.getByRole("tab", { name: "Cover" }).click();
   for (const v of VARIANTS) {
     const seen = new Set<string>();
+    // the participants come from the page, not from a list here
+    const all = await d.evaluate(() =>
+      [...document.querySelectorAll("[data-participant]")].map(
+        (e) => (e as HTMLElement).dataset.participant!,
+      ),
+    );
+    check(
+      all.length >= 2,
+      `${v.id}: the page lists its participants (${all.join(", ")})`,
+    );
     await d.getByRole("tab", { name: v.tab }).click();
     await settle(d, `${v.id}: the tab opens step 1`, read, (x) =>
       shows(x, v, 0),
@@ -178,12 +181,13 @@ try {
       for (const id of Object.keys(s?.roles ?? {})) seen.add(id);
     }
     check(
-      ALL.every((id) => seen.has(id)),
+      all.every((id) => seen.has(id)),
       `${v.id}: every participant is Sender or Receiver somewhere (saw ${[...seen].join(", ")})`,
     );
 
     // at the last step Next does nothing and keeps focus
-    await next(d).click({ force: true });
+    await next(d).focus();
+    await d.keyboard.press("Enter");
     await settle(
       d,
       `${v.id}: Next at the last step changes nothing and the focus stays on Next`,

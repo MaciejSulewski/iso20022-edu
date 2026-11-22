@@ -148,6 +148,7 @@
   "lesson.next": "Next lesson",
   "lesson.all": "All lessons",
   "lesson.tool": "Open the workspace",
+  "lesson.toolFlow": "Open the flow",
   "flow.draft": "AI-drafted from public sources, not yet reviewed by a person.",
   "flow.variants": "Method",
   "flow.diagram": "The parties in the chain",

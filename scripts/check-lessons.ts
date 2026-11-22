@@ -129,6 +129,33 @@ try {
         s.h1.length === 1 && s.h1[0] === l.title && s.draft && s.sources >= 1,
     );
 
+    // 2b. the tool link at the end of the lesson: its wording and target (steps without a tool have none)
+    const tool = TOOLS[l.step];
+    await settle(
+      p,
+      `${l.slug}: the tool link ${tool ? `reads "${l.step === "flow" ? "Open the flow" : "Open the workspace"}" and goes to ${tool}` : "is absent"}`,
+      () =>
+        [...document.querySelectorAll("article > p > a")]
+          .filter((a) => a.textContent?.startsWith("Open the"))
+          .map((a) => ({
+            text: a.textContent,
+            path: (a as HTMLAnchorElement).pathname,
+          })),
+      (links) =>
+        JSON.stringify(links) ===
+        JSON.stringify(
+          tool
+            ? [
+                {
+                  text:
+                    l.step === "flow" ? "Open the flow" : "Open the workspace",
+                  path: tool,
+                },
+              ]
+            : [],
+        ),
+    );
+
     // 3. related-element links point into the workspace and select the element
     const hrefs = await settle(
       p,

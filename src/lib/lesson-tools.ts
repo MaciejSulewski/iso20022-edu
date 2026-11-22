@@ -6,5 +6,9 @@ const TOOLS: Record<string, string> = {
   flow: "flows/pacs.008-agent-chain/",
 };
 
+// ui.en.json key of the lesson page's tool link text; a step not listed uses the workspace wording
+export const toolLabelKey = (step: string) =>
+  step === "flow" ? ("lesson.toolFlow" as const) : ("lesson.tool" as const);
+
 export const toolHref = (step: string, base: string) =>
   TOOLS[step] ? `${base}${TOOLS[step]}` : undefined;
