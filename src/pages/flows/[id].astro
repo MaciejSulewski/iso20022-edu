@@ -20,8 +20,9 @@ if (!lessonEntry) throw new Error(`Lesson missing for flow ${flow.id}`);
 const samples = (await getCollection("samples"))
   .filter((s) => s.data.message === message)
   .sort((x, y) => x.data.order - y.data.order);
-// the flow's `sample` is serial step 2 by definition (flow spec, Data)
-const sampleHref = `${base}messages/${message}/${samples[0]?.id === sample ? "" : `${sample}/`}`;
+const sampleHref =
+  sample &&
+  `${base}messages/${message}/${samples[0]?.id === sample ? "" : `${sample}/`}`;
 const settlement = (await getEntry("annotations", message))?.data.codes
   .SettlementMethod1Code;
 const codes = Object.fromEntries(
@@ -60,7 +61,7 @@ const labels = {
         labels={labels}
         codes={codes}
         elementBase={`${base}messages/${message}/`}
-        sample={{ href: sampleHref, variant: "serial", step: 1 }}
+        sampleHref={sampleHref}
       />
     </div>
 

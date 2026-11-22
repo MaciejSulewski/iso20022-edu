@@ -32,7 +32,7 @@ export default function FlowPlayer({
   labels,
   codes,
   elementBase,
-  sample,
+  sampleHref,
 }: {
   participants: Flow["participants"];
   variants: Flow["variants"];
@@ -41,8 +41,8 @@ export default function FlowPlayer({
   codes: Record<string, string>;
   /** Element links are `${elementBase}#<path>`. */
   elementBase: string;
-  /** The step that is the sample message, and its page. */
-  sample: { href: string; variant: string; step: number };
+  /** Page of the flow's sample, linked from the step flagged `sample: true`. */
+  sampleHref: string | undefined;
 }) {
   // the first render is fixed (server and client agree); the hash is read after mount
   const [vi, setVi] = useState(0);
@@ -88,7 +88,7 @@ export default function FlowPlayer({
         tabs={variants.map((v) => ({ id: `flow-${v.id}`, label: v.title }))}
         label={labels.variants}
         active={vi}
-        onChange={(i) => go(i, 0)}
+        onChange={(i) => i !== vi && go(i, 0)}
       />
       <div
         role="tabpanel"
@@ -195,11 +195,6 @@ export default function FlowPlayer({
           >
             {labels.prev}
           </button>
-          <span class="text-sm text-muted tabular-nums">
-            {labels.stepOf
-              .replace("{n}", String(step + 1))
-              .replace("{total}", String(steps.length))}
-          </span>
           <button
             type="button"
             class={btn}
@@ -212,10 +207,16 @@ export default function FlowPlayer({
 
         <section
           aria-live="polite"
+          aria-atomic="true"
           data-flow-detail
           class="mt-4 rounded border border-line bg-surface p-4"
         >
-          <h2 class="text-lg font-semibold">{current.title}</h2>
+          <p class="text-sm text-muted tabular-nums">
+            {labels.stepOf
+              .replace("{n}", String(step + 1))
+              .replace("{total}", String(steps.length))}
+          </p>
+          <h2 class="mt-1 text-lg font-semibold">{current.title}</h2>
           <p class="mt-1 text-sm text-muted">
             {labels.hop
               .replace("{from}", participants[from]!.role)
@@ -261,9 +262,9 @@ export default function FlowPlayer({
               </div>
             )}
           </dl>
-          {variant.id === sample.variant && step === sample.step && (
+          {current.sample && sampleHref && (
             <p class="mt-4 text-sm">
-              <a href={sample.href}>{labels.sample}</a>
+              <a href={sampleHref}>{labels.sample}</a>
             </p>
           )}
         </section>
