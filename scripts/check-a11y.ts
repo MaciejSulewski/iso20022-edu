@@ -45,6 +45,27 @@ try {
             () => tab.getByRole("tab", { name: "XML" }).click(),
           ],
         );
+      // The flow page: scan the first step, then the last step of each variant (the inactive tab's aria-controls is scanned too).
+      if (page.startsWith("flows/"))
+        for (const [tabName, steps] of [
+          ["Serial", 4],
+          ["Cover", 5],
+        ] as const)
+          stages.push([
+            `${tabName}, last step`,
+            async () => {
+              await tab.getByRole("tab", { name: tabName }).click();
+              for (let i = 1; i < steps; i++)
+                await tab.getByRole("button", { name: "Next step" }).click();
+              await settled(
+                tab,
+                `${page} ${tabName}: at the last step`,
+                () =>
+                  document.querySelector("[data-flow-detail] p")?.textContent,
+                (v) => v === `Step ${steps} of ${steps}`,
+              );
+            },
+          ]);
       for (const [stage, go] of stages) {
         await go?.();
         const { violations } = await new AxeBuilder({ page: tab }).analyze();

@@ -69,7 +69,7 @@ try {
   // 1b. every step links its lesson; steps with a tool also keep the tool link; the others link nothing else
   await settle(
     home,
-    "Start here: every step links its lesson (and only xml and tree also the workspace)",
+    "Start here: every step links its lesson (and only xml, tree and flow also their tool)",
     () =>
       Object.fromEntries(
         ["lesson", "xml", "tree", "flow", "mapping", "quiz"].map((id) => [
