@@ -56,6 +56,21 @@ try {
     );
   }
 
+  const p = await open(1280, PAGE);
+  await settle(
+    p,
+    "each table has an accessible name, and the intro mentions the earlier versions pacs.008.001.0X",
+    () => ({
+      names: [...document.querySelectorAll("[data-mapping-table]")].map((t) => {
+        const id = t.getAttribute("aria-labelledby");
+        return (id && document.getElementById(id)?.textContent?.trim()) || "";
+      }),
+      earlier: document.body.textContent?.includes("pacs.008.001.0X") ?? false,
+    }),
+    (s) =>
+      s.names.length === 2 && s.names.every((n) => n.length > 0) && s.earlier,
+  );
+
   const d = await open(1280, PAGE);
   await d
     .locator("[data-mapping-table=rows] tbody tr")

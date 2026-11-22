@@ -47,6 +47,7 @@ const tables = [
             class="mt-3 overflow-x-auto rounded border border-line"
           >
             <table
+              aria-labelledby={`${tbl.id}-caption`}
               class="w-full min-w-[40rem] border-collapse text-left text-sm"
               data-mapping-table={tbl.id}
             >
@@ -69,59 +70,70 @@ const tables = [
                 </tr>
               </thead>
               <tbody>
-                {list.map((row) => (
-                  <tr class="border-t border-line align-top">
-                    {"field" in row && (
-                      <th scope="row" class="p-3 text-left font-semibold">
-                        {row.field}
-                        {row.fieldName && (
-                          <span class="block font-normal text-muted">
-                            {row.fieldName}
-                          </span>
-                        )}
-                      </th>
-                    )}
-                    <td class="p-3">
-                      <ul class="space-y-1">
-                        {row.paths.map((path) => (
-                          <li>
-                            <a
-                              class="font-mono break-all"
-                              href={pathLink(path)}
-                            >
-                              {path}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </td>
-                    <td class="p-3">
-                      {row.note}
-                      {"codes" in row && row.codes && (
-                        <ul class="mt-2 space-y-1">
-                          <li class="text-muted">{t("mapping.codes")}</li>
-                          {row.codes.map((c) => (
+                {list.map((row) => {
+                  const Cell = "field" in row ? "td" : "th";
+                  return (
+                    <tr class="border-t border-line align-top">
+                      {"field" in row && (
+                        <th scope="row" class="p-3 text-left font-semibold">
+                          {row.field}
+                          {row.fieldName && (
+                            <span class="block font-normal text-muted">
+                              {row.fieldName}
+                            </span>
+                          )}
+                        </th>
+                      )}
+                      <Cell
+                        scope={Cell === "th" ? "row" : undefined}
+                        class={
+                          Cell === "th" ? "p-3 text-left font-normal" : "p-3"
+                        }
+                      >
+                        <ul class="space-y-1">
+                          {row.paths.map((path) => (
                             <li>
-                              {t("mapping.becomes")
-                                .replace("{mt}", c.mt)
-                                .replace("{iso}", c.iso)}
+                              <a
+                                class="font-mono break-all"
+                                href={pathLink(path)}
+                              >
+                                {path}
+                              </a>
                             </li>
                           ))}
                         </ul>
-                      )}
-                    </td>
-                    <td class="p-3 whitespace-nowrap">
-                      {row.sources.map((i, k) => (
-                        <>
-                          {k > 0 && ", "}
-                          <a href={`#source-${i + 1}`}>
-                            {t("mapping.sourceN").replace("{n}", String(i + 1))}
-                          </a>
-                        </>
-                      ))}
-                    </td>
-                  </tr>
-                ))}
+                      </Cell>
+                      <td class="p-3">
+                        {row.note}
+                        {"codes" in row && row.codes && (
+                          <ul class="mt-2 space-y-1">
+                            <li class="text-muted">{t("mapping.codes")}</li>
+                            {row.codes.map((c) => (
+                              <li>
+                                {t("mapping.becomes")
+                                  .replace("{mt}", c.mt)
+                                  .replace("{iso}", c.iso)}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </td>
+                      <td class="p-3 whitespace-nowrap">
+                        {row.sources.map((i, k) => (
+                          <>
+                            {k > 0 && ", "}
+                            <a href={`#source-${i + 1}`}>
+                              {t("mapping.sourceN").replace(
+                                "{n}",
+                                String(i + 1),
+                              )}
+                            </a>
+                          </>
+                        ))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
