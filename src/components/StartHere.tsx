@@ -5,12 +5,15 @@ export type Step = {
   title: string;
   desc: string;
   href?: string | undefined;
+  lessonHref?: string | undefined;
+  lessonTitle?: string | undefined;
 };
 type Labels = {
   progress: string; // contains {done} and {total}
   soon: string;
   done: string;
   open: string;
+  lesson: string; // contains {title}
 };
 
 const KEY = "progress.start-here";
@@ -88,6 +91,12 @@ export default function StartHere({
                   )}
                 </label>
                 <p class="mt-1 text-sm text-muted">{s.desc}</p>
+                {/* step 1's tool is its lesson: one link, not two */}
+                {s.lessonHref && s.lessonHref !== s.href && (
+                  <a href={s.lessonHref} class="mt-1 mr-4 inline-block text-sm">
+                    {labels.lesson.replace("{title}", s.lessonTitle ?? "")}
+                  </a>
+                )}
                 {s.href ? (
                   <a href={s.href} class="mt-1 inline-block text-sm">
                     {labels.open}

@@ -4,8 +4,10 @@ import { parse as parseYaml } from "yaml";
 import type { Schema } from "./schema-model.ts";
 import {
   AnnotationSchema,
+  LessonSchema,
   MessageSchema,
   SampleSchema,
+  STEPS,
 } from "../src/lib/content-schemas.ts";
 import { resolvePath } from "../src/lib/resolver.ts";
 import { elementPaths, parseXml } from "../src/lib/xml-tree.ts";
@@ -17,6 +19,10 @@ export type Input = {
   annotations: File[];
   /** xml is undefined when the sample's file is missing. */
   samples: (File & { xml?: string | undefined })[];
+  /** name is the file name, data the front matter. */
+  lessons?: File[];
+  /** Turn "a step has no lesson" from a report into an error (on once all six lessons exist). */
+  requireAllSteps?: boolean;
 };
 
 export function checkContent({
@@ -24,6 +30,8 @@ export function checkContent({
   messages,
   annotations,
   samples,
+  lessons = [],
+  requireAllSteps = false,
 }: Input) {
   const errors: string[] = [];
   const ids = new Set<string>();
@@ -131,11 +139,45 @@ export function checkContent({
     }
   }
 
+  const byStep = new Map<string, string>();
+  const byOrder = new Map<number, string>();
+  for (const f of lessons) {
+    const l = parsed(f, LessonSchema);
+    if (!l) continue;
+    const used = byStep.get(l.step);
+    if (used)
+      errors.push(`${f.name}: step "${l.step}" is already used by ${used}`);
+    else byStep.set(l.step, f.name);
+    const usedOrder = byOrder.get(l.order);
+    if (usedOrder)
+      errors.push(
+        `${f.name}: order ${l.order} is already used by ${usedOrder}`,
+      );
+    else byOrder.set(l.order, f.name);
+    const pos = STEPS.indexOf(l.step) + 1;
+    if (l.order !== pos)
+      errors.push(
+        `${f.name}: order ${l.order} does not match: step "${l.step}" is position ${pos}`,
+      );
+    for (const p of l.relatedElements)
+      if (!resolvePath(schema, p))
+        errors.push(
+          `${f.name}: relatedElements "${p}" does not resolve in ${schema.id}`,
+        );
+  }
+  const missingSteps = STEPS.filter((s) => !byStep.has(s));
+  if (requireAllSteps)
+    for (const s of missingSteps) errors.push(`step "${s}" has no lesson`);
+
   const annotated = [...paths].filter((p) => {
     const r = resolvePath(schema, p);
     return r && (annotatedPaths.has(r.path) || annotatedTypes.has(r.typeName));
   }).length;
-  return { errors, coverage: { annotated, total: paths.size } };
+  return {
+    errors,
+    coverage: { annotated, total: paths.size },
+    lessons: { count: byStep.size, missingSteps },
+  };
 }
 
 /** Complex types that two or more elements use, and how many of them have a byType entry. */
@@ -181,15 +223,38 @@ if (import.meta.main) {
       "utf8",
     ),
   );
-  const { errors, coverage } = checkContent({
+  const lessonDir = dir("lessons/en");
+  const lessons = readdirSync(lessonDir)
+    .filter((n) => n.endsWith(".md"))
+    .flatMap((name) => {
+      const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(
+        readFileSync(new URL(name, lessonDir), "utf8"),
+      );
+
+      try {
+        if (!m) throw new Error("no front matter between --- lines");
+        return [{ name, data: parseYaml(m[1]!) }];
+      } catch (e) {
+        loadErrors.push(`${name}: parse error: ${(e as Error).message}`);
+        return [];
+      }
+    });
+  const {
+    errors,
+    coverage,
+    lessons: lessonInfo,
+  } = checkContent({
     schema,
     messages: load("messages"),
     annotations: load("annotations"),
     samples,
+    lessons,
+    requireAllSteps: true,
   });
   console.log(
     `Coverage: ${coverage.annotated} of ${coverage.total} distinct sample element paths annotated`,
   );
+  console.log(`Lessons: ${lessonInfo.count} of ${STEPS.length} steps`);
   const byType = new Set(
     load("annotations").flatMap((f) =>
       Object.keys((f.data as { byType?: object }).byType ?? {}),

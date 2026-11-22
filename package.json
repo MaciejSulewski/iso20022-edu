@@ -18,7 +18,7 @@
     "check:content": "node scripts/check-content.ts",
     "check:xml": "xmllint --noout --schema schemas/pacs.008.001.14.xsd src/content/samples/*.xml",
     "check:a11y": "node scripts/check-a11y.ts",
-    "check:ui": "node scripts/check-annotated-xml.ts && node scripts/check-schema-tree.ts && node scripts/check-workspace.ts && node scripts/check-palette.ts && node scripts/check-samples.ts",
+    "check:ui": "node scripts/check-annotated-xml.ts && node scripts/check-schema-tree.ts && node scripts/check-workspace.ts && node scripts/check-palette.ts && node scripts/check-samples.ts && node scripts/check-lessons.ts",
     "check:size": "node scripts/check-js-size.ts"
   },
   "dependencies": {

@@ -39,3 +39,31 @@ export const SampleSchema = z.strictObject({
   scenario: z.string(),
   order: z.number().int(),
 });
+
+/** The "Start here" steps in order; one lesson per step. */
+export const STEPS = [
+  "lesson",
+  "xml",
+  "tree",
+  "flow",
+  "mapping",
+  "quiz",
+] as const;
+
+export const LessonSchema = z.strictObject({
+  title: z.string().min(1),
+  summary: z.string().min(1),
+  step: z.enum(STEPS),
+  order: z.number().int().min(1).max(STEPS.length),
+  relatedElements: z.array(z.string()).default([]),
+  sources: z
+    .array(
+      z.strictObject({
+        title: z.string(),
+        url: z.url({ protocol: /^https$/ }),
+        retrieved: day,
+      }),
+    )
+    .min(1),
+  lastReviewed: z.strictObject({ date: day, by: z.string() }),
+});
