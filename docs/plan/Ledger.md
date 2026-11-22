@@ -16,8 +16,6 @@ Rules:
 ## Next
 ### Phase 5: pacs.008 depth
 ### Phase 6: flow
-- [ ] T-070 FlowPlayer + pacs.008 agent-chain flow (serial and cover described). Complex: spec first. Done when: Next/Prev steps through every participant, and mobile shows a step list #agent #phase/6
-- [ ] T-071 Animate the flow diagram, respecting `prefers-reduced-motion`. Done when: motion stops with the setting on #agent #phase/6
 ### Phase 7: mapping
 - [ ] T-080 MT103 → pacs.008 mapping table from public sources, own wording. Done when: every row path resolves in the schema #agent #phase/7
 - [ ] T-081 Review the mapping #me #phase/7
@@ -29,6 +27,8 @@ Rules:
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-070 FlowPlayer + pacs.008 agent-chain flow (serial and cover described). Done when: Next/Prev steps through every participant, and mobile shows a step list #agent #phase/6 ✅ 2026-11-22 [PR #52](https://github.com/MaciejSulewski/iso20022-edu/pull/52) (page /flows/pacs.008-agent-chain/, AI-drafted, cover is an outline from weak sources, unreviewed until T-093)
+- [x] T-071 Animate the flow diagram, respecting `prefers-reduced-motion`. Done when: motion stops with the setting on #agent #phase/6 ✅ 2026-11-23 [PR #53](https://github.com/MaciejSulewski/iso20022-edu/pull/53)
 - [x] T-060 Overlay by type for shared components, plus code explanations. Done when: shared types have one overlay entry used everywhere #agent #phase/5 ✅ 2026-11-22 [PR #47](https://github.com/MaciejSulewski/iso20022-edu/pull/47)
 - [x] T-061 Second sample (intermediary agent, structured remittance). Done when: it passes xmllint and check-content #agent #phase/5 ✅ 2026-11-22 [PR #48](https://github.com/MaciejSulewski/iso20022-edu/pull/48)
 - [x] T-092 Draft lessons from public sources in own wording, recorded in `sources.md`. Done when: the "Start here" path links a lesson at each step #agent #phase/5 ✅ 2026-11-22 [PR #49](https://github.com/MaciejSulewski/iso20022-edu/pull/49) (six lessons, AI-drafted, unreviewed until T-093)
@@ -94,3 +94,4 @@ Rules:
 - [[ADR-014 One workspace island]]
 - [[ADR-015 Palette on every page]]
 - [[ADR-016 Lessons as Markdown content]]
+- [[ADR-017 Flows as YAML content]]
