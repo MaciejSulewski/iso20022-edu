@@ -11,7 +11,6 @@ Rules:
 (max 3 open tasks)
 
 ## Waiting on me
-- [ ] T-045 Review the prototype for accuracy and usability #me #phase/3
 
 ## Next
 ### Phase 4: full tree explorer
@@ -37,6 +36,7 @@ Rules:
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-045 Review the prototype for accuracy and usability (pacs.008.001.14 page: sample, hover info, side panel, desktop and iPhone all OK) #me #phase/3 ✅ 2026-11-22 [[2026-11-22]]
 - [x] T-104 Version (.14) and zip URL confirmed; iso20022.org terms of use, IP policy and Swift licence read and recorded in [[sources]]: redistribution allowed, [[ADR-013 Commit the XSDs]] stands #me #phase/2 ✅ 2026-11-21 [[2026-11-21]]
 - [x] T-105 Fetch script for the pacs.008 XSD (URL from T-104) + gitignore + run fetch and import-xsd in npm run build and CI, per [[ADR-012 XSD not committed]]. Done when: a clean clone builds with no committed XSD or schema JSON #agent #phase/2 Cancelled 2026-11-21: superseded by [[ADR-013 Commit the XSDs]] (no fetch needed)
 - [x] T-040 Synthetic pacs.008 sample, valid under xmllint; xmllint step in CI. Done when: CI fails on an invalid sample #agent #phase/3 ✅ 2026-11-21 [PR #33](https://github.com/MaciejSulewski/iso20022-edu/pull/33)
