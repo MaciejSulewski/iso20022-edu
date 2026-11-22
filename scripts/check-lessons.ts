@@ -24,8 +24,12 @@ const LESSONS = [
   { step: "mapping", slug: "from-mt103", title: "From MT 103 to pacs.008" },
   { step: "quiz", slug: "check-yourself", title: "Check yourself: a recap" },
 ];
-// steps that have a tool; the others show only their lesson link
-const TOOLS = ["xml", "tree"];
+// steps that have a tool, with where it lives; the others show only their lesson link
+const TOOLS: Record<string, string> = {
+  xml: WORKSPACE,
+  tree: WORKSPACE,
+  flow: `${BASE}flows/pacs.008-agent-chain/`,
+};
 const LESSON = `${url}lessons/${LESSONS[0]!.slug}/`;
 const TITLE = LESSONS[0]!.title;
 const PHRASE = "debtor agent";
@@ -69,7 +73,7 @@ try {
   // 1b. every step links its lesson; steps with a tool also keep the tool link; the others link nothing else
   await settle(
     home,
-    "Start here: every step links its lesson (and only xml and tree also the workspace)",
+    "Start here: every step links its lesson (and only xml, tree and flow also their tool)",
     () =>
       Object.fromEntries(
         ["lesson", "xml", "tree", "flow", "mapping", "quiz"].map((id) => [
@@ -83,10 +87,9 @@ try {
       LESSONS.every((l) => {
         const links = s[l.step] ?? [];
         const lesson = `${BASE}lessons/${l.slug}/`;
-        return TOOLS.includes(l.step)
-          ? links.length === 2 &&
-              links.includes(WORKSPACE) &&
-              links.includes(lesson)
+        const tool = TOOLS[l.step];
+        return tool
+          ? links.length === 2 && links.includes(tool) && links.includes(lesson)
           : links.length === 1 && links[0] === lesson;
       }),
   );
@@ -124,6 +127,33 @@ try {
       }),
       (s) =>
         s.h1.length === 1 && s.h1[0] === l.title && s.draft && s.sources >= 1,
+    );
+
+    // 2b. the tool link at the end of the lesson: its wording and target (steps without a tool have none)
+    const tool = TOOLS[l.step];
+    await settle(
+      p,
+      `${l.slug}: the tool link ${tool ? `reads "${l.step === "flow" ? "Open the flow" : "Open the workspace"}" and goes to ${tool}` : "is absent"}`,
+      () =>
+        [...document.querySelectorAll("article > p > a")]
+          .filter((a) => a.textContent?.startsWith("Open the"))
+          .map((a) => ({
+            text: a.textContent,
+            path: (a as HTMLAnchorElement).pathname,
+          })),
+      (links) =>
+        JSON.stringify(links) ===
+        JSON.stringify(
+          tool
+            ? [
+                {
+                  text:
+                    l.step === "flow" ? "Open the flow" : "Open the workspace",
+                  path: tool,
+                },
+              ]
+            : [],
+        ),
     );
 
     // 3. related-element links point into the workspace and select the element

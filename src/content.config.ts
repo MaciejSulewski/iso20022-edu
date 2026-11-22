@@ -2,6 +2,7 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import {
   AnnotationSchema,
+  FlowSchema,
   LessonSchema,
   MessageSchema,
   SampleSchema,
@@ -30,6 +31,10 @@ export const collections = {
       generateId: ({ entry }) => entry.replace(/\.md$/, ""),
     }),
     schema: LessonSchema,
+  }),
+  flows: defineCollection({
+    loader: yaml("src/content/flows"),
+    schema: FlowSchema,
   }),
   samples: defineCollection({
     loader: yaml("src/content/samples"),

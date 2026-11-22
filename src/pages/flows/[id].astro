@@ -1,0 +1,98 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import FlowPlayer from "../../components/FlowPlayer";
+import { t } from "../../i18n/t";
+
+export async function getStaticPaths() {
+  return (await getCollection("flows")).map((flow) => ({
+    params: { id: flow.id },
+    props: { flow },
+  }));
+}
+
+const { flow } = Astro.props;
+const { title, summary, message, lesson, sample, sources } = flow.data;
+const base = import.meta.env.BASE_URL;
+const lessonEntry = await getEntry("lessons", lesson);
+if (!lessonEntry) throw new Error(`Lesson missing for flow ${flow.id}`);
+// the lowest-order sample is served at /messages/<id>/, the others under their id
+const samples = (await getCollection("samples"))
+  .filter((s) => s.data.message === message)
+  .sort((x, y) => x.data.order - y.data.order);
+const sampleHref =
+  sample &&
+  `${base}messages/${message}/${samples[0]?.id === sample ? "" : `${sample}/`}`;
+const settlement = (await getEntry("annotations", message))?.data.codes
+  .SettlementMethod1Code;
+const codes = Object.fromEntries(
+  Object.entries(settlement ?? {}).map(([code, text]) => [code, text.en]),
+);
+const labels = {
+  variants: t("flow.variants"),
+  diagram: t("flow.diagram"),
+  steps: t("flow.steps"),
+  sender: t("flow.sender"),
+  receiver: t("flow.receiver"),
+  stepOf: t("flow.stepOf"),
+  prev: t("flow.prev"),
+  next: t("flow.next"),
+  hop: t("flow.hop"),
+  message: t("flow.message"),
+  settlement: t("flow.settlement"),
+  elements: t("flow.elements"),
+  sample: t("flow.sample"),
+};
+---
+
+<Base title={title} description={summary}>
+  <article class="mx-auto max-w-5xl px-4">
+    <h1 class="text-3xl leading-tight font-bold">{title}</h1>
+    <p class="mt-3 max-w-[65ch] text-lg text-muted">{summary}</p>
+    <p class="mt-5 max-w-[65ch] rounded border border-line border-l-4 border-l-accent bg-surface p-3 text-sm">
+      {t("flow.draft")}
+    </p>
+
+    <div class="mt-8">
+      <FlowPlayer
+        client:load
+        participants={flow.data.participants}
+        variants={flow.data.variants}
+        labels={labels}
+        codes={codes}
+        elementBase={`${base}messages/${message}/`}
+        sampleHref={sampleHref}
+      />
+    </div>
+
+    <p class="mt-10">
+      <a href={`${base}lessons/${lesson}/`}>
+        {t("flow.lesson")
+          .replace("{n}", String(lessonEntry.data.order))
+          .replace("{title}", lessonEntry.data.title)}
+      </a>
+    </p>
+
+    <section class="mt-10" aria-labelledby="sources">
+      <h2 id="sources" class="text-xl font-semibold">
+        {t("lesson.sources")}
+      </h2>
+      <ul class="mt-3 list-disc space-y-2 pl-6 text-sm">
+        {sources.map((s) => (
+          <li>
+            <a href={s.url} class="break-words">
+              {s.title}
+            </a>{" "}
+            <span class="text-muted">
+              ({t("lesson.retrieved").replace("{date}", s.retrieved)})
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <p class="mt-10 border-t border-line pt-4">
+      <a href={`${base}lessons/`}>{t("lesson.all")}</a>
+    </p>
+  </article>
+</Base>

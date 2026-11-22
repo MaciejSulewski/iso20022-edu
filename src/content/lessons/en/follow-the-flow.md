@@ -57,9 +57,9 @@ Public sources describe two ways to send money across correspondent banks. Both 
 
 In the **serial** method the customer payment is handed from bank to bank in turn. In the **cover** method the customer payment message goes toward the creditor agent, while a second message tells the banks in between to move the funds. An encyclopedia article on the older Swift form of this describes it that way. A bank software manual shows the receiving bank matching the two messages by amount, currency and date, and for CHAPS, the Bank of England's handbook lists the cover message against a `pacs.009` usage. We did not read a source that sets out the cover method in ISO 20022 terms, so this lesson goes no further.
 
-## Coming soon
+## See it step by step
 
-An interactive, step-by-step view of this flow is planned (T-070). It is coming soon, and has no date.
+[Walk through this flow, one step at a time](../../flows/pacs.008-agent-chain/).
 
 ## Check your understanding
 

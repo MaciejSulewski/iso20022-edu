@@ -147,5 +147,21 @@
   "lesson.prev": "Previous lesson",
   "lesson.next": "Next lesson",
   "lesson.all": "All lessons",
-  "lesson.tool": "Open the workspace"
+  "lesson.tool": "Open the workspace",
+  "lesson.toolFlow": "Open the flow",
+  "flow.draft": "AI-drafted from public sources, not yet reviewed by a person.",
+  "flow.variants": "Method",
+  "flow.diagram": "The parties in the chain",
+  "flow.steps": "Steps",
+  "flow.sender": "Sender",
+  "flow.receiver": "Receiver",
+  "flow.stepOf": "Step {n} of {total}",
+  "flow.prev": "Previous step",
+  "flow.next": "Next step",
+  "flow.hop": "From {from} to {to}",
+  "flow.message": "What travels",
+  "flow.settlement": "Settlement method",
+  "flow.elements": "Look at it in the workspace",
+  "flow.sample": "Open this message as a full sample",
+  "flow.lesson": "Read lesson {n}: {title}"
 }
