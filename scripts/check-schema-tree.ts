@@ -2,7 +2,7 @@
 // Needs a built dist (npm run build).
 import { chromium, type Page } from "playwright";
 import { serveDist } from "./serve-dist.ts";
-import { settled, throttle, verifying } from "./ui-wait.ts";
+import { throttle, verifying } from "./ui-wait.ts";
 
 const { server, url } = await serveDist();
 const page = `${url}messages/pacs.008.001.14/`;
@@ -134,7 +134,7 @@ try {
     results.locator("button", { has: d.getByText(path, { exact: true }) });
   await hit(`${HDR}/InstgAgt`).click();
   await d.locator(sel(`${HDR}/InstgAgt`)).waitFor({ timeout: 3000 });
-  await settled(
+  await settle(
     d,
     "the panel shows the picked element (its record lands a render after the row)",
     () => document.querySelector("aside")?.textContent ?? "",
@@ -171,7 +171,7 @@ try {
   // deep link
   const dl = await open(1280, 900, `#${TX}/PmtId`);
   await dl.locator(sel(`${TX}/PmtId`)).waitFor({ timeout: 5000 });
-  await settled(
+  await settle(
     dl,
     "the panel shows the deep-linked element",
     () => document.querySelector("aside")?.textContent ?? "",
@@ -228,7 +228,7 @@ try {
   const sideways: boolean[] = [];
   for (const name of ["Tree", "Details", "XML"]) {
     await m.getByRole("tab", { name }).click();
-    const v = await settled(
+    const v = await settle(
       m,
       `mobile: the ${name} tab is selected and the page fits the width`,
       () => ({
@@ -238,7 +238,7 @@ try {
       }),
       (v) => v.tab === name,
     );
-    sideways.push(v.fits);
+    sideways.push(v?.fits ?? false);
   }
   check(
     sideways.every(Boolean),

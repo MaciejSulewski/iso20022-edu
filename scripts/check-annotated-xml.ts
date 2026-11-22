@@ -4,7 +4,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, type Locator, type Page } from "playwright";
 import { serveDist } from "./serve-dist.ts";
-import { selectedTab, settled, throttle, verifying } from "./ui-wait.ts";
+import { throttle, verifying } from "./ui-wait.ts";
 
 const { server, url } = await serveDist();
 const page = `${url}messages/pacs.008.001.14/`;
@@ -308,15 +308,18 @@ try {
   await touch.tap(el(MSGID));
   await touch.waitForTimeout(600);
   check(
-    (await touch.getByRole("tooltip").count()) === 0 &&
-      (await touch.locator(sel(MSGID)).count()) === 1,
-    "touch: no tooltip, the tap selects",
+    (await touch.getByRole("tooltip").count()) === 0,
+    "touch: no tooltip after the tap",
   );
   await settle(
     touch,
-    "touch: the tap opens the Details tab",
-    selectedTab,
-    (t) => t === "Details",
+    "touch: the tap selects the row and opens the Details tab",
+    () => ({
+      tab: document.querySelector("[role=tab][aria-selected=true]")
+        ?.textContent,
+      marked: document.querySelectorAll("[aria-current='true']").length,
+    }),
+    (v) => v.tab === "Details" && v.marked === 1,
   );
 
   const rowCount = (p: Page) => p.locator("[data-id]").count();
@@ -474,13 +477,13 @@ try {
     await m.keyboard.press(key);
     roving.push(
       (
-        await settled(
+        await settle(
           m,
           `mobile: ${key} moves focus and selection to ${want}`,
           view,
           (v) => v.roving === want,
         )
-      ).roving,
+      )?.roving ?? "",
     );
   }
   await settle(
@@ -547,7 +550,7 @@ try {
   });
   await m.click(el("CdtTrfTxInf/CdtrAcct/Id/IBAN"));
   // throws (with the last layout) when the tab, focus and layout do not settle in 5 s
-  const settledLayout = await settled(
+  const settledLayout = await settle(
     m,
     "mobile: the far pick ends on the Details tab with focus on it",
     () => (window as unknown as { layout: () => Layout }).layout(),
@@ -601,7 +604,7 @@ try {
     tRow("CdtTrfTxInf/CdtrAcct/Id/IBAN"),
   );
   await m.locator(`[role=treeitem][data-path="${CA}"]`).click();
-  await settled(
+  await settle(
     m,
     "mobile: the tree pick opens Details",
     view,
@@ -617,7 +620,7 @@ try {
   );
   // a row above the window scrolled into view the way reveal does it: it must clear the sticky tab bar
   await m.getByRole("tab", { name: "Tree" }).click();
-  await settled(
+  await settle(
     m,
     "mobile: the Tree tab is open and settled",
     view,
@@ -643,6 +646,7 @@ try {
     (v) =>
       v.panes === "details" && v.tabs === DETAILS_ON && v.text.includes(ISO),
   );
+  await mh.waitForTimeout(500); // a late focus move would land inside this dwell
   await settle(
     mh,
     "mobile: a hash on load does not move focus",
@@ -650,7 +654,7 @@ try {
     (v) => v,
   );
   await mh.setViewportSize({ width: 1280, height: 900 });
-  await settled(
+  await settle(
     mh,
     "resize up to 1280px: the tab panels go and the tab bar hides",
     () => ({

@@ -31,12 +31,14 @@ export async function serveDist() {
     const hold = p.includes("/tree/")
       ? Number(process.env.UI_DELAY_MS ?? 0)
       : 0;
-    setTimeout(() => {
+    const send = () => {
       res.writeHead(200, {
         "content-type": types[extname(file)] ?? "application/octet-stream",
       });
       createReadStream(file).pipe(res);
-    }, hold);
+    };
+    if (hold) setTimeout(send, hold);
+    else send();
   });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const port = (server.address() as { port: number }).port;
