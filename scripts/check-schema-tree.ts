@@ -150,13 +150,17 @@ try {
   // shared-type overlay: two agent elements with no byPath entry show the same byType text
   const SHARED = "A block that identifies a bank and, if needed";
   await chevron(d, TX).click();
-  for (const a of ["IntrmyAgt1", "PrvsInstgAgt1"]) {
+  const agents = {
+    IntrmyAgt1: "IntermediaryAgent1",
+    PrvsInstgAgt1: "PreviousInstructingAgent1",
+  };
+  for (const [a, name] of Object.entries(agents)) {
     await d.locator(row(`${TX}/${a}`)).click();
     await settle(
       d,
-      `${a} in the tree pane shows the shared-type explanation`,
+      `${a} in the tree pane shows its own name and the shared-type explanation`,
       () => document.querySelector("aside")?.textContent ?? "",
-      (t) => t.includes(SHARED),
+      (t) => t.startsWith(name) && t.includes(SHARED),
     );
   }
   const before = d.typeReqs.length;
