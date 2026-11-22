@@ -11,13 +11,10 @@ Rules:
 (max 3 open tasks)
 
 ## Waiting on me
+- [ ] T-093 Review the lessons for accuracy #me #phase/5
 
 ## Next
 ### Phase 5: pacs.008 depth
-- [ ] T-060 Overlay by type for shared components, plus code explanations. Done when: shared types have one overlay entry used everywhere #agent #phase/5
-- [ ] T-061 Second sample (intermediary agent, structured remittance). Done when: it passes xmllint and check-content #agent #phase/5
-- [ ] T-092 Draft lessons from public sources in own wording, recorded in `sources.md`. Done when: the "Start here" path links a lesson at each step #agent #phase/5
-- [ ] T-093 Review the lessons for accuracy #me #phase/5
 ### Phase 6: flow
 - [ ] T-070 FlowPlayer + pacs.008 agent-chain flow (serial and cover described). Complex: spec first. Done when: Next/Prev steps through every participant, and mobile shows a step list #agent #phase/6
 - [ ] T-071 Animate the flow diagram, respecting `prefers-reduced-motion`. Done when: motion stops with the setting on #agent #phase/6
@@ -32,6 +29,9 @@ Rules:
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-060 Overlay by type for shared components, plus code explanations. Done when: shared types have one overlay entry used everywhere #agent #phase/5 ✅ 2026-11-22 [PR #47](https://github.com/MaciejSulewski/iso20022-edu/pull/47)
+- [x] T-061 Second sample (intermediary agent, structured remittance). Done when: it passes xmllint and check-content #agent #phase/5 ✅ 2026-11-22 [PR #48](https://github.com/MaciejSulewski/iso20022-edu/pull/48)
+- [x] T-092 Draft lessons from public sources in own wording, recorded in `sources.md`. Done when: the "Start here" path links a lesson at each step #agent #phase/5 ✅ 2026-11-22 [PR #49](https://github.com/MaciejSulewski/iso20022-edu/pull/49) (six lessons, AI-drafted, unreviewed until T-093)
 - [x] T-052 Ctrl+K command palette with build-time element index; Pagefind for lessons and glossary (moved from T-101). Done when: Ctrl+K jumps to an element, term and lesson #agent #phase/4 ✅ 2026-11-22 [PR #45](https://github.com/MaciejSulewski/iso20022-edu/pull/45) (elements and Pagefind pages done; lessons and glossary have no pages yet, T-090 and T-092 wire them in)
 - [x] T-051 Split-pane workspace (XML | tree | details; tabs on mobile). Done when: panes resize on desktop and become tabs on mobile #agent #phase/4 ✅ 2026-11-22 [PR #43](https://github.com/MaciejSulewski/iso20022-edu/pull/43)
 - [x] T-050 SchemaTree page with lazy expansion, mandatory-only filter, search, deep links. Done when: the full tree loads lazily and filters work #agent #phase/4 ✅ 2026-11-22 [PR #42](https://github.com/MaciejSulewski/iso20022-edu/pull/42)
@@ -93,3 +93,4 @@ Rules:
 - [[ADR-013 Commit the XSDs]]
 - [[ADR-014 One workspace island]]
 - [[ADR-015 Palette on every page]]
+- [[ADR-016 Lessons as Markdown content]]
