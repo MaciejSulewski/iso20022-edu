@@ -3,6 +3,7 @@
 // src/lib/workspace.test.ts. Needs a built dist (npm run build).
 import { chromium, type Locator, type Page } from "playwright";
 import { serveDist } from "./serve-dist.ts";
+import { selectedTab, count, shown, throttle, verifying } from "./ui-wait.ts";
 
 const { server, url } = await serveDist();
 const page = `${url}messages/pacs.008.001.14/`;
@@ -21,6 +22,7 @@ const check = (ok: boolean, what: string) => {
   console.log(`${ok ? "ok  " : "FAIL"} ${what}`);
   if (!ok) bad++;
 };
+const settle = verifying(check);
 // false on timeout, so a missing state fails its check instead of aborting the run
 const there = (l: Locator, ms = 3000) =>
   l.waitFor({ timeout: ms }).then(
@@ -44,6 +46,7 @@ async function open(width: number, height: number) {
   const p = await (
     await browser.newContext({ viewport: { width, height } })
   ).newPage();
+  await throttle(p);
   const errors: string[] = [];
   p.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   p.on("pageerror", (e) => errors.push(String(e)));
@@ -152,47 +155,56 @@ try {
   // a full flow at 390: tabs, picks, filter, Esc
   const m = await open(390, 800);
   await m.click(`[data-id="${E2E}"]`);
-  check(
-    await there(m.getByRole("tab", { name: "Details", selected: true })),
+  await settle(
+    m,
     "mobile: an XML pick opens Details",
+    selectedTab,
+    (t) => t === "Details",
   );
   await m.getByRole("tab", { name: "Tree" }).click();
-  check(
-    await there(m.locator(tree(E2E))),
+  await settle(
+    m,
     "mobile: the Tree tab shows the XML selection",
+    shown,
+    (v) => v,
+    tree(E2E),
   );
   await required(m).click();
   await search(m, "InstructingAgent", "GrpHdr/InstgAgt");
-  check(
-    await there(m.getByRole("tab", { name: "Details", selected: true })),
+  await settle(
+    m,
     "mobile: a search pick opens Details",
+    selectedTab,
+    (t) => t === "Details",
   );
   await m.getByRole("tab", { name: "XML" }).click();
-  check(
-    (await m.locator("[aria-current='true']").count()) === 0,
+  await settle(
+    m,
     "mobile: a search pick of a path not in the sample leaves the XML pane unmarked",
+    () => ({
+      tab: document.querySelector("[role=tab][aria-selected=true]")
+        ?.textContent,
+      marked: document.querySelectorAll("[aria-current='true']").length,
+    }),
+    (v) => v.tab === "XML" && v.marked === 0,
   );
   await m.click(`[data-id="${INSTR}"]`);
-  const marked = await m
-    .locator(xml(INSTR))
-    .waitFor({ state: "attached", timeout: 3000 })
-    .then(
-      () => true,
-      () => false,
-    ); // the XML pane is hidden on the Details tab
+  await settle(
+    m,
+    "mobile: the XML pane marks the picked row (hidden on the Details tab)",
+    count,
+    (n) => n === 1,
+    xml(INSTR),
+  );
   // The click leaves a hover tooltip pending (the mouse stays over the row, which is then hidden); the first Esc cancels it.
   await m.keyboard.press("Escape");
   await m.keyboard.press("Escape");
-  check(
-    marked &&
-      (await m
-        .locator(xml(INSTR))
-        .waitFor({ state: "detached", timeout: 2000 })
-        .then(
-          () => true,
-          () => false,
-        )),
+  await settle(
+    m,
     "mobile: Esc clears the selection",
+    count,
+    (n) => n === 0,
+    xml(INSTR),
   );
   check(
     m.errors.length === 0,

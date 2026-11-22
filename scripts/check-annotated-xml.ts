@@ -4,6 +4,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, type Locator, type Page } from "playwright";
 import { serveDist } from "./serve-dist.ts";
+import { selectedTab, settled, throttle, verifying } from "./ui-wait.ts";
 
 const { server, url } = await serveDist();
 const page = `${url}messages/pacs.008.001.14/`;
@@ -31,12 +32,7 @@ const check = (ok: boolean, what: string) => {
   console.log(`${ok ? "ok  " : "FAIL"} ${what}`);
   if (!ok) bad++;
 };
-// false on timeout, so a missing state fails its check instead of aborting the run
-const until = (l: Locator, ms = 2000) =>
-  l.waitFor({ timeout: ms }).then(
-    () => true,
-    () => false,
-  );
+const settle = verifying(check);
 // Pane widths in pixels, measured; the panes are the grid items #panel-ws-*.
 const widths = (p: Page) =>
   p.evaluate(() => {
@@ -52,24 +48,6 @@ const widths = (p: Page) =>
     };
   });
 const near = (x: number, y: number) => Math.abs(x - y) <= 1;
-// "XML:true:0,Tree:false:-1,…": each tab's name, aria-selected and tabindex
-const tabState = (p: Page) =>
-  p.evaluate(() =>
-    [...document.querySelectorAll<HTMLElement>("[role=tab]")]
-      .map(
-        (t) =>
-          `${t.textContent}:${t.getAttribute("aria-selected")}:${t.tabIndex}`,
-      )
-      .join(),
-  );
-const shownPanes = (p: Page) =>
-  p.evaluate(() =>
-    ["xml", "tree", "details"]
-      .filter((x) =>
-        document.getElementById(`panel-ws-${x}`)!.checkVisibility(),
-      )
-      .join(),
-  );
 const frames = (p: Page) =>
   p.evaluate(
     () =>
@@ -79,6 +57,7 @@ const open = async (width: number, height: number, hash = "") => {
   const p = await (
     await browser.newContext({ viewport: { width, height } })
   ).newPage();
+  await throttle(p);
   await p.goto(page + hash, { waitUntil: "networkidle" });
   return p;
 };
@@ -324,6 +303,7 @@ try {
       isMobile: true,
     })
   ).newPage();
+  await throttle(touch);
   await touch.goto(page, { waitUntil: "networkidle" });
   await touch.tap(el(MSGID));
   await touch.waitForTimeout(600);
@@ -332,9 +312,11 @@ try {
       (await touch.locator(sel(MSGID)).count()) === 1,
     "touch: no tooltip, the tap selects",
   );
-  check(
-    await until(touch.getByRole("tab", { name: "Details", selected: true })),
+  await settle(
+    touch,
     "touch: the tap opens the Details tab",
+    selectedTab,
+    (t) => t === "Details",
   );
 
   const rowCount = (p: Page) => p.locator("[data-id]").count();
@@ -396,77 +378,118 @@ try {
 
   // mobile: XML | Tree | Details tabs, one pane at a time
   const m = await open(390, 800);
-  const mAside = m.getByRole("complementary", { name: "Element details" });
-  check(
-    (await tabState(m)) === "XML:true:0,Tree:false:-1,Details:false:-1" &&
-      (await shownPanes(m)) === "xml",
+  // What the page shows, in one read: each tab's name, aria-selected and tabindex, the visible panes, where
+  // focus is, the panel text and the panel's position.
+  const view = () => ({
+    tabs: [...document.querySelectorAll<HTMLElement>("[role=tab]")]
+      .map(
+        (t) =>
+          `${t.textContent}:${t.getAttribute("aria-selected")}:${t.tabIndex}`,
+      )
+      .join(),
+    panes: ["xml", "tree", "details"]
+      .filter((x) =>
+        document.getElementById(`panel-ws-${x}`)?.checkVisibility(),
+      )
+      .join(),
+    focusId: document.activeElement?.id ?? "",
+    focusRow: document.activeElement?.getAttribute("data-id") ?? "",
+    roving: `${document.activeElement?.getAttribute("role") === "tab" ? document.activeElement.textContent : "-"}/${document.querySelector("[role=tab][aria-selected=true]")?.textContent}`,
+    text: document.querySelector("aside")?.textContent ?? "",
+    asideTop: document.querySelector("aside")?.getBoundingClientRect().top ?? 0,
+    innerHeight,
+    marked: document.querySelectorAll("[aria-current='true']").length,
+    treeSel:
+      document
+        .querySelector("[role=treeitem][aria-selected=true]")
+        ?.getAttribute("data-path") ?? "",
+    xmlSel:
+      document
+        .querySelector("[aria-current='true']")
+        ?.getAttribute("data-id") ?? "",
+    fits: document.documentElement.scrollWidth <= innerWidth,
+    scrollY,
+  });
+  const XML_FIRST = "XML:true:0,Tree:false:-1,Details:false:-1";
+  const DETAILS_ON = "XML:false:-1,Tree:false:-1,Details:true:0";
+  await settle(
+    m,
     "mobile: the XML tab is open first and only its pane shows",
+    view,
+    (v) => v.tabs === XML_FIRST && v.panes === "xml",
   );
-  check(
-    (await m.getByRole("tablist", { name: "Workspace panes" }).count()) === 1 &&
-      (await m.evaluate(() =>
-        [...document.querySelectorAll("[role=tab]")].every((t) => {
-          const p = document.getElementById(t.getAttribute("aria-controls")!);
-          return (
-            p?.getAttribute("role") === "tabpanel" &&
-            p.getAttribute("aria-labelledby") === t.id
-          );
-        }),
-      )),
+  await settle(
+    m,
     "mobile: each tab controls its pane, a tab panel labelled by that tab",
+    () => ({
+      lists: document.querySelectorAll(
+        "[role=tablist][aria-label='Workspace panes']",
+      ).length,
+      wired: [...document.querySelectorAll("[role=tab]")].every((t) => {
+        const p = document.getElementById(t.getAttribute("aria-controls")!);
+        return (
+          p?.getAttribute("role") === "tabpanel" &&
+          p.getAttribute("aria-labelledby") === t.id
+        );
+      }),
+    }),
+    (v) => v.lists === 1 && v.wired,
   );
   await m.click(el(MSGID));
-  check(
-    (await until(m.getByRole("tab", { name: "Details", selected: true }))) &&
-      (await tabState(m)) === "XML:false:-1,Tree:false:-1,Details:true:0" &&
-      (await shownPanes(m)) === "details" &&
-      (await m.getByRole("tabpanel", { name: "Details" }).isVisible()) &&
-      (await mAside.innerText()).includes(ISO) &&
-      (await mAside.evaluate((a) => {
-        const r = a.getBoundingClientRect();
-        return r.top >= 0 && r.top < innerHeight;
-      })),
+  await settle(
+    m,
     "mobile: a click in the XML pane opens the Details tab, with the panel in view",
+    view,
+    (v) =>
+      v.tabs === DETAILS_ON &&
+      v.panes === "details" &&
+      v.text.includes(ISO) &&
+      v.asideTop >= 0 &&
+      v.asideTop < v.innerHeight,
   );
-  check(
-    (await m.evaluate(() => document.activeElement?.id)) === "tab-ws-details",
+  await settle(
+    m,
     "mobile: after the switch, focus is on the Details tab",
+    view,
+    (v) => v.focusId === "tab-ws-details",
   );
   await axe(m, "mobile, MsgId selected");
-  check(
-    await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
-    "mobile: page does not scroll sideways",
-  );
+  await settle(m, "mobile: page does not scroll sideways", view, (v) => v.fits);
   await m.keyboard.press("Escape");
-  const mCleared = await m
-    .locator(sel(MSGID))
-    .waitFor({ state: "detached", timeout: 1000 })
-    .then(
-      () => true,
-      () => false,
-    );
-  check(
-    mCleared &&
-      (await tabState(m)) === "XML:false:-1,Tree:false:-1,Details:true:0" &&
-      (await mAside.innerText()).includes(
-        "Select an element to see what it is.",
-      ),
+  await settle(
+    m,
     "mobile: Esc clears the selection and keeps the Details tab",
+    view,
+    (v) =>
+      v.marked === 0 &&
+      v.tabs === DETAILS_ON &&
+      v.text.includes("Select an element to see what it is."),
   );
   const roving: string[] = [];
-  for (const key of ["ArrowLeft", "ArrowRight", "ArrowRight"]) {
+  for (const [key, want] of [
+    ["ArrowLeft", "Tree/Tree"],
+    ["ArrowRight", "Details/Details"],
+    ["ArrowRight", "XML/XML"],
+  ] as const) {
     await m.keyboard.press(key);
     roving.push(
-      await m.evaluate(
-        () =>
-          `${document.activeElement?.textContent}/${document.querySelector("[role=tab][aria-selected=true]")?.textContent}`,
-      ),
+      (
+        await settled(
+          m,
+          `mobile: ${key} moves focus and selection to ${want}`,
+          view,
+          (v) => v.roving === want,
+        )
+      ).roving,
     );
   }
-  check(
-    roving.join() === "Tree/Tree,Details/Details,XML/XML" &&
-      (await shownPanes(m)) === "xml",
+  await settle(
+    m,
     "mobile: arrow keys move focus along the tabs and show that pane (roving, wraps)",
+    view,
+    (v) =>
+      v.panes === "xml" &&
+      roving.join() === "Tree/Tree,Details/Details,XML/XML",
   );
   await m
     .locator(el(MSGID))
@@ -475,16 +498,16 @@ try {
   const y0 = await m.evaluate(() => scrollY);
   await m.keyboard.press("ArrowDown");
   // the hidden tree pane follows the selection: wait for it, then for its scroll frame
-  await m
-    .locator('[role=treeitem][data-path="GrpHdr/CreDtTm"][aria-selected=true]')
-    .waitFor({ state: "attached", timeout: 5000 });
-  await frames(m);
-  check(
-    (await focused(m)) === "GrpHdr/CreDtTm" &&
-      (await m.locator(sel("GrpHdr/CreDtTm")).count()) === 1 &&
-      (await shownPanes(m)) === "xml" &&
-      (await m.evaluate(() => scrollY)) === y0,
+  await settle(
+    m,
     "mobile: arrow keys select in the XML pane, stay on the XML tab and do not scroll the window",
+    view,
+    (v) =>
+      v.treeSel === "GrpHdr/CreDtTm" &&
+      v.xmlSel === "GrpHdr/CreDtTm" &&
+      v.focusRow === "GrpHdr/CreDtTm" &&
+      v.panes === "xml" &&
+      v.scrollY === y0,
   );
   // a pick far down the page: the Details tab and the top of the panel come into view.
   // Half a pixel above the workspace gives fractional positions, as other font metrics do (CI on Linux).
@@ -523,30 +546,15 @@ try {
     o.observe(t, { attributes: true, attributeFilter: ["aria-selected"] });
   });
   await m.click(el("CdtTrfTxInf/CdtrAcct/Id/IBAN"));
-  const picked = await until(
-    m.getByRole("tab", { name: "Details", selected: true }),
+  // throws (with the last layout) when the tab, focus and layout do not settle in 5 s
+  const settledLayout = await settled(
+    m,
+    "mobile: the far pick ends on the Details tab with focus on it",
+    () => (window as unknown as { layout: () => Layout }).layout(),
+    (l) => l.tab === "Details" && l.focus === "tab-ws-details",
   );
   const atSwitch = await m.evaluate(
     () => (window as unknown as { atSwitch?: Layout }).atSwitch,
-  );
-  // throws when the layout keeps changing for 2s
-  const settled = await m.evaluate(
-    () =>
-      new Promise<Layout>((done, fail) => {
-        const w = window as unknown as { layout: () => Layout };
-        const end = performance.now() + 2000;
-        let last = "";
-        const tick = () => {
-          const now = w.layout();
-          const key = JSON.stringify(now);
-          if (key === last) return done(now);
-          if (performance.now() > end)
-            return fail(new Error(`layout did not settle in 2s: ${key}`));
-          last = key;
-          requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }),
   );
   const inView = (l?: Layout) =>
     !!l &&
@@ -555,106 +563,140 @@ try {
     (l.barTop as number) >= 0 &&
     (l.asideTop as number) >= (l.barBottom as number) &&
     (l.asideTop as number) < (l.innerHeight as number);
-  const farOk = picked && inView(atSwitch) && inView(settled);
+  const farOk = inView(atSwitch) && inView(settledLayout);
   check(
     farOk,
     "mobile: a pick far down the XML pane shows the tab bar and the top of the panel, from the switch on",
   );
   if (!farOk)
     console.log(
-      `  picked=${picked}
-  at switch: ${JSON.stringify(atSwitch)}
-  settled:   ${JSON.stringify(settled)}`,
+      `  at switch: ${JSON.stringify(atSwitch)}
+  settled:   ${JSON.stringify(settledLayout)}`,
     );
-  // the row is on screen and not under the sticky tab bar
-  const onScreen = (q: string) =>
-    m.evaluate((q) => {
-      const r = document.querySelector(q)!.getBoundingClientRect();
-      const bar = document.querySelector("[role=tablist]")!;
-      return (
-        r.top >= bar.getBoundingClientRect().bottom - 1 &&
-        r.bottom <= innerHeight + 1
-      );
-    }, q);
+  // the row is on screen and not under the sticky tab bar (null while the row is not in the page)
+  const rowBox = (q: string) => {
+    const r = document.querySelector(q)?.getBoundingClientRect();
+    return r
+      ? {
+          top: r.top,
+          bottom: r.bottom,
+          barBottom: document
+            .querySelector("[role=tablist]")!
+            .getBoundingClientRect().bottom,
+          innerHeight,
+        }
+      : null;
+  };
+  const below = (r: ReturnType<typeof rowBox>) =>
+    !!r && r.top >= r.barBottom - 1 && r.bottom <= r.innerHeight + 1;
   const CA = "CdtTrfTxInf/CdtrAcct";
   const tRow = (path: string) =>
     `[role=treeitem][data-path="${path}"][aria-selected='true']`;
   await m.getByRole("tab", { name: "Tree" }).click();
-  await frames(m);
-  check(
-    await onScreen(tRow("CdtTrfTxInf/CdtrAcct/Id/IBAN")),
+  await settle(
+    m,
     "mobile: opening the Tree tab shows the row selected in the XML pane",
+    rowBox,
+    below,
+    tRow("CdtTrfTxInf/CdtrAcct/Id/IBAN"),
   );
   await m.locator(`[role=treeitem][data-path="${CA}"]`).click();
-  await until(m.getByRole("tab", { name: "Details", selected: true }));
+  await settled(
+    m,
+    "mobile: the tree pick opens Details",
+    view,
+    (v) => v.tabs === DETAILS_ON,
+  );
   await m.getByRole("tab", { name: "XML" }).click();
-  await frames(m);
-  check(
-    await onScreen(sel(CA)),
+  await settle(
+    m,
     "mobile: opening the XML tab shows the row selected in the tree",
+    rowBox,
+    below,
+    sel(CA),
   );
   // a row above the window scrolled into view the way reveal does it: it must clear the sticky tab bar
   await m.getByRole("tab", { name: "Tree" }).click();
+  await settled(
+    m,
+    "mobile: the Tree tab is open and settled",
+    view,
+    (v) => v.panes === "tree",
+  );
   await m.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+  const GH = '[role=treeitem][data-path="GrpHdr"]';
   const up = await m.evaluate((q) => {
     const e = document.querySelector(q)!;
     const before = e.getBoundingClientRect().top;
     e.scrollIntoView({ block: "nearest" });
     return before;
-  }, '[role=treeitem][data-path="GrpHdr"]');
+  }, GH);
   check(
-    up < 0 && (await onScreen('[role=treeitem][data-path="GrpHdr"]')),
+    up < 0 && below(await m.evaluate(rowBox, GH)),
     "mobile: a row scrolled up into view lands below the sticky tab bar",
   );
   const mh = await open(390, 800, `#${MSGID}`);
-  check(
-    (await until(mh.getByRole("tab", { name: "Details", selected: true }))) &&
-      (await shownPanes(mh)) === "details" &&
-      (
-        await mh
-          .getByRole("complementary", { name: "Element details" })
-          .innerText()
-      ).includes(ISO),
+  await settle(
+    mh,
     "mobile: a hash on load opens the Details tab",
+    view,
+    (v) =>
+      v.panes === "details" && v.tabs === DETAILS_ON && v.text.includes(ISO),
   );
-  check(
-    await mh.evaluate(() => document.activeElement === document.body),
+  await settle(
+    mh,
     "mobile: a hash on load does not move focus",
+    () => document.activeElement === document.body,
+    (v) => v,
   );
   await mh.setViewportSize({ width: 1280, height: 900 });
-  const columns = await mh
-    .waitForFunction(() => !document.querySelector("[role=tabpanel]"), null, {
-      timeout: 2000,
-    })
-    .then(
-      () => true,
-      () => false,
-    );
+  await settled(
+    mh,
+    "resize up to 1280px: the tab panels go and the tab bar hides",
+    () => ({
+      panels: document.querySelectorAll("[role=tabpanel]").length,
+      bar: !!document.querySelector("[role=tablist]")?.checkVisibility(),
+      panes: ["xml", "tree", "details"]
+        .filter((x) =>
+          document.getElementById(`panel-ws-${x}`)?.checkVisibility(),
+        )
+        .join(),
+      separators: document.querySelectorAll("[role=separator]").length,
+    }),
+    (v) =>
+      v.panels === 0 &&
+      !v.bar &&
+      v.panes === "xml,tree,details" &&
+      v.separators === 2,
+  );
   check(
-    columns &&
-      !(await mh.getByRole("tablist").isVisible()) &&
-      (await shownPanes(mh)) === "xml,tree,details" &&
-      (await mh.getByRole("separator").count()) === 2 &&
-      (await mh.getByRole("region", { name: "Annotated XML" }).isVisible()),
+    await mh.getByRole("region", { name: "Annotated XML" }).isVisible(),
     "resize up to 1280px: the tab bar hides, the three panes show as columns with separators",
   );
   await mh.setViewportSize({ width: 390, height: 800 });
-  const tabsBack = await mh
-    .waitForFunction(
-      () => document.querySelectorAll("[role=tabpanel]").length === 3,
-      null,
-      { timeout: 2000 },
-    )
-    .then(
-      () => true,
-      () => false,
-    );
-  check(
-    tabsBack &&
-      (await mh.getByRole("tablist").isVisible()) &&
-      (await tabState(mh)) === "XML:false:-1,Tree:false:-1,Details:true:0" &&
-      (await shownPanes(mh)) === "details",
+  await settle(
+    mh,
     "resize back down: the tab bar comes back on the same tab",
+    () => ({
+      panels: document.querySelectorAll("[role=tabpanel]").length,
+      bar: !!document.querySelector("[role=tablist]")?.checkVisibility(),
+      tabs: [...document.querySelectorAll<HTMLElement>("[role=tab]")]
+        .map(
+          (t) =>
+            `${t.textContent}:${t.getAttribute("aria-selected")}:${t.tabIndex}`,
+        )
+        .join(),
+      panes: ["xml", "tree", "details"]
+        .filter((x) =>
+          document.getElementById(`panel-ws-${x}`)?.checkVisibility(),
+        )
+        .join(),
+    }),
+    (v) =>
+      v.panels === 3 &&
+      v.bar &&
+      v.tabs === "XML:false:-1,Tree:false:-1,Details:true:0" &&
+      v.panes === "details",
   );
 
   // separators (1280px and up): keyboard, limits, drag, measured pane widths
@@ -873,6 +915,8 @@ try {
   const XPRY = "GrpHdr/XpryDtTm"; // not in the sample
   const b = await open(1280, 900);
   await b.click(el(INSTR));
+  // the tree opens the branch to it first: a later pick would make that open give up
+  await b.locator(treeSel(INSTR)).waitFor({ timeout: 5000 });
   await b
     .locator('[role=treeitem][data-path="GrpHdr"]')
     .getByText("▸", { exact: true })

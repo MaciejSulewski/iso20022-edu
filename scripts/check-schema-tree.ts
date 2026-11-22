@@ -2,6 +2,7 @@
 // Needs a built dist (npm run build).
 import { chromium, type Page } from "playwright";
 import { serveDist } from "./serve-dist.ts";
+import { settled, throttle, verifying } from "./ui-wait.ts";
 
 const { server, url } = await serveDist();
 const page = `${url}messages/pacs.008.001.14/`;
@@ -20,20 +21,13 @@ const check = (ok: boolean, what: string) => {
   console.log(`${ok ? "ok  " : "FAIL"} ${what}`);
   if (!ok) bad++;
 };
-// Below 1280px: true once the Details tab is the selected one (false on timeout).
-const onDetails = (p: Page) =>
-  p
-    .getByRole("tab", { name: "Details", selected: true })
-    .waitFor({ timeout: 2000 })
-    .then(
-      () => true,
-      () => false,
-    );
+const settle = verifying(check);
 // Fresh page that records every type-file request (by type name, in order).
 async function open(width: number, height: number, hash = "") {
   const p = await (
     await browser.newContext({ viewport: { width, height } })
   ).newPage();
+  await throttle(p);
   const typeReqs: string[] = [];
   p.on("request", (r) => {
     const m = /\/types\/([^/]+)\.json$/.exec(r.url());
@@ -140,6 +134,12 @@ try {
     results.locator("button", { has: d.getByText(path, { exact: true }) });
   await hit(`${HDR}/InstgAgt`).click();
   await d.locator(sel(`${HDR}/InstgAgt`)).waitFor({ timeout: 3000 });
+  await settled(
+    d,
+    "the panel shows the picked element (its record lands a render after the row)",
+    () => document.querySelector("aside")?.textContent ?? "",
+    (t) => t.includes("Agent that instructs the next"),
+  );
   check(
     (await expanded(d, HDR)) === "true" &&
       (await focusIs(d, `${HDR}/InstgAgt`)) &&
@@ -171,6 +171,12 @@ try {
   // deep link
   const dl = await open(1280, 900, `#${TX}/PmtId`);
   await dl.locator(sel(`${TX}/PmtId`)).waitFor({ timeout: 5000 });
+  await settled(
+    dl,
+    "the panel shows the deep-linked element",
+    () => document.querySelector("aside")?.textContent ?? "",
+    (t) => t.includes("PaymentIdentification"),
+  );
   check(
     (await expanded(dl, TX)) === "true" &&
       dl.typeReqs.join() === `${TXT}` &&
@@ -222,24 +228,41 @@ try {
   const sideways: boolean[] = [];
   for (const name of ["Tree", "Details", "XML"]) {
     await m.getByRole("tab", { name }).click();
-    sideways.push(
-      await m.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
+    const v = await settled(
+      m,
+      `mobile: the ${name} tab is selected and the page fits the width`,
+      () => ({
+        tab: document.querySelector("[role=tab][aria-selected=true]")
+          ?.textContent,
+        fits: document.documentElement.scrollWidth <= innerWidth,
+      }),
+      (v) => v.tab === name,
     );
+    sideways.push(v.fits);
   }
   check(
     sideways.every(Boolean),
     "mobile: page does not scroll sideways on any tab",
   );
+  // the Details tab, its panel text and where focus is, as the page shows them
+  const details = () => ({
+    tab: document.querySelector("[role=tab][aria-selected=true]")?.textContent,
+    asideShown: !!document.querySelector("aside")?.checkVisibility(),
+    treeShown: !!document.querySelector("[role=tree]")?.checkVisibility(),
+    text: document.querySelector("aside")?.textContent ?? "",
+    focus: document.activeElement?.id,
+  });
   await m.getByRole("tab", { name: "Tree" }).click();
   await m.locator(row(HDR)).click();
-  check(
-    (await onDetails(m)) &&
-      (await aside(m).isVisible()) &&
-      !(await m.getByRole("tree").isVisible()) &&
-      (await aside(m).innerText()).includes("GroupHeader"),
+  await settle(
+    m,
     "mobile: tapping a tree row opens the Details tab with the element",
+    details,
+    (v) =>
+      v.tab === "Details" &&
+      v.asideShown &&
+      !v.treeShown &&
+      v.text.includes("GroupHeader"),
   );
   await m.getByRole("tab", { name: "Tree" }).click();
   await m.getByLabel("Find an element").fill("InstructingAgent");
@@ -247,25 +270,33 @@ try {
     .getByRole("list", { name: "Search results" })
     .locator("button", { has: m.getByText(`${HDR}/InstgAgt`, { exact: true }) })
     .click();
-  check(
-    (await onDetails(m)) &&
-      (await aside(m).innerText()).includes("Agent that instructs the next") &&
-      (await m.evaluate(() => document.activeElement?.id)) === "tab-ws-details",
+  await settle(
+    m,
     "mobile: a search pick opens the Details tab and puts focus on it",
+    details,
+    (v) =>
+      v.tab === "Details" &&
+      v.text.includes("Agent that instructs the next") &&
+      v.focus === "tab-ws-details",
   );
   const md = await open(390, 800, `#${HDR}/MsgId`);
   await md
     .locator(sel(`${HDR}/MsgId`))
     .waitFor({ state: "attached", timeout: 5000 });
-  check(
-    (await onDetails(md)) &&
-      (await aside(md).isVisible()) &&
-      (await aside(md).innerText()).includes("Point to point reference"),
+  await settle(
+    md,
     "mobile: a deep link opens the Details tab with the ISO definition",
+    details,
+    (v) =>
+      v.tab === "Details" &&
+      v.asideShown &&
+      v.text.includes("Point to point reference"),
   );
-  check(
-    await md.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+  await settle(
+    md,
     "mobile: page does not scroll sideways",
+    () => document.documentElement.scrollWidth <= innerWidth,
+    (fits) => fits,
   );
 
   // races, with type files delayed or failed by request interception
