@@ -1,4 +1,5 @@
-// Browser check for the annotated XML page: click, deep link, keyboard, the mobile sheet and axe.
+// Browser check for the XML pane of the workspace page: click, deep link, keyboard, tooltip, beginner mode,
+// cross-pane selection and axe.
 // Needs a built dist (npm run build).
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, type Page } from "playwright";
@@ -30,6 +31,9 @@ const check = (ok: boolean, what: string) => {
   console.log(`${ok ? "ok  " : "FAIL"} ${what}`);
   if (!ok) bad++;
 };
+// The mobile sheet is gone from the workspace page; Task 2 of T-051 replaces these with tab checks.
+const skip = (what: string) =>
+  console.log(`skip ${what} (no sheet on the workspace page, T-051 task 2)`);
 const open = async (width: number, height: number, hash = "") => {
   const p = await (
     await browser.newContext({ viewport: { width, height } })
@@ -37,18 +41,6 @@ const open = async (width: number, height: number, hash = "") => {
   await p.goto(page + hash, { waitUntil: "networkidle" });
   return p;
 };
-// The sheet must really be on screen: visible, inside the viewport and on top.
-async function sheetShown(p: Page) {
-  const dialog = p.locator("dialog[open]");
-  await dialog.waitFor({ state: "visible", timeout: 3000 });
-  const box = (await dialog.boundingBox())!;
-  const vh = p.viewportSize()!.height;
-  const top = await p.evaluate(
-    ([x, y]) => !!document.elementFromPoint(x!, y!)?.closest("dialog[open]"),
-    [box.x + box.width / 2, box.y + box.height / 2],
-  );
-  return box.height > 0 && box.y + box.height <= vh + 0.5 && top;
-}
 async function axe(p: Page, what: string) {
   for (const theme of ["light", "dark"]) {
     await p.evaluate(
@@ -139,7 +131,11 @@ try {
     );
   const l = await open(1280, 900);
   check(
-    (await l.locator("dl dt").allTextContents())
+    (
+      await l
+        .locator("dl[aria-label='Key to the element markers'] dt")
+        .allTextContents()
+    )
       .map((x) => x.slice(1))
       .join() === "Required,Optional,Choice,Repeats",
     "legend lists the four states",
@@ -248,9 +244,10 @@ try {
   await touch.waitForTimeout(600);
   check(
     (await touch.getByRole("tooltip").count()) === 0 &&
-      (await sheetShown(touch)),
-    "touch: no tooltip, the tap opens the sheet",
+      (await touch.locator(sel(MSGID)).count()) === 1,
+    "touch: no tooltip, the tap selects",
   );
+  skip("touch: the tap opens the sheet");
 
   const rowCount = (p: Page) => p.locator("[data-id]").count();
   const pressed = (p: Page) =>
@@ -261,7 +258,10 @@ try {
   await l.click(el("CdtTrfTxInf/PmtId/InstrId"));
   await l.getByRole("button", { name: "Beginner view" }).click();
   const beginner = await rowCount(l);
-  const note = await l.getByRole("status").innerText();
+  const note = await l
+    .getByRole("region", { name: "Annotated XML" })
+    .getByRole("status")
+    .innerText();
   check(
     (await pressed(l)) === "true" &&
       beginner < full &&
@@ -284,8 +284,23 @@ try {
   await l.goto(`${page}#CdtTrfTxInf/PmtId/InstrId`, {
     waitUntil: "networkidle",
   });
+  // same-document hash change: the mode switches a render after the selection, so poll (false on timeout)
+  const full2 = await l
+    .waitForFunction(
+      () =>
+        document
+          .querySelector("[aria-pressed]")
+          ?.getAttribute("aria-pressed") === "false",
+      null,
+      { timeout: 2000 },
+    )
+    .then(
+      () => true,
+      () => false,
+    );
   check(
-    (await pressed(l)) === "false" &&
+    full2 &&
+      (await pressed(l)) === "false" &&
       (await l.locator(sel("CdtTrfTxInf/PmtId/InstrId")).count()) === 1,
     "a deep link to a hidden element switches to full mode",
   );
@@ -297,69 +312,63 @@ try {
   );
   await axe(l, "beginner mode");
 
-  // mobile
+  // mobile: the panes stack, the panel sits below them (tabs come in T-051 task 2)
   const m = await open(390, 800);
   await m.click(el(MSGID));
   check(
-    await sheetShown(m),
-    "mobile: click opens a visible sheet in the viewport",
+    (
+      await m
+        .getByRole("complementary", { name: "Element details" })
+        .innerText()
+    ).includes(ISO),
+    "mobile: click shows the ISO definition in the panel",
   );
-  const dialog = m.locator("dialog[open]");
-  check(
-    (await dialog.innerText()).includes(ISO),
-    "mobile: sheet shows the ISO definition",
-  );
-  const label = await m.evaluate(() => {
-    const d = document.querySelector("dialog[open]")!;
-    return (
-      document.getElementById(d.getAttribute("aria-labelledby")!)
-        ?.textContent ?? ""
-    );
-  });
-  check(
-    label === "MessageIdentification",
-    "mobile: sheet label points at the element name",
-  );
-  await axe(m, "mobile sheet, MsgId selected");
-  await m.keyboard.press("Escape");
-  check(
-    (await m.locator("dialog[open]").count()) === 0,
-    "mobile: Esc closes the sheet",
-  );
-  check((await focused(m)) === MSGID, "mobile: focus returns to the element");
+  skip("mobile: click opens a visible sheet in the viewport");
+  skip("mobile: sheet label points at the element name");
+  await axe(m, "mobile, MsgId selected");
+  skip("mobile: Esc closes the sheet");
+  skip("mobile: focus returns to the element");
   check(
     await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
     "mobile: page does not scroll sideways",
   );
+  await m.focus(el(MSGID));
   await m.keyboard.press("ArrowDown");
   check(
     (await focused(m)) === "GrpHdr/CreDtTm" &&
-      (await m.locator("dialog[open]").count()) === 0,
-    "mobile: arrow keys select without opening the sheet",
+      (await m.locator(sel("GrpHdr/CreDtTm")).count()) === 1,
+    "mobile: arrow keys select",
   );
+  skip("mobile: deep link opens the sheet");
+  skip("mobile: deep link, focus returns to the element after Esc");
+  skip("resize up closes the sheet");
+  skip("resize back down does not pop the sheet");
 
-  const dl = await open(390, 800, `#${MSGID}`);
-  check(await sheetShown(dl), "mobile: deep link opens the sheet");
-  await dl.keyboard.press("Escape");
+  // cross-pane: one selection drives the XML pane, the tree and the panel
+  const x = await open(1280, 900);
+  const treeSel = (path: string) =>
+    `[role=treeitem][data-path="${path}"][aria-selected='true']`;
+  const xAside = x.getByRole("complementary", { name: "Element details" });
+  await x.click(el(MSGID));
+  await x.locator(treeSel(MSGID)).waitFor({ timeout: 5000 });
   check(
-    (await focused(dl)) === MSGID,
-    "mobile: deep link, focus returns to the element after Esc",
+    (await x.locator("[role=treeitem][aria-selected='true']").count()) === 1 &&
+      (await xAside.innerText()).includes(ISO) &&
+      (await x.evaluate(() => location.hash)) === `#${MSGID}`,
+    "XML pane: selecting MsgId marks it in the tree and shows it in the panel",
   );
-
-  const r = await open(390, 800);
-  await r.click(el(MSGID));
-  await r.locator("dialog[open]").waitFor({ state: "visible" });
-  await r.setViewportSize({ width: 1280, height: 900 });
-  await r.locator("aside").waitFor({ state: "visible" });
+  const PMT = "CdtTrfTxInf/PmtId";
+  await x
+    .locator('[role=treeitem][data-path="CdtTrfTxInf"]')
+    .getByText("▸", { exact: true })
+    .click();
+  await x.locator(`[role=treeitem][data-path="${PMT}"]`).click();
+  await x.locator(sel(PMT)).waitFor({ timeout: 3000 });
   check(
-    (await r.locator("dialog[open]").count()) === 0,
-    "resize up closes the sheet",
-  );
-  await r.setViewportSize({ width: 390, height: 800 });
-  await r.waitForTimeout(300);
-  check(
-    (await r.locator("dialog[open]").count()) === 0,
-    "resize back down does not pop the sheet",
+    (await x.locator("[aria-current='true']").count()) === 1 &&
+      (await xAside.innerText()).includes("PaymentIdentification") &&
+      (await x.locator(treeSel(MSGID)).count()) === 0,
+    "tree pane: selecting PmtId marks it in the XML pane and shows it in the panel",
   );
 } finally {
   await browser.close();

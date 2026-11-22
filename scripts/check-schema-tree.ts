@@ -1,10 +1,10 @@
-// Browser check for the schema tree page: lazy loading, search, filter, deep links, races, keyboard, mobile sheet.
+// Browser check for the tree pane of the workspace page: lazy loading, search, filter, deep links, races, keyboard.
 // Needs a built dist (npm run build).
 import { chromium, type Page } from "playwright";
 import { serveDist } from "./serve-dist.ts";
 
 const { server, url } = await serveDist();
-const page = `${url}tree/pacs.008.001.14/`;
+const page = `${url}messages/pacs.008.001.14/`;
 const row = (path: string) => `[role=treeitem][data-path="${path}"]`;
 const sel = (path: string) => `${row(path)}[aria-selected='true']`;
 const HDR = "GrpHdr";
@@ -20,6 +20,9 @@ const check = (ok: boolean, what: string) => {
   console.log(`${ok ? "ok  " : "FAIL"} ${what}`);
   if (!ok) bad++;
 };
+// The mobile sheet is gone from the workspace page; Task 2 of T-051 replaces these with tab checks.
+const skip = (what: string) =>
+  console.log(`skip ${what} (no sheet on the workspace page, T-051 task 2)`);
 // Fresh page that records every type-file request (by type name, in order).
 async function open(width: number, height: number, hash = "") {
   const p = await (
@@ -57,18 +60,6 @@ const within = <T>(pr: Promise<T>, ms: number, what: string) =>
       setTimeout(() => no(new Error(`timed out waiting for ${what}`)), ms),
     ),
   ]);
-// The sheet must really be on screen: visible, inside the viewport and on top.
-async function sheetShown(p: Page) {
-  const dialog = p.locator("dialog[open]");
-  await dialog.waitFor({ state: "visible", timeout: 3000 });
-  const box = (await dialog.boundingBox())!;
-  const vh = p.viewportSize()!.height;
-  const top = await p.evaluate(
-    ([x, y]) => !!document.elementFromPoint(x!, y!)?.closest("dialog[open]"),
-    [box.x + box.width / 2, box.y + box.height / 2],
-  );
-  return box.height > 0 && box.y + box.height <= vh + 0.5 && top;
-}
 // A page opened on a deep link while one type file is held back; resolves once the page is hydrated and loading.
 async function slowDeepLink(file: string, ms: number, hashPart: string) {
   const ctx = await browser.newContext({
@@ -214,34 +205,26 @@ try {
   await k.keyboard.press("ArrowLeft");
   check(await focusIs(k, TX), "ArrowLeft goes to the parent row");
 
-  // mobile sheet
+  // mobile: the panes stack, the panel sits below them (tabs come in T-051 task 2)
   const m = await open(390, 800);
   await m.locator(row(HDR)).click();
-  check(await sheetShown(m), "mobile: tapping a row opens a visible sheet");
+  skip("mobile: tapping a row opens a visible sheet");
   check(
-    (await m.locator("dialog[open]").innerText()).includes("GroupHeader"),
-    "mobile: the sheet shows the element",
+    (await aside(m).innerText()).includes("GroupHeader"),
+    "mobile: tapping a row shows the element in the panel",
   );
   const md = await open(390, 800, `#${HDR}/MsgId`);
-  check(await sheetShown(md), "mobile: a deep link opens the sheet");
+  skip("mobile: a deep link opens the sheet");
+  await md.locator(sel(`${HDR}/MsgId`)).waitFor({ timeout: 5000 });
   check(
-    (await md.locator("dialog[open]").innerText()).includes(
-      "Point to point reference",
-    ),
-    "mobile: the deep-linked sheet shows the ISO definition",
+    (await aside(md).innerText()).includes("Point to point reference"),
+    "mobile: a deep link shows the ISO definition in the panel",
   );
-  const noSideways = () =>
-    md.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
   check(
-    await noSideways(),
-    "mobile: page does not scroll sideways, sheet open",
+    await md.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    "mobile: page does not scroll sideways",
   );
-  await md.keyboard.press("Escape");
-  await md.locator("dialog[open]").waitFor({ state: "detached" });
-  check(
-    await noSideways(),
-    "mobile: page does not scroll sideways, sheet closed",
-  );
+  skip("mobile: page does not scroll sideways, sheet closed");
 
   // races, with type files delayed or failed by request interception
   const r1 = await slowDeepLink(GH, 1500, `#${HDR}/MsgId`);
@@ -251,8 +234,9 @@ try {
   check(
     (await r1.p.locator(sel(TX)).count()) === 1 &&
       (await hash(r1.p)) === `#${TX}` &&
-      (await r1.p.locator(sel(`${HDR}/MsgId`)).count()) === 0,
-    "race: a slow deep link does not steal a later click",
+      (await r1.p.locator(sel(`${HDR}/MsgId`)).count()) === 0 &&
+      (await expanded(r1.p, HDR)) === "false",
+    "race: a slow deep link does not steal a later click or open its branch",
   );
 
   const r2 = await open(1280, 900);
@@ -271,8 +255,9 @@ try {
   check(
     (await r2.locator(sel(`${TX}/PmtId`)).count()) === 1 &&
       (await hash(r2)) === `#${TX}/PmtId` &&
-      (await r2.locator(sel(`${HDR}/MsgId`)).count()) === 0,
-    "race: a slow earlier hash does not override a newer one",
+      (await r2.locator(sel(`${HDR}/MsgId`)).count()) === 0 &&
+      (await expanded(r2, HDR)) === "false",
+    "race: a slow earlier hash does not override a newer one or open its branch",
   );
 
   const ctx3 = await browser.newContext({
