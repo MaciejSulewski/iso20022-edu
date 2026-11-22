@@ -45,7 +45,7 @@
   "home.step.flow.title": "Follow the flow",
   "home.step.flow.desc": "See how the payment moves from bank to bank.",
   "home.step.mapping.title": "Check the mapping",
-  "home.step.mapping.desc": "Match fields to what a customer sees on a transfer.",
+  "home.step.mapping.desc": "How an MT 103 customer transfer compares with pacs.008, in plain words.",
   "home.step.quiz.title": "Take the quiz",
   "home.step.quiz.desc": "Test what you remember.",
   "xml.title": "Annotated XML",

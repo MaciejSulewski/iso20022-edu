@@ -9,17 +9,18 @@ import { t, type UiKey } from "../i18n/t";
 const base = import.meta.env.BASE_URL;
 const lessons = await getCollection("lessons");
 // A step with a tool shows "Open step". Its lesson is linked too; step 1's tool is its lesson.
-// A step with neither shows "coming soon".
+// Every step must have a lesson: the build fails otherwise.
 const steps = STEPS.map((id) => {
   const lesson = lessons.find((l) => l.data.step === id);
-  const lessonHref = lesson && `${base}lessons/${lesson.id}/`;
+  if (!lesson) throw new Error(`Start-here step "${id}" has no lesson`);
+  const lessonHref = `${base}lessons/${lesson.id}/`;
   return {
     id,
     title: t(`home.step.${id}.title` as UiKey),
     desc: t(`home.step.${id}.desc` as UiKey),
     href: id === "lesson" ? lessonHref : toolHref(id, base),
     lessonHref,
-    lessonTitle: lesson?.data.title,
+    lessonTitle: lesson.data.title,
   };
 });
 const labels = {

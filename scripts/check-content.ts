@@ -249,6 +249,7 @@ if (import.meta.main) {
     annotations: load("annotations"),
     samples,
     lessons,
+    requireAllSteps: true,
   });
   console.log(
     `Coverage: ${coverage.annotated} of ${coverage.total} distinct sample element paths annotated`,
