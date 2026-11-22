@@ -13,9 +13,6 @@ Rules:
 ## Waiting on me
 
 ## Next
-### Phase 4: full tree explorer
-- [ ] T-051 Split-pane workspace (XML | tree | details; tabs on mobile). Complex: spec first. Done when: panes resize on desktop and become tabs on mobile #agent #phase/4 #blocked built in [PR #43](https://github.com/MaciejSulewski/iso20022-edu/pull/43), reviewed clean, but CI check:ui fails on mobile timing checks, see [[2026-11-22]]
-- [ ] T-052 Ctrl+K command palette with build-time element index; Pagefind for lessons and glossary (moved from T-101). Complex: spec first. Done when: Ctrl+K jumps to an element, term and lesson #agent #phase/4
 ### Phase 5: pacs.008 depth
 - [ ] T-060 Overlay by type for shared components, plus code explanations. Done when: shared types have one overlay entry used everywhere #agent #phase/5
 - [ ] T-061 Second sample (intermediary agent, structured remittance). Done when: it passes xmllint and check-content #agent #phase/5
@@ -35,6 +32,8 @@ Rules:
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-052 Ctrl+K command palette with build-time element index; Pagefind for lessons and glossary (moved from T-101). Done when: Ctrl+K jumps to an element, term and lesson #agent #phase/4 ✅ 2026-11-22 [PR #45](https://github.com/MaciejSulewski/iso20022-edu/pull/45) (elements and Pagefind pages done; lessons and glossary have no pages yet, T-090 and T-092 wire them in)
+- [x] T-051 Split-pane workspace (XML | tree | details; tabs on mobile). Done when: panes resize on desktop and become tabs on mobile #agent #phase/4 ✅ 2026-11-22 [PR #43](https://github.com/MaciejSulewski/iso20022-edu/pull/43)
 - [x] T-050 SchemaTree page with lazy expansion, mandatory-only filter, search, deep links. Done when: the full tree loads lazily and filters work #agent #phase/4 ✅ 2026-11-22 [PR #42](https://github.com/MaciejSulewski/iso20022-edu/pull/42)
 - [x] T-045 Review the prototype for accuracy and usability (pacs.008.001.14 page: sample, hover info, side panel, desktop and iPhone all OK) #me #phase/3 ✅ 2026-11-22 [[2026-11-22]]
 - [x] T-104 Version (.14) and zip URL confirmed; iso20022.org terms of use, IP policy and Swift licence read and recorded in [[sources]]: redistribution allowed, [[ADR-013 Commit the XSDs]] stands #me #phase/2 ✅ 2026-11-21 [[2026-11-21]]
@@ -92,3 +91,5 @@ Rules:
 - [[ADR-011 Process per task]]
 - [[ADR-012 XSD not committed]] (superseded)
 - [[ADR-013 Commit the XSDs]]
+- [[ADR-014 One workspace island]]
+- [[ADR-015 Palette on every page]]
