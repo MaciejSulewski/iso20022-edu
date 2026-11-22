@@ -2,6 +2,7 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import {
   AnnotationSchema,
+  LessonSchema,
   MessageSchema,
   SampleSchema,
 } from "./lib/content-schemas.ts";
@@ -21,6 +22,14 @@ export const collections = {
   annotations: defineCollection({
     loader: yaml("src/content/annotations"),
     schema: AnnotationSchema,
+  }),
+  lessons: defineCollection({
+    loader: glob({
+      pattern: "*.md",
+      base: "src/content/lessons/en",
+      generateId: ({ entry }) => entry.replace(/\.md$/, ""),
+    }),
+    schema: LessonSchema,
   }),
   samples: defineCollection({
     loader: yaml("src/content/samples"),

@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import type { Schema } from "./schema-model.ts";
+import { STEPS } from "../src/lib/content-schemas.ts";
 import { checkContent, sharedTypes, type Input } from "./check-content.ts";
 
 const schema: Schema = JSON.parse(
@@ -180,4 +181,71 @@ test("two samples of one message with the same order fail", () => {
   assert.match(errs(i), /same order 1/);
   (copy.data as { order: number }).order = 2;
   assert.doesNotMatch(errs(i), /same order/);
+});
+
+const lessonFile = (name: string, step: string, order: number) => ({
+  name,
+  data: {
+    title: "T",
+    summary: "S",
+    step,
+    order,
+    relatedElements: ["GrpHdr/MsgId"],
+    sources: [
+      { title: "t", url: "https://example.com", retrieved: "2026-11-22" },
+    ],
+    lastReviewed: { date: "2026-11-22", by: "u" },
+  },
+});
+const withLessons = (...l: ReturnType<typeof lessonFile>[]) => ({
+  ...base(),
+  lessons: l,
+});
+
+test("clean lessons pass and are counted", () => {
+  const r = checkContent(withLessons(lessonFile("a.md", "lesson", 1)));
+  assert.deepEqual(r.errors, []);
+  assert.deepEqual(r.lessons, { count: 1, missingSteps: STEPS.slice(1) });
+});
+
+test("lesson with bad front matter fails", () => {
+  const l = lessonFile("a.md", "lesson", 1);
+  (l.data as { sources: unknown[] }).sources = [];
+  assert.match(errs(withLessons(l)), /a\.md/);
+});
+
+test("two lessons for one step fail", () => {
+  const i = withLessons(
+    lessonFile("a.md", "lesson", 1),
+    lessonFile("b.md", "lesson", 2),
+  );
+  assert.match(errs(i), /b\.md: step "lesson" is already used by a\.md/);
+});
+
+test("two lessons with one order fail", () => {
+  const i = withLessons(
+    lessonFile("a.md", "lesson", 1),
+    lessonFile("b.md", "xml", 1),
+  );
+  assert.match(errs(i), /b\.md: order 1 is already used by a\.md/);
+});
+
+test("order must equal the step position", () => {
+  const i = withLessons(lessonFile("a.md", "xml", 3));
+  assert.match(errs(i), /a\.md: order 3 .* step "xml" is position 2/);
+});
+
+test("related element that does not resolve fails", () => {
+  const l = lessonFile("a.md", "lesson", 1);
+  l.data.relatedElements = ["GrpHdr/Nope"];
+  assert.match(errs(withLessons(l)), /a\.md: relatedElements "GrpHdr\/Nope"/);
+});
+
+test("a step without a lesson is an error only when required", () => {
+  const i = withLessons(lessonFile("a.md", "lesson", 1));
+  assert.doesNotMatch(errs(i), /no lesson/);
+  assert.match(
+    errs({ ...i, requireAllSteps: true }),
+    /step "xml" has no lesson/,
+  );
 });
