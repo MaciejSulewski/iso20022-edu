@@ -24,8 +24,12 @@ const LESSONS = [
   { step: "mapping", slug: "from-mt103", title: "From MT 103 to pacs.008" },
   { step: "quiz", slug: "check-yourself", title: "Check yourself: a recap" },
 ];
-// steps that have a tool; the others show only their lesson link
-const TOOLS = ["xml", "tree"];
+// steps that have a tool, with where it lives; the others show only their lesson link
+const TOOLS: Record<string, string> = {
+  xml: WORKSPACE,
+  tree: WORKSPACE,
+  flow: `${BASE}flows/pacs.008-agent-chain/`,
+};
 const LESSON = `${url}lessons/${LESSONS[0]!.slug}/`;
 const TITLE = LESSONS[0]!.title;
 const PHRASE = "debtor agent";
@@ -83,10 +87,9 @@ try {
       LESSONS.every((l) => {
         const links = s[l.step] ?? [];
         const lesson = `${BASE}lessons/${l.slug}/`;
-        return TOOLS.includes(l.step)
-          ? links.length === 2 &&
-              links.includes(WORKSPACE) &&
-              links.includes(lesson)
+        const tool = TOOLS[l.step];
+        return tool
+          ? links.length === 2 && links.includes(tool) && links.includes(lesson)
           : links.length === 1 && links[0] === lesson;
       }),
   );
