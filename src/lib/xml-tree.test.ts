@@ -80,6 +80,21 @@ test("overlay: byPath wins over byType; text resolved to en", () => {
   assert.equal(viaType[0]!.children[0]!.info.explanation, "type");
 });
 
+test("overlay codes: explanation per code, none when absent or type unlisted", () => {
+  const xml = wrap("<CdtTrfTxInf><ChrgBr>SHAR</ChrgBr></CdtTrfTxInf>");
+  const base = { byPath: {}, byType: {} };
+  const code = (codes: Record<string, Record<string, { en: string }>>) =>
+    find(buildTree(xml, schema, { ...base, codes }), "CdtTrfTxInf/ChrgBr")!.info
+      .codes!;
+  const got = code({ ChargeBearerType1Code: { SHAR: { en: "shared" } } });
+  assert.equal(got.find((c) => c.code === "SHAR")!.explanation, "shared");
+  assert.equal(got.find((c) => c.code === "DEBT")!.explanation, undefined);
+  assert.equal(
+    code({ Other: { SHAR: { en: "x" } } }).every((c) => !c.explanation),
+    true,
+  );
+});
+
 test("unresolved element throws with its path", () =>
   assert.throws(
     () => buildTree(wrap("<GrpHdr><Nope/></GrpHdr>"), schema),

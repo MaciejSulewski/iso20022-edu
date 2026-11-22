@@ -39,7 +39,7 @@ const rootType = rootTypeName(schema);
 if (!rootType) throw new Error(`No root type in ${message.id}`);
 const nodes = buildTree(xml, schema, a);
 // only the overlay maps reach the island; the schema stays at build time
-const overlay = a && { byPath: a.byPath, byType: a.byType };
+const overlay = a && { byPath: a.byPath, byType: a.byType, codes: a.codes };
 const states = {
   required: t("xml.state.required"),
   optional: t("xml.state.optional"),
@@ -87,6 +87,7 @@ const labels = {
     choiceMember: t("xml.panel.choiceMember"),
     choice: t("xml.panel.choice"),
     codes: t("xml.panel.codes"),
+    codeExplained: t("xml.panel.codeExplained"),
     examples: t("xml.panel.examples"),
     notes: t("xml.panel.notes"),
   },

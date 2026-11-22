@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import type { Schema } from "./schema-model.ts";
-import { checkContent, type Input } from "./check-content.ts";
+import { checkContent, sharedTypes, type Input } from "./check-content.ts";
 
 const schema: Schema = JSON.parse(
   readFileSync(
@@ -146,4 +146,20 @@ test("repeated siblings count once", () => {
   const r = checkContent(i);
   assert.deepEqual(r.errors, []);
   assert.equal(r.coverage.total, 4);
+});
+
+test("sharedTypes counts types used by two or more elements and those overlaid", () => {
+  const el = (type: string) => ({ tag: "x", type });
+  const s = {
+    complexTypes: {
+      A: { elements: [el("B"), el("B"), el("C")] },
+      B: { elements: [el("C"), el("Max35Text")] },
+      C: { elements: [] },
+    },
+  } as unknown as Schema;
+  // B is used twice, C twice, Max35Text is not a complex type.
+  assert.deepEqual(sharedTypes(s, new Set(["B", "Z"])), {
+    overlaid: 1,
+    total: 2,
+  });
 });

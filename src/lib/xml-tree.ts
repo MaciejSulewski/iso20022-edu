@@ -5,10 +5,31 @@ import type { Schema } from "../../scripts/schema-model.ts";
 import type { AnnotationSchema } from "./content-schemas.ts";
 import { resolvePath } from "./resolver.ts";
 
-export type Overlay = Pick<
-  z.infer<typeof AnnotationSchema>,
-  "byPath" | "byType"
->;
+type Annotations = z.infer<typeof AnnotationSchema>;
+// codes is optional so callers (and tests) that only overlay by path or type need not pass it.
+export type Overlay = Pick<Annotations, "byPath" | "byType"> &
+  Partial<Pick<Annotations, "codes">>;
+
+export type CodeInfo = {
+  code: string;
+  name?: string;
+  definition?: string;
+  explanation?: string;
+};
+
+/** Normalise a type's codes and add the overlay's plain-English line per code. */
+export function mergeCodes(
+  codes: (string | CodeInfo)[],
+  typeName: string,
+  overlay?: Overlay,
+): CodeInfo[] {
+  const by = overlay?.codes?.[typeName];
+  return codes.map((c) => {
+    const i = typeof c === "string" ? { code: c } : { ...c };
+    const e = by?.[i.code]?.en;
+    return e ? { ...i, explanation: e } : i;
+  });
+}
 
 export type Raw = {
   tag: string;
@@ -36,7 +57,7 @@ export type XmlNode = {
     repeating: boolean;
     choiceMember: boolean;
     choice: boolean;
-    codes?: { code: string; name?: string; definition?: string }[];
+    codes?: CodeInfo[];
     explanation?: string;
     notes?: string;
     examples?: string[];
@@ -118,10 +139,7 @@ export function buildTree(
         choiceMember: r.choiceMember,
         choice: r.choice,
       };
-      if (r.codes)
-        info.codes = r.codes.map((c) =>
-          typeof c === "string" ? { code: c } : c,
-        );
+      if (r.codes) info.codes = mergeCodes(r.codes, r.typeName, overlay);
       if (o) {
         info.explanation = o.explanation.en;
         if (o.notes) info.notes = o.notes.en;

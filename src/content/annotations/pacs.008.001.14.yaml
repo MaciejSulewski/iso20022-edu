@@ -130,3 +130,85 @@ byPath:
       en: The International Bank Account Number of the creditor's account, an account identifier used internationally and defined in the standard ISO 13616. It identifies the account to credit.
     examples:
       - DE89370400440532013000
+byType:
+  BranchAndFinancialInstitutionIdentification8:
+    explanation:
+      en: A block that identifies a bank and, if needed, one of its branches. The bank itself is identified in the FinInstnId part, for example by its BIC. The branch part is only needed when that identification does not already point to a specific branch. The same block is used for every bank in the payment, so the name of the element that holds it tells you which bank it is.
+  CashAccount40:
+    explanation:
+      en: A block that identifies an account. Its main part is the account identifier, either an IBAN or another identifier. It can also give the account type, its currency, a name for the account and a proxy, which is an alternative name for reaching the account. The currency is only needed when one account number covers several currencies. The name of the element that holds the block tells you whose account it is.
+  ActiveOrHistoricCurrencyAndAmount:
+    explanation:
+      en: An amount of money together with its currency. The number is the text of the element and the currency is the Ccy attribute, written as an ISO 4217 currency code. The currency may be one in use today or one that is no longer used. What the amount stands for depends on the element and on the block that holds it.
+  ActiveCurrencyAndAmount:
+    explanation:
+      en: An amount of money together with its currency. The number is the text of the element and the currency is the Ccy attribute, written as an ISO 4217 currency code. Unlike the historic variant, it accepts only currencies that are in use today. What the amount stands for depends on the element and on the block that holds it.
+  PartyIdentification272:
+    explanation:
+      en: A block that identifies a party, which is either a person or an organisation. It can hold the party's name, postal address, identification, country of residence and contact details, and all of them are optional. The same block is used for every party in the payment, so the name of the element that holds it tells you the party's role.
+  PostalAddress27:
+    explanation:
+      en: A block that holds an address in the form postal services use. It offers separate fields, such as street name, building number, post code, town and country, and also free lines of text (AdrLine). All of the fields are optional, so an address can be given in whichever form the sender has. The name of the element that holds it tells you whose address it is.
+  PaymentTypeInformation28:
+    explanation:
+      en: A block with further detail about the type of payment. It can give the priority, the clearing channel, the service level, the local instrument and the category purpose. All are optional, and they tell the banks how the payment should be handled.
+  ServiceLevel8Choice:
+    explanation:
+      en: A choice between two ways to name a service level, which is an agreement or a set of rules that applies to the item the parent element describes (a payment or a mandate). Use either a code taken from an external code list (Cd) or a code the parties have agreed between themselves (Prtry), never both. The codes themselves come from outside this message.
+  LocalInstrument2Choice:
+    explanation:
+      en: A choice between two ways to name a local instrument, an instrument specific to one community of users. It can also refine the service or service level. The parent element says whether it belongs to a payment or a mandate. Use either a code taken from an external code list (Cd) or a code the parties have agreed between themselves (Prtry), never both.
+  CategoryPurpose1Choice:
+    explanation:
+      en: A choice between two ways to give the high-level purpose of the item the parent element describes (a payment or a mandate), in broad categories. Use either a code taken from an external code list (Cd) or a code in a proprietary form (Prtry), never both. For a payment, the initiating party uses it to tell the banks something about how to process it, and it may lead them to handle it in a special way.
+  TaxData1:
+    explanation:
+      en: A block for tax information that goes with the payment. It can name the parties the tax applies to and give the tax reference, the amount the tax is based on, the tax amount itself and a date. It also holds tax records. All of it is optional.
+  SupplementaryData1:
+    explanation:
+      en: A block for extra information that does not fit any of the other fields of the message. It has two parts. PlcAndNm says where in the message the extra data belongs, written as an XPath when the message is XML. Envlp is the envelope that wraps the data itself.
+codes:
+  SettlementMethod1Code:
+    INDA:
+      en: The bank that receives the instruction does the settling.
+    INGA:
+      en: The bank that sends the instruction does the settling, then passes the payment on to the next bank.
+    COVE:
+      en: The banks settle with a separate cover payment instead of through this message.
+    CLRG:
+      en: The banks settle through a payment clearing system.
+  ChargeBearerType1Code:
+    DEBT:
+      en: The debtor pays all the fees for this payment.
+    CRED:
+      en: The creditor pays all the fees for this payment.
+    SHAR:
+      en: The two sides split the fees. The debtor pays the fees on the sending side and the creditor pays the fees on the receiving side.
+    SLEV:
+      en: The fees follow the rules of the service level or scheme the payment uses.
+  Priority2Code:
+    HIGH:
+      en: The payment should be handled with high priority.
+    NORM:
+      en: The payment should be handled with normal priority.
+  Priority3Code:
+    URGT:
+      en: The payment is urgent, the highest priority there is.
+    HIGH:
+      en: The payment should be handled with high priority.
+    NORM:
+      en: The payment should be handled with normal priority.
+  ClearingChannel2Code:
+    RTGS:
+      en: The payment goes through a real-time gross settlement system.
+    RTNS:
+      en: The payment goes through a real-time net settlement system.
+    MPNS:
+      en: The payment goes through a net settlement system for mass payments.
+    BOOK:
+      en: The payment is made as an internal book transfer.
+  CreditDebitCode:
+    CRDT:
+      en: "A credit: the adjustment adds to the amount it applies to."
+    DBIT:
+      en: "A debit: the adjustment is subtracted from the amount it applies to."

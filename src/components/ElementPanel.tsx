@@ -18,6 +18,7 @@ export type PanelLabels = Record<
   | "choiceMember"
   | "choice"
   | "codes"
+  | "codeExplained"
   | "examples"
   | "notes",
   string
@@ -146,6 +147,14 @@ export default function ElementPanel({
                     {c.name && <span> {c.name}</span>}
                     {c.definition && (
                       <span class="block text-muted">{c.definition}</span>
+                    )}
+                    {c.explanation && (
+                      <span class="block">
+                        <span class="font-semibold">
+                          {labels.codeExplained}
+                        </span>{" "}
+                        {c.explanation}
+                      </span>
                     )}
                   </li>
                 ))}

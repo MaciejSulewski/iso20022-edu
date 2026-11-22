@@ -1,6 +1,11 @@
 // Pure view logic for the SchemaTree island: visible rows, lookup, overlay merge, hash and search.
 import type { TreeChild } from "./schema-tree.ts";
-import type { Overlay, XmlNode } from "./xml-tree.ts";
+import {
+  mergeCodes,
+  type CodeInfo,
+  type Overlay,
+  type XmlNode,
+} from "./xml-tree.ts";
 import { elementState } from "./xml-view.ts";
 
 /** A type file: its rows once fetched, or where the fetch stands. */
@@ -104,11 +109,11 @@ export function toXmlNode(
     choice: c.choice,
   };
   if (c.codes)
-    info.codes = (
-      c.codes as (
-        string | { code: string; name?: string; definition?: string }
-      )[]
-    ).map((x) => (typeof x === "string" ? { code: x } : x));
+    info.codes = mergeCodes(
+      c.codes as (string | CodeInfo)[],
+      c.typeName,
+      overlay,
+    );
   const o = overlay?.byPath[path] ?? overlay?.byType[c.typeName];
   if (o) {
     info.explanation = o.explanation.en;
