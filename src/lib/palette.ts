@@ -15,12 +15,15 @@ export type PaletteTarget = {
 export type KeyLike = {
   ctrlKey: boolean;
   metaKey: boolean;
+  shiftKey?: boolean;
+  altKey?: boolean;
   key: string;
   target: PaletteTarget;
 };
 
-/** Ctrl or Cmd plus K opens, unless the focus is in a text field outside the palette. */
+/** Plain Ctrl or Cmd plus K opens (Shift or Alt keep the browser's own shortcut), unless the focus is in a text field outside the palette. */
 export function shouldOpen(e: KeyLike): boolean {
+  if (e.shiftKey || e.altKey) return false;
   if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "k") return false;
   const t = e.target;
   if (!t) return true;
@@ -64,10 +67,12 @@ export function elementResults(
       id,
       path,
       name,
-      parts: splitName(name, query),
     })),
   );
-  return { hits: all.slice(0, limit), total: all.length };
+  const hits = all
+    .slice(0, limit)
+    .map((h) => ({ ...h, parts: splitName(h.name, query) }));
+  return { hits, total: all.length };
 }
 
 /** A Pagefind hit once its `data()` is loaded (only the fields used here). */

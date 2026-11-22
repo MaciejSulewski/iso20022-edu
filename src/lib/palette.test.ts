@@ -30,6 +30,30 @@ test("does not open from input, textarea, select or contenteditable", () => {
   assert.equal(key({ tagName: "DIV", isContentEditable: true }), false);
 });
 
+test("Shift or Alt held keeps the browser's own shortcut", () => {
+  assert.equal(key(null, { shiftKey: true }), false);
+  assert.equal(key(null, { altKey: true }), false);
+  assert.equal(
+    key(null, { ctrlKey: false, metaKey: true, shiftKey: true }),
+    false,
+  );
+  assert.equal(key(null, { shiftKey: false, altKey: false }), true);
+});
+
+test("non-element targets and lowercase tag names", () => {
+  assert.equal(key({}), true); // document or a text node: no tagName, no closest
+  assert.equal(key({ tagName: "input" }), false);
+  assert.equal(key({ tagName: "textarea" }), false);
+  assert.equal(key({ tagName: "button" }), true);
+});
+
+test("a contenteditable inside the palette still opens", () => {
+  assert.equal(
+    key({ tagName: "DIV", isContentEditable: true, closest: () => ({}) }),
+    true,
+  );
+});
+
 test("opens from the palette's own input", () => {
   assert.equal(key(field("INPUT", true)), true);
 });
@@ -125,4 +149,20 @@ test("status picks the wording key", () => {
   assert.deepEqual(status(12, 8), { key: "palette.showing", n: 12, shown: 8 });
   assert.equal(status(0, 0, "loading").key, "palette.loading");
   assert.equal(status(3, 3, "error").key, "palette.error");
+});
+
+test("regex characters in the query are plain text", () => {
+  assert.deepEqual(splitName("BICFI", "."), [{ text: "BICFI", match: false }]);
+  assert.deepEqual(splitName("BICFI", "("), [{ text: "BICFI", match: false }]);
+  const r = elementResults([{ id: "m", index }], "/");
+  assert.equal(r.total, 3);
+  assert.deepEqual(r.hits[0]?.parts, [{ text: "DebtorAgent", match: false }]);
+  assert.equal(elementResults([{ id: "m", index }], ".").total, 0);
+});
+
+test("only the first of repeated matches is marked", () => {
+  assert.deepEqual(splitName("AgentAgent", "agent"), [
+    { text: "Agent", match: true },
+    { text: "Agent", match: false },
+  ]);
 });
