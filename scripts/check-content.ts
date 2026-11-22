@@ -131,6 +131,20 @@ export function checkContent({
   return { errors, coverage: { annotated, total: paths.size } };
 }
 
+/** Complex types that two or more elements use, and how many of them have a byType entry. */
+export function sharedTypes(schema: Schema, byType: Set<string>) {
+  const uses = new Map<string, number>();
+  for (const t of Object.values(schema.complexTypes))
+    for (const e of t.elements)
+      if (schema.complexTypes[e.type])
+        uses.set(e.type, (uses.get(e.type) ?? 0) + 1);
+  const shared = [...uses].filter(([, n]) => n >= 2).map(([k]) => k);
+  return {
+    overlaid: shared.filter((k) => byType.has(k)).length,
+    total: shared.length,
+  };
+}
+
 if (import.meta.main) {
   const dir = (d: string) => new URL(`../src/content/${d}/`, import.meta.url);
   const loadErrors: string[] = [];
@@ -169,6 +183,13 @@ if (import.meta.main) {
   console.log(
     `Coverage: ${coverage.annotated} of ${coverage.total} distinct sample element paths annotated`,
   );
+  const byType = new Set(
+    load("annotations").flatMap((f) =>
+      Object.keys((f.data as { byType?: object }).byType ?? {}),
+    ),
+  );
+  const st = sharedTypes(schema, byType);
+  console.log(`Shared types: ${st.overlaid} of ${st.total} overlaid`);
   errors.unshift(...loadErrors);
   if (errors.length) {
     console.error(errors.map((e) => `ERROR ${e}`).join("\n"));
