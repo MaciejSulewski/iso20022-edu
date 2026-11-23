@@ -1,7 +1,7 @@
 id: interbank-settlement-amount
 term: Interbank settlement amount
 plain: >-
-  The amount of money moved between the two banks exchanging this message. It carries a currency, and every payment must give it.
+  How much money passes from one bank to the other for this payment, with its currency. Every payment must give it.
 message: pacs.008.001.14
 elements:
   - CdtTrfTxInf/IntrBkSttlmAmt

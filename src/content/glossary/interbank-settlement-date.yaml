@@ -1,7 +1,7 @@
 id: interbank-settlement-date
 term: Interbank settlement date
 plain: >-
-  The date on which the money leaves the paying bank and becomes available to the bank it is owed to. It is optional.
+  The day the money actually changes hands between the two banks. It can be given once for the whole message or for each payment.
 message: pacs.008.001.14
 elements:
   - CdtTrfTxInf/IntrBkSttlmDt

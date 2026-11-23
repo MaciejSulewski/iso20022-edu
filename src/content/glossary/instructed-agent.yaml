@@ -1,7 +1,7 @@
 id: instructed-agent
 term: Instructed agent
 plain: >-
-  The bank that receives this message from the party before it in the chain and is asked to carry it out. It is optional in the group header.
+  The bank this message is addressed to, the one that has to act on it. It can be named once for the whole message or for each payment.
 message: pacs.008.001.14
 elements:
   - GrpHdr/InstdAgt

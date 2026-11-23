@@ -1,7 +1,7 @@
 id: intermediary-agent
 term: Intermediary agent
 plain: >-
-  A bank that sits between the payer's bank and the payee's bank. This element is the first one after the debtor agent when there are several, and it can be left out.
+  A bank that handles the payment on its way from the payer's bank to the payee's bank. It is optional, and this is the first such bank if there are several.
 message: pacs.008.001.14
 elements:
   - CdtTrfTxInf/IntrmyAgt1

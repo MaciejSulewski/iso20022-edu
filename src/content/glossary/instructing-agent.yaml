@@ -1,7 +1,7 @@
 id: instructing-agent
 term: Instructing agent
 plain: >-
-  The bank that sends this message on to the next party in the chain. It is optional in the group header.
+  The bank that is sending this message. It can be named once for the whole message or for each payment.
 message: pacs.008.001.14
 elements:
   - GrpHdr/InstgAgt

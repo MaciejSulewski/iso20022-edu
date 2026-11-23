@@ -1,7 +1,7 @@
 id: uetr
 term: UETR
 plain: >-
-  A universally unique identifier for the payment, meant as an end-to-end reference. It follows a fixed UUID format, and it is optional in this message.
+  A single code that stays with one payment from start to finish, so anyone along the way can point to that exact payment. A message may leave it out.
 message: pacs.008.001.14
 elements:
   - CdtTrfTxInf/PmtId/UETR

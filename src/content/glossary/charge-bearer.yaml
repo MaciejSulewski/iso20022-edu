@@ -1,7 +1,7 @@
 id: charge-bearer
 term: Charge bearer
 plain: >-
-  Says which party pays the fees for processing the payment. The message must state it, and it is picked from a short list of codes.
+  Tells who covers the fees charged along the way: the payer, the payee, or both. The message must say which, using a short code.
 message: pacs.008.001.14
 elements:
   - CdtTrfTxInf/ChrgBr
