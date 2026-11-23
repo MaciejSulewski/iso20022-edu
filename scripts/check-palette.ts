@@ -435,32 +435,60 @@ try {
   const gl = await fresh(1280, 900, `${url}glossary/`);
   await gl.getByRole("button", { name: "Search" }).click();
   await input(gl).fill(TERM);
+  // the rows with the group each one sits in, and which one is selected
+  const rowsOf = (sel: string) => {
+    const opts = [...document.querySelectorAll(`${sel} [role=option]`)];
+    const row = (o: Element) => ({
+      group: o.closest("[role=group]")?.firstElementChild?.textContent ?? "",
+      text: o.textContent ?? "",
+    });
+    const on = opts.find((o) => o.getAttribute("aria-selected") === "true");
+    return { rows: opts.map(row), on: on ? opts.indexOf(on) : -1 };
+  };
+  const isTerm = (r: { group: string; text: string }) =>
+    r.group === "Pages" && r.text.startsWith(TERM);
   const hit = await settle(
     gl,
-    `glossary page: ${TERM} lists a Pages row titled ${TERM}`,
-    view,
-    (s) =>
-      s.groups.includes("Pages") &&
-      s.options.some((o) => o.text.startsWith(TERM)),
+    `glossary page: ${TERM} lists a row titled ${TERM} in the Pages group`,
+    rowsOf,
+    (s) => s.rows.some(isTerm),
     DIALOG,
   );
   if (hit) {
-    // move to the row of the Pages group (the Elements group may hold a UETR row too)
-    const onPage = (sel: string) =>
-      document
-        .querySelector(`${sel} [role=option][aria-selected=true]`)
-        ?.closest("[role=group]")?.firstElementChild?.textContent === "Pages";
-    for (let k = 0; k < 40 && !(await gl.evaluate(onPage, DIALOG)); k++)
+    // ArrowDown to that row, reading the selection after every press
+    let at = hit;
+    for (
+      let k = 0;
+      k < hit.rows.length && !isTerm(at.rows[at.on] ?? { group: "", text: "" });
+      k++
+    ) {
+      const from = at.on;
       await gl.keyboard.press("ArrowDown");
-    await gl.keyboard.press("Enter");
-    await gl.waitForURL(`${url}glossary/${TERM_ID}/`, { timeout: 5000 }).then(
-      () => check(true, `Enter on the ${TERM} row lands on its glossary page`),
-      () =>
-        check(
-          false,
-          `Enter on the ${TERM} row lands on its glossary page (at ${gl.url()})`,
-        ),
-    );
+      const next = await settle(
+        gl,
+        `ArrowDown moves the selection towards the ${TERM} row (from row ${from})`,
+        rowsOf,
+        (s) => s.on !== from,
+        DIALOG,
+      );
+      if (!next) break;
+      at = next;
+    }
+    if (!isTerm(at.rows[at.on] ?? { group: "", text: "" })) {
+      check(false, `the selection reached the ${TERM} row in the Pages group`);
+      await gl.close();
+    } else {
+      await gl.keyboard.press("Enter");
+      await gl.waitForURL(`${url}glossary/${TERM_ID}/`, { timeout: 5000 }).then(
+        () =>
+          check(true, `Enter on the ${TERM} row lands on its glossary page`),
+        () =>
+          check(
+            false,
+            `Enter on the ${TERM} row lands on its glossary page (at ${gl.url()})`,
+          ),
+      );
+    }
   }
 } finally {
   await browser.close();

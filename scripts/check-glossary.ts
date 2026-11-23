@@ -83,17 +83,30 @@ try {
   ];
   const all = new Set<string>();
   let wsLinks = 0;
+  const wrongFrags: string[] = [];
   for (const to of pages) {
     await g.goto(to, { waitUntil: "networkidle" });
+    const ws: string[] = [];
     for (const l of await links(g)) {
       all.add(l);
-      if (l.includes("/messages/")) wsLinks++;
+      if (l.includes("/messages/")) {
+        wsLinks++;
+        ws.push(l.split("#")[1] ?? "");
+      }
     }
+    const own =
+      terms.find((t) => to === `${url}glossary/${t.id}/`)?.elements ?? [];
+    if (JSON.stringify([...ws].sort()) !== JSON.stringify([...own].sort()))
+      wrongFrags.push(`${to.slice(url.length)}: ${ws.join(",") || "none"}`);
   }
   const wantWs = terms.reduce((n, t) => n + t.elements.length, 0);
   check(
     wsLinks === wantWs,
     `term pages hold ${wantWs} workspace links (${wsLinks})`,
+  );
+  check(
+    wrongFrags.length === 0,
+    `each term page links exactly its own elements (${wrongFrags.join(" | ")})`,
   );
   const badStatus: string[] = [];
   const badPath: string[] = [];
@@ -134,14 +147,16 @@ try {
       link: h?.parentElement?.querySelector("a")?.textContent ?? null,
     };
   };
-  await settle(
+  const hasLink = await settle(
     f,
     `1280: the Details pane for ${SM} has a Glossary link named ${smTerm.term}`,
     glossarySection,
     (s) => s.link === smTerm.term,
   );
-  await f.locator("section:has(> h3) a", { hasText: smTerm.term }).click();
-  await f.waitForURL(`${url}glossary/${smTerm.id}/`).catch(() => {}); // a miss shows in the read below
+  if (hasLink) {
+    await f.locator("section:has(> h3) a", { hasText: smTerm.term }).click();
+    await f.waitForURL(`${url}glossary/${smTerm.id}/`).catch(() => {}); // a miss shows in the read below
+  }
   await settle(
     f,
     `clicking it lands on /glossary/${smTerm.id}/ with ${smTerm.term} as h1`,
