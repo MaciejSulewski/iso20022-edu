@@ -146,3 +146,14 @@ export const FlowSchema = z.strictObject({
     )
     .min(1),
 });
+
+export const GlossarySchema = z.strictObject({
+  id: z.string().min(1),
+  term: z.string().min(1),
+  plain: z.string().min(1),
+  message: z.string(),
+  elements: z.array(z.string()).min(1),
+  related: z.array(z.string()).default([]),
+  lesson: z.string().optional(),
+  lastReviewed: Reviewed,
+});

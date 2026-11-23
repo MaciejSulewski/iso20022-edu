@@ -5,6 +5,7 @@ import type { Schema } from "./schema-model.ts";
 import {
   AnnotationSchema,
   FlowSchema,
+  GlossarySchema,
   LessonSchema,
   MappingSchema,
   MessageSchema,
@@ -25,6 +26,7 @@ export type Input = {
   lessons?: File[];
   flows?: File[];
   mappings?: File[];
+  glossary?: File[];
   /** Turn "a step has no lesson" from a report into an error (on once all six lessons exist). */
   requireAllSteps?: boolean;
 };
@@ -37,6 +39,7 @@ export function checkContent({
   lessons = [],
   flows = [],
   mappings = [],
+  glossary = [],
   requireAllSteps = false,
 }: Input) {
   const errors: string[] = [];
@@ -304,6 +307,52 @@ export function checkContent({
     });
   }
 
+  const terms = glossary.flatMap((f) => {
+    const t = parsed(f, GlossarySchema);
+    return t ? [{ f, t }] : [];
+  });
+  const termIds = new Set(terms.map(({ t }) => t.id));
+  const byTerm = new Map<string, string>();
+  const byElement = new Map<string, string>();
+  for (const { f, t } of terms) {
+    idMatches(f, t.id);
+    if (t.message !== schema.id)
+      errors.push(`${f.name}: no schema for message "${t.message}"`);
+    if (t.lesson && !lessonIds.has(t.lesson))
+      errors.push(`${f.name}: lesson "${t.lesson}" is not a lesson id`);
+    const key = t.term.toLowerCase();
+    const sameTerm = byTerm.get(key);
+    if (sameTerm)
+      errors.push(`${f.name}: term "${t.term}" is already used by ${sameTerm}`);
+    else byTerm.set(key, f.name);
+    if (t.message === schema.id)
+      for (const p of t.elements) {
+        const r = resolvePath(schema, p);
+        if (!r) {
+          errors.push(
+            `${f.name}: element "${p}" does not resolve in ${schema.id}`,
+          );
+          continue;
+        }
+        const owner = byElement.get(r.path);
+        if (owner)
+          errors.push(
+            `${f.name}: element "${p}" is already claimed by ${owner}`,
+          );
+        else byElement.set(r.path, f.name);
+      }
+    const seenRelated = new Set<string>();
+    for (const r of t.related) {
+      if (r === t.id)
+        errors.push(`${f.name}: related "${r}" is the term itself`);
+      else if (!termIds.has(r))
+        errors.push(`${f.name}: related "${r}" is not a term id`);
+      if (seenRelated.has(r))
+        errors.push(`${f.name}: related "${r}" appears twice`);
+      seenRelated.add(r);
+    }
+  }
+
   const annotated = [...paths].filter((p) => {
     const r = resolvePath(schema, p);
     return r && (annotatedPaths.has(r.path) || annotatedTypes.has(r.typeName));
@@ -314,6 +363,7 @@ export function checkContent({
     lessons: { count: byStep.size, missingSteps },
     flows: flows.length,
     mappings: mappings.length,
+    glossary: glossary.length,
   };
 }
 
@@ -382,6 +432,7 @@ if (import.meta.main) {
     lessons: lessonInfo,
     flows: flowCount,
     mappings: mappingCount,
+    glossary: glossaryCount,
   } = checkContent({
     schema,
     messages: load("messages"),
@@ -390,6 +441,7 @@ if (import.meta.main) {
     lessons,
     flows: load("flows"),
     mappings: load("mappings"),
+    glossary: load("glossary"),
     requireAllSteps: true,
   });
   console.log(
@@ -397,6 +449,7 @@ if (import.meta.main) {
   );
   console.log(`Flows: ${flowCount}`);
   console.log(`Mappings: ${mappingCount}`);
+  console.log(`Glossary: ${glossaryCount}`);
   console.log(`Lessons: ${lessonInfo.count} of ${STEPS.length} steps`);
   const byType = new Set(
     load("annotations").flatMap((f) =>

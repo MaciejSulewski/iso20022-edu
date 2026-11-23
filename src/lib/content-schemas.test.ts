@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   AnnotationSchema,
   FlowSchema,
+  GlossarySchema,
   LessonSchema,
   MessageSchema,
   SampleSchema,
@@ -162,4 +163,28 @@ test("flow sample is optional and a step may flag sample: true only", () => {
   const bad = flow();
   Object.assign(bad.variants[0]!.steps[0]!, { sample: false });
   assert.ok(!FlowSchema.safeParse(bad).success);
+});
+
+const term = () => ({
+  id: "debtor",
+  term: "Debtor",
+  plain: "The payer.",
+  message: "pacs.008.001.14",
+  elements: ["CdtTrfTxInf/Dbtr"],
+  lastReviewed: { date: "2026-11-23", by: "me" },
+});
+
+test("good glossary term passes and related defaults to empty", () => {
+  const r = GlossarySchema.safeParse(term());
+  assert.ok(r.success);
+  assert.deepEqual(r.data.related, []);
+  assert.equal(r.data.lesson, undefined);
+});
+
+test("glossary term with an extra key fails", () => {
+  assert.ok(!GlossarySchema.safeParse({ ...term(), extra: 1 }).success);
+});
+
+test("glossary term needs at least one element", () => {
+  assert.ok(!GlossarySchema.safeParse({ ...term(), elements: [] }).success);
 });
