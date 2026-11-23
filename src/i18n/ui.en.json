@@ -150,6 +150,7 @@
   "lesson.tool": "Open the workspace",
   "lesson.toolFlow": "Open the flow",
   "lesson.toolMapping": "Open the mapping table",
+  "lesson.toolQuiz": "Take the quiz",
   "flow.draft": "AI-drafted from public sources, not yet reviewed by a person.",
   "flow.variants": "Method",
   "flow.diagram": "The parties in the chain",
@@ -187,5 +188,18 @@
   "glossary.official.note": "The text below is the ISO definition, read from the pacs.008.001.14 schema. The wording above is ours.",
   "glossary.related": "Related terms",
   "glossary.lesson": "Read lesson {n}: {title}",
-  "xml.panel.glossary": "Glossary"
+  "xml.panel.glossary": "Glossary",
+  "quiz.draft": "AI-drafted from lessons 1 to 5, not yet reviewed by a person (T-093). Do not rely on it for real payments.",
+  "quiz.intro": "Pick one answer for each question, then press the button. Nothing is saved: a fresh page is a fresh quiz.",
+  "quiz.form": "Quiz questions",
+  "quiz.check": "Check my answers",
+  "quiz.retry": "Try again",
+  "quiz.score": "You scored {n} of {total}",
+  "quiz.right": "Right",
+  "quiz.wrong": "Not quite",
+  "quiz.skipped": "Not answered",
+  "quiz.answerIs": "The right answer: {answer}",
+  "quiz.elements": "Look at it in the workspace",
+  "quiz.lesson": "Read lesson {n}: {title}",
+  "quiz.back": "Back to lesson {n}: {title}"
 }
