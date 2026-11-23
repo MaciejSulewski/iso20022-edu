@@ -182,7 +182,7 @@ try {
   // 6. a Pagefind hit for a word on the landing page (the only guard against a silent production failure)
   const g = await fresh(1280, 900, msgUrl);
   await g.getByRole("button", { name: "Search" }).click();
-  await input(g).fill("money");
+  await input(g).fill("remember");
   const pg = await settle(
     g,
     "a word from the landing page lists a Pagefind hit under Pages",
@@ -191,7 +191,7 @@ try {
     DIALOG,
   );
   check(
-    !!pg?.options.some((o) => o.text.includes("a customer's money")),
+    !!pg?.options.some((o) => o.text.includes("what you remember")),
     "the Pages hit is the landing page (its excerpt holds the word)",
   );
   if (pg) {
