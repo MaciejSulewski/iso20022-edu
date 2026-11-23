@@ -3,6 +3,7 @@ import { getCollection, getEntry } from "astro:content";
 import Base from "../../../layouts/Base.astro";
 import Workspace from "../../../components/Workspace";
 import { buildTree } from "../../../lib/xml-tree";
+import { termsByPath } from "../../../lib/glossary";
 import { childRecords } from "../../../lib/schema-tree";
 import { rootTypeName } from "../../../lib/resolver";
 import { t } from "../../../i18n/t";
@@ -40,6 +41,18 @@ const schemas = import.meta.glob("../../../data/schema/*.json", {
   import: "default",
   eager: true,
 }) as unknown as Record<string, Schema>;
+// path -> term, with its page link: the only glossary data the island gets
+const glossary = Object.fromEntries(
+  Object.entries(
+    termsByPath(
+      (await getCollection("glossary")).map((g) => g.data),
+      message.id,
+    ),
+  ).map(([path, g]) => [
+    path,
+    { term: g.term, href: `${base}glossary/${g.id}/` },
+  ]),
+);
 const a = (await getEntry("annotations", message.id))?.data;
 const file = `../../../content/samples/${sample.data.file}`;
 const xml = xmls[file];
@@ -101,6 +114,7 @@ const labels = {
     codeExplained: t("xml.panel.codeExplained"),
     examples: t("xml.panel.examples"),
     notes: t("xml.panel.notes"),
+    glossary: t("xml.panel.glossary"),
   },
   xml: {
     tree: t("xml.tree"),
@@ -180,6 +194,7 @@ const labels = {
       rootType={rootType}
       root={childRecords(schema, rootType)}
       overlay={overlay}
+      glossary={glossary}
       labels={labels}
     >
       {schema.constraints && schema.constraints.length > 0 && (
