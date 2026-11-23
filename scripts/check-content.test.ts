@@ -675,7 +675,7 @@ test("clean quiz passes and is counted", () => {
 test("quiz with bad data fails", () => {
   assert.match(
     errs(withQuiz((q) => (q.questions[0]!.options = ["a"]))),
-    /z.yaml/,
+    /z\.yaml.*"questions",\s*0,\s*"options"/s,
   );
 });
 

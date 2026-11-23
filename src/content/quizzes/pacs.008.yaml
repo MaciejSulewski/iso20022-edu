@@ -23,7 +23,7 @@ questions:
       - "Debtor agent: Ben's bank. Creditor agent: Ana's bank."
       - "Debtor agent: Ana's bank. Creditor agent: an intermediary bank between the two."
     answer: 0
-    explanation: "Lesson 1: the debtor agent services the payer's account and the creditor agent services the payee's account. Ana pays, so her bank is the debtor agent. An intermediary agent is a different bank, placed between the two. Both agents are required in the message."
+    explanation: "Lessons 1 and 4: the debtor agent services the payer's account and the creditor agent services the payee's account. Ana pays, so her bank is the debtor agent. An intermediary agent is a different bank, placed between the two. Both agents are required in the message."
     lesson: what-is-pacs008
     elements:
       - CdtTrfTxInf/DbtrAgt
@@ -35,7 +35,7 @@ questions:
       - "Both GrpHdr and CdtTrfTxInf repeat, once per payment."
       - "GrpHdr appears once, and CdtTrfTxInf can repeat, one block per payment."
     answer: 2
-    explanation: "Lessons 1 and 2: the group header appears once and holds what is shared by every payment. Each payment gets its own transaction block, and that block can repeat. The tree shows CdtTrfTxInf as [1..n]."
+    explanation: "Lessons 1 to 3: the group header appears once and holds what is shared by every payment. Each payment gets its own transaction block, and that block can repeat. The tree shows CdtTrfTxInf as [1..n]."
     lesson: what-is-pacs008
     elements:
       - GrpHdr
@@ -83,7 +83,7 @@ questions:
       - "Settlement between the two banks of that message happens through a separate cover payment."
       - "Settlement happens through a payment clearing system."
     answer: 2
-    explanation: "Lesson 4 and the code list in the schema: COVE is the cover method, settlement through a separate cover payment. The other three options are the other codes: INDA, INGA and CLRG."
+    explanation: "Lesson 4 and the code list in the schema: COVE means settlement through a separate cover payment. The other three options are the other codes: INDA, INGA and CLRG."
     lesson: follow-the-flow
     elements:
       - GrpHdr/SttlmInf/SttlmMtd
