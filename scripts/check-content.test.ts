@@ -636,3 +636,115 @@ test("glossary elements are claimed once, even through another spelling", () => 
   );
   assert.match(errs(spelled), /already claimed by a\.yaml/);
 });
+
+const quizQ = (n: number, answer: number) => ({
+  id: `q${n}`,
+  prompt: "P",
+  options: ["a", "b", "c"],
+  answer,
+  explanation: "E",
+  lesson: "l" as string | undefined,
+  elements: ["GrpHdr/MsgId"],
+});
+const withQuiz = (
+  edit?: (q: { questions: ReturnType<typeof quizQ>[] }) => void,
+) => {
+  const data = {
+    id: "z",
+    message: id,
+    title: "T",
+    summary: "S",
+    lesson: "l",
+    lastReviewed: { date: "2026-11-23", by: "u" },
+    questions: [quizQ(1, 0), quizQ(2, 1), quizQ(3, 2)],
+  };
+  edit?.(data);
+  return {
+    ...base(),
+    lessons: [lessonFile("l.md", "lesson", 1)],
+    quizzes: [{ name: "z.yaml", data }],
+  };
+};
+
+test("clean quiz passes and is counted", () => {
+  const r = checkContent(withQuiz());
+  assert.deepEqual(r.errors, []);
+  assert.equal(r.quizzes, 1);
+});
+
+test("quiz with bad data fails", () => {
+  assert.match(
+    errs(withQuiz((q) => (q.questions[0]!.options = ["a"]))),
+    /z.yaml/,
+  );
+});
+
+test("quiz id must match file name", () => {
+  const i = withQuiz();
+  (i.quizzes[0]!.data as { id: string }).id = "other";
+  assert.match(errs(i), /z.yaml: id "other" does not match/);
+});
+
+test("quiz message must have a schema", () => {
+  const i = withQuiz();
+  (i.quizzes[0]!.data as { message: string }).message = "pacs.009.001.10";
+  assert.match(errs(i), /z.yaml: no schema for message "pacs.009.001.10"/);
+});
+
+test("quiz lesson and question lesson must exist", () => {
+  const i = withQuiz();
+  (i.quizzes[0]!.data as { lesson: string }).lesson = "nope";
+  assert.match(errs(i), /z.yaml: lesson "nope" is not a lesson id/);
+  assert.match(
+    errs(withQuiz((q) => (q.questions[1]!.lesson = "nope"))),
+    /z.yaml: question 2 "q2": lesson "nope" is not a lesson id/,
+  );
+  assert.deepEqual(
+    checkContent(withQuiz((q) => (q.questions[1]!.lesson = undefined))).errors,
+    [],
+  );
+});
+
+test("quiz element that does not resolve fails", () => {
+  assert.match(
+    errs(withQuiz((q) => (q.questions[0]!.elements = ["Nope"]))),
+    /z.yaml: question 1 "q1": element "Nope" does not resolve/,
+  );
+});
+
+test("quiz answer must be an option index", () => {
+  assert.match(
+    errs(withQuiz((q) => (q.questions[2]!.answer = 3))),
+    /z.yaml: question 3 "q3": answer 3 is not an option index/,
+  );
+});
+
+test("quiz options must differ within a question", () => {
+  assert.match(
+    errs(withQuiz((q) => (q.questions[0]!.options = ["a", "b", "a"]))),
+    /z.yaml: question 1 "q1": options are not all different/,
+  );
+});
+
+test("quiz question ids must be unique", () => {
+  assert.match(
+    errs(withQuiz((q) => (q.questions[1]!.id = "q1"))),
+    /z.yaml: question id "q1" appears twice/,
+  );
+});
+
+test("quiz right answers must not all sit at one index", () => {
+  assert.match(
+    errs(
+      withQuiz((q) => {
+        for (const x of q.questions) x.answer = 1;
+      }),
+    ),
+    /z.yaml: every right answer is option 2/,
+  );
+  // two questions are too few to judge
+  const two = withQuiz((q) => {
+    q.questions = [quizQ(1, 1), quizQ(2, 1)];
+  });
+  assert.deepEqual(checkContent(two).errors, []);
+});

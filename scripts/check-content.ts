@@ -9,6 +9,7 @@ import {
   LessonSchema,
   MappingSchema,
   MessageSchema,
+  QuizSchema,
   SampleSchema,
   STEPS,
 } from "../src/lib/content-schemas.ts";
@@ -27,6 +28,7 @@ export type Input = {
   flows?: File[];
   mappings?: File[];
   glossary?: File[];
+  quizzes?: File[];
   /** Turn "a step has no lesson" from a report into an error (on once all six lessons exist). */
   requireAllSteps?: boolean;
 };
@@ -40,6 +42,7 @@ export function checkContent({
   flows = [],
   mappings = [],
   glossary = [],
+  quizzes = [],
   requireAllSteps = false,
 }: Input) {
   const errors: string[] = [];
@@ -353,6 +356,47 @@ export function checkContent({
     }
   }
 
+  for (const f of quizzes) {
+    const q = parsed(f, QuizSchema);
+    if (!q) continue;
+    idMatches(f, q.id);
+    if (q.message !== schema.id)
+      errors.push(`${f.name}: no schema for message "${q.message}"`);
+    if (!lessonIds.has(q.lesson))
+      errors.push(`${f.name}: lesson "${q.lesson}" is not a lesson id`);
+    const seenIds = new Set<string>();
+    q.questions.forEach((qn, n) => {
+      const where = `question ${n + 1} "${qn.id}"`;
+      if (seenIds.has(qn.id))
+        errors.push(`${f.name}: question id "${qn.id}" appears twice`);
+      seenIds.add(qn.id);
+      if (qn.answer >= qn.options.length)
+        errors.push(
+          `${f.name}: ${where}: answer ${qn.answer} is not an option index (${qn.options.length} options)`,
+        );
+      if (new Set(qn.options).size !== qn.options.length)
+        errors.push(`${f.name}: ${where}: options are not all different`);
+      if (qn.lesson && !lessonIds.has(qn.lesson))
+        errors.push(
+          `${f.name}: ${where}: lesson "${qn.lesson}" is not a lesson id`,
+        );
+      if (q.message === schema.id)
+        for (const p of qn.elements)
+          if (!resolvePath(schema, p))
+            errors.push(
+              `${f.name}: ${where}: element "${p}" does not resolve in ${schema.id}`,
+            );
+    });
+    // shortcut: the position check needs 3 or more questions to mean anything
+    if (
+      q.questions.length >= 3 &&
+      new Set(q.questions.map((qn) => qn.answer)).size === 1
+    )
+      errors.push(
+        `${f.name}: every right answer is option ${q.questions[0]!.answer + 1}`,
+      );
+  }
+
   const annotated = [...paths].filter((p) => {
     const r = resolvePath(schema, p);
     return r && (annotatedPaths.has(r.path) || annotatedTypes.has(r.typeName));
@@ -364,6 +408,7 @@ export function checkContent({
     flows: flows.length,
     mappings: mappings.length,
     glossary: glossary.length,
+    quizzes: quizzes.length,
   };
 }
 
@@ -433,6 +478,7 @@ if (import.meta.main) {
     flows: flowCount,
     mappings: mappingCount,
     glossary: glossaryCount,
+    quizzes: quizCount,
   } = checkContent({
     schema,
     messages: load("messages"),
@@ -442,6 +488,7 @@ if (import.meta.main) {
     flows: load("flows"),
     mappings: load("mappings"),
     glossary: load("glossary"),
+    quizzes: load("quizzes"),
     requireAllSteps: true,
   });
   console.log(
@@ -450,6 +497,7 @@ if (import.meta.main) {
   console.log(`Flows: ${flowCount}`);
   console.log(`Mappings: ${mappingCount}`);
   console.log(`Glossary: ${glossaryCount}`);
+  console.log(`Quizzes: ${quizCount}`);
   console.log(`Lessons: ${lessonInfo.count} of ${STEPS.length} steps`);
   const byType = new Set(
     load("annotations").flatMap((f) =>
