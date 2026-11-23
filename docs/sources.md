@@ -24,12 +24,14 @@ Public sources used for content and planning. Every source used must be listed h
 | MT202 COV (Wikipedia) | https://en.wikipedia.org/wiki/MT202_COV | Lesson 4 (T-092): outline of the serial method (customer message passed from bank to bank) and the cover method (customer message sent toward the beneficiary's bank, plus a second bank-to-bank message that moves the funds). The article itself carries a banner saying it needs more citations, so this is a pointer, not a strong source. Downloaded with curl, tags stripped, raw text read directly | 2026-11-22 |
 | Cover Matching (Oracle Banking Payments documentation) | https://docs.oracle.com/en/industries/financial-services/banking-payments/14.7.0.0.0/crbug/cover-matching.html | Lesson 4 (T-092): a bank-software manual that matches a customer payment message to a separate cover message by reference, amount, currency and value date. Used only to show that the cover method involves two messages. Downloaded with curl, tags stripped, raw text read directly | 2026-11-22 |
 | SWIFT message types (Wikipedia) | https://en.wikipedia.org/wiki/SWIFT_message_types | Lesson 5 (T-092): MT 103 is called a single customer credit transfer, used to instruct a funds transfer, in the customer payments category. Pointer only. Downloaded with curl, tags stripped, raw text read directly | 2026-11-22 |
+| A deep dive on pacs.008 (BNY, February 2021) | https://www.bny.com/content/dam/bnymellon/documents/pdf/iso-20022/learning-guide-module4.pdf | MT 103 to pacs.008 mapping table (T-080) and lesson 5 sources: which pacs.008 elements pair with which MT fields, which elements are new, and the family of MT messages it calls pacs.008 equivalent to. PDF downloaded and its text extracted with pdftotext, read directly | 2026-11-23 |
+| MT103 mapping (Ripple documentation) | https://docs.ripple.com/products/payments-odl/api-docs/ripplenet/resources/srpo/mt103-mapping | MT 103 to pacs.008 mapping table (T-080): the field 20, 50, 59, 70 and 71a pairings. The table targets Ripple's own payment object, not a pacs.008. The page's markdown export was read directly | 2026-11-23 |
 
 Lessons 2 to 6 also describe what this site does (markers, Beginner view, Required only, search, links). That rests on the site's own code, text and built pages, which were read and checked in a browser; it needs no external source. Schema facts (occurrence numbers, code lists such as SettlementMethod1Code, type names, element definitions for lessons 4 to 6) come from `src/data/schema/pacs.008.001.14.json`.
 
 ## Not used
 
-- **JPMorgan "Migration to ISO 20022" mapping guide** (pages-jpmcib.jpmorgan.com): read on 2026-11-22 but not used; its example carries CBPR+ content and its layout did not extract reliably.
+- **JPMorgan "Migration to ISO 20022" mapping guide** (pages-jpmcib.jpmorgan.com): read on 2026-11-22 but not used; its example carries CBPR+ content and its layout did not extract reliably. It stays unused for the mapping table (T-080) as well.
 - **Swift MyStandards and CBPR+ documentation:** not public, not used. The plan forbids copying from MyStandards or Swift ([[Project Plan]], risks).
 
 ## Notes

@@ -1,0 +1,130 @@
+id: mt103-pacs.008
+message: pacs.008.001.14
+title: MT 103 fields and pacs.008 elements
+summary: Which pacs.008 elements correspond to which MT 103 fields, as far as two public sources say. A partial table, not an official mapping.
+lesson: from-mt103
+sources:
+  - title: A deep dive on pacs.008 (BNY, February 2021)
+    url: https://www.bny.com/content/dam/bnymellon/documents/pdf/iso-20022/learning-guide-module4.pdf
+    retrieved: "2026-11-23"
+  - title: MT103 mapping (Ripple documentation)
+    url: https://docs.ripple.com/products/payments-odl/api-docs/ripplenet/resources/srpo/mt103-mapping
+    retrieved: "2026-11-23"
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-081)
+rows:
+  - field: "20"
+    fieldName: Sender's Reference
+    paths: [CdtTrfTxInf/PmtId/InstrId]
+    note: Both sources pair this field with the instruction identification.
+    sources: [0, 1]
+  - field: "121 (block 3)"
+    paths: [CdtTrfTxInf/PmtId/UETR]
+    note: The BNY paper says the UETR travels in field 121 of block 3 in MT messages.
+    sources: [0]
+  - field: 32a
+    paths:
+      [
+        CdtTrfTxInf/IntrBkSttlmAmt,
+        CdtTrfTxInf/IntrBkSttlmDt,
+        GrpHdr/IntrBkSttlmDt,
+      ]
+    note: One MT field holds currency, amount and date; pacs.008 has separate elements for the amount and for the date. The source does not say which of the two date elements to use, and this schema version has the date in both places.
+    sources: [0]
+  - field: 50a
+    paths: [CdtTrfTxInf/Dbtr]
+    note: Ripple's table, which targets its own payment object and not a pacs.008, takes the debtor name and address from 50K or 50F.
+    sources: [0, 1]
+  - field: 52a
+    paths: [CdtTrfTxInf/DbtrAgt]
+    note: The debtor agent.
+    sources: [0]
+  - field: 53a
+    paths: [GrpHdr/SttlmInf/InstgRmbrsmntAgt]
+    note: The instructing reimbursement agent.
+    sources: [0]
+  - field: 54a
+    paths: [GrpHdr/SttlmInf/InstdRmbrsmntAgt]
+    note: The instructed reimbursement agent.
+    sources: [0]
+  - field: 55a
+    paths: [GrpHdr/SttlmInf/ThrdRmbrsmntAgt]
+    note: The third reimbursement agent.
+    sources: [0]
+  - field: 56a
+    paths: [CdtTrfTxInf/IntrmyAgt1]
+    note: The first intermediary agent. pacs.008 also has second and third intermediary agents, which have no dedicated MT field (see the second table).
+    sources: [0]
+  - field: 57a
+    paths: [CdtTrfTxInf/CdtrAgt]
+    note: The creditor agent.
+    sources: [0]
+  - field: 59a
+    paths: [CdtTrfTxInf/Cdtr]
+    note: Ripple's table takes the creditor name and address from 59 or 59F.
+    sources: [0, 1]
+  - field: 23E
+    paths: [CdtTrfTxInf/InstrForCdtrAgt]
+    note: Instructions to the creditor agent, such as holding the cash for the creditor.
+    sources: [0]
+  - field: "70"
+    fieldName: Remittance Information
+    paths: [CdtTrfTxInf/RmtInf/Ustrd]
+    note: Only Ripple's table gives this pairing.
+    sources: [1]
+  - field: 71a
+    fieldName: Details of Charges
+    paths: [CdtTrfTxInf/ChrgBr]
+    note: Three of the four charge codes pair with a 71a value. The BNY paper lists the fourth, SLEV, as new, for schemes with a common service agreement, and not for cross-border payments.
+    codeList: ChargeBearerType1Code
+    codes:
+      - { mt: BEN, iso: CRED }
+      - { mt: OUR, iso: DEBT }
+      - { mt: SHA, iso: SHAR }
+    sources: [0, 1]
+additions:
+  - paths: [CdtTrfTxInf/UltmtDbtr, CdtTrfTxInf/UltmtCdtr, CdtTrfTxInf/InitgPty]
+    note: The ultimate debtor, the ultimate creditor and the initiating party. The BNY paper says three of the five parties are new and names the two ultimate parties as new. It gives no MT field for the initiating party, the party that starts the payment.
+    sources: [0]
+  - paths: [CdtTrfTxInf/IntrmyAgt2, CdtTrfTxInf/IntrmyAgt3]
+    note: Second and third intermediary agents. The BNY paper says MT messages have no dedicated field for them.
+    sources: [0]
+  - paths:
+      [
+        CdtTrfTxInf/PrvsInstgAgt1,
+        CdtTrfTxInf/PrvsInstgAgt2,
+        CdtTrfTxInf/PrvsInstgAgt3,
+      ]
+    note: Previous instructing agents 1 to 3, which the BNY paper says have dedicated fields in pacs.008.
+    sources: [0]
+  - paths: [CdtTrfTxInf/InstgAgt, CdtTrfTxInf/InstdAgt]
+    note: The instructing and the instructed agent. The BNY paper calls this a new concept, so that sender and receiver also sit in the payload and not only in the header.
+    sources: [0]
+  - paths:
+      [
+        CdtTrfTxInf/DbtrAcct/Tp,
+        CdtTrfTxInf/DbtrAcct/Ccy,
+        CdtTrfTxInf/DbtrAcct/Nm,
+        CdtTrfTxInf/DbtrAcct/Prxy,
+      ]
+    note: Account type, currency, a chosen name and a proxy. The BNY paper says the account structure is richer than in the MT messages and that these four are new.
+    sources: [0]
+  - paths: [CdtTrfTxInf/PmtId/TxId]
+    note: The transaction identification, which the BNY paper calls new. It is allocated by the debtor agent and carried to the creditor agent unchanged.
+    sources: [0]
+  - paths: [GrpHdr/SttlmInf/SttlmMtd]
+    note: The settlement method, with a code that says how the payment is settled. The BNY paper calls it a new feature.
+    sources: [0]
+  - paths: [CdtTrfTxInf/ChrgsInf]
+    note: Charge information, the amount of charges taken and the agent that took them. The BNY paper calls it new.
+    sources: [0]
+  - paths: [CdtTrfTxInf/InstrForNxtAgt]
+    note: An instruction from the sender to the next agent in the chain. The BNY paper calls it new.
+    sources: [0]
+  - paths: [CdtTrfTxInf/RmtInf/Strd]
+    note: Structured remittance information. The BNY paper says it is new compared with the MT messages and that its use has to be agreed between the parties.
+    sources: [0]
+  - paths: [CdtTrfTxInf/RltdRmtInf]
+    note: Related remittance information, which lets remittance data travel outside the payment instruction. The BNY paper calls it brand new.
+    sources: [0]

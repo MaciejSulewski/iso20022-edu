@@ -149,6 +149,7 @@
   "lesson.all": "All lessons",
   "lesson.tool": "Open the workspace",
   "lesson.toolFlow": "Open the flow",
+  "lesson.toolMapping": "Open the mapping table",
   "flow.draft": "AI-drafted from public sources, not yet reviewed by a person.",
   "flow.variants": "Method",
   "flow.diagram": "The parties in the chain",
@@ -163,5 +164,17 @@
   "flow.settlement": "Settlement method",
   "flow.elements": "Look at it in the workspace",
   "flow.sample": "Open this message as a full sample",
-  "flow.lesson": "Read lesson {n}: {title}"
+  "flow.lesson": "Read lesson {n}: {title}",
+  "mapping.draft": "AI-drafted from two public sources, not yet reviewed by a person (T-081). Do not rely on it for real payments.",
+  "mapping.about": "This table is partial. It rests on two public sources: a bank's explainer written for the CBPR+ rollout and a vendor's table for its own payment object. Neither is an official mapping. The bank paper calls pacs.008 the equivalent of MT 103, MT 103+, MT 103 Remit, MT 102 and MT 102+, so its pairings are for that family, not for MT 103 alone. A field missing here is one these sources do not cover. The bank paper describes earlier versions of pacs.008 (pacs.008.001.0X); element names here are those of pacs.008.001.14, and every one exists in the schema.",
+  "mapping.rows": "MT 103 fields and the pacs.008 elements the sources pair with them",
+  "mapping.additions": "Elements with no MT field named in the sources",
+  "mapping.field": "MT 103 field",
+  "mapping.elements": "pacs.008 elements",
+  "mapping.note": "Note",
+  "mapping.source": "Source",
+  "mapping.sourceN": "Source {n}",
+  "mapping.codes": "Charge codes",
+  "mapping.becomes": "{mt} becomes {iso}",
+  "mapping.lesson": "Read lesson {n}: {title}"
 }

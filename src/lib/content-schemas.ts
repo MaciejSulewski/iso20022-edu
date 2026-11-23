@@ -83,6 +83,39 @@ const FlowStep = z.strictObject({
   sample: z.literal(true).optional(),
 });
 
+const SourceRefs = z.array(z.number().int().min(0)).min(1);
+
+export const MappingSchema = z.strictObject({
+  id: z.string().min(1),
+  message: z.string(),
+  title: z.string().min(1),
+  summary: z.string().min(1),
+  lesson: z.string(),
+  sources: Sources,
+  lastReviewed: Reviewed,
+  rows: z.array(
+    z.strictObject({
+      // quote numeric field labels in YAML; the label is a strict string
+      field: z.string().min(1),
+      fieldName: z.string().optional(),
+      paths: z.array(z.string()).min(1),
+      codeList: z.string().optional(),
+      codes: z
+        .array(z.strictObject({ mt: z.string(), iso: z.string() }))
+        .optional(),
+      note: z.string().optional(),
+      sources: SourceRefs,
+    }),
+  ),
+  additions: z.array(
+    z.strictObject({
+      paths: z.array(z.string()).min(1),
+      note: z.string().min(1),
+      sources: SourceRefs,
+    }),
+  ),
+});
+
 export const FlowSchema = z.strictObject({
   id: z.string().min(1),
   message: z.string(),

@@ -400,3 +400,139 @@ test("a step flagged sample: true needs a flow-level sample", () => {
     [],
   );
 });
+
+const mappingFile = () => ({
+  name: "m.yaml",
+  data: {
+    id: "m",
+    message: id,
+    title: "T",
+    summary: "S",
+    lesson: "l",
+    sources: [
+      { title: "t", url: "https://example.com", retrieved: "2026-11-23" },
+      { title: "u", url: "https://example.com/u", retrieved: "2026-11-23" },
+    ],
+    lastReviewed: { date: "2026-11-23", by: "u" },
+    rows: [
+      {
+        field: "20",
+        paths: ["GrpHdr/MsgId"],
+        sources: [0],
+      },
+      {
+        field: "71a",
+        paths: ["CdtTrfTxInf/ChrgBr"],
+        codeList: "ChargeBearerType1Code" as string | undefined,
+        codes: [{ mt: "BEN", iso: "CRED" }] as { mt: string; iso: string }[],
+        sources: [0],
+      },
+    ],
+    additions: [{ paths: ["GrpHdr/NbOfTxs"], note: "n", sources: [1] }],
+  },
+});
+type MappingData = ReturnType<typeof mappingFile>["data"];
+const withMapping = (edit?: (d: MappingData) => void) => {
+  const f = mappingFile();
+  edit?.(f.data);
+  return {
+    ...base(),
+    lessons: [lessonFile("l.md", "lesson", 1)],
+    mappings: [f],
+  };
+};
+
+test("clean mapping passes and is counted", () => {
+  const r = checkContent(withMapping());
+  assert.deepEqual(r.errors, []);
+  assert.equal(r.mappings, 1);
+});
+
+test("mapping with bad data fails", () => {
+  assert.match(errs(withMapping((d) => (d.rows[0]!.paths = []))), /m\.yaml/);
+});
+
+test("mapping id must match file name", () => {
+  assert.match(
+    errs(withMapping((d) => (d.id = "g"))),
+    /m\.yaml: id "g" does not match/,
+  );
+});
+
+test("mapping message must have a schema", () => {
+  assert.match(
+    errs(withMapping((d) => (d.message = "pacs.009.001.10"))),
+    /m\.yaml: no schema for message "pacs.009.001.10"/,
+  );
+});
+
+test("mapping lesson must exist", () => {
+  assert.match(
+    errs(withMapping((d) => (d.lesson = "nope"))),
+    /m\.yaml: lesson "nope" is not a lesson/,
+  );
+});
+
+test("mapping path that does not resolve fails in rows and additions", () => {
+  assert.match(
+    errs(withMapping((d) => (d.rows[0]!.paths = ["Nope"]))),
+    /m\.yaml: row "20": path "Nope" does not resolve/,
+  );
+  assert.match(
+    errs(withMapping((d) => (d.additions[0]!.paths = ["Nope"]))),
+    /m\.yaml: addition 1: path "Nope" does not resolve/,
+  );
+});
+
+test("mapping path used twice, within or across tables, fails", () => {
+  const across = withMapping((d) => (d.additions[0]!.paths = ["GrpHdr/MsgId"]));
+  assert.match(errs(across), /m\.yaml: path "GrpHdr\/MsgId" appears twice/);
+  const within = withMapping((d) => d.rows[0]!.paths.push("GrpHdr/MsgId"));
+  assert.match(errs(within), /path "GrpHdr\/MsgId" appears twice/);
+});
+
+test("mapping field used twice fails", () => {
+  const i = withMapping((d) => (d.rows[1]!.field = "20"));
+  assert.match(errs(i), /m\.yaml: field "20" appears twice/);
+});
+
+test("mapping code must be a code of the code list", () => {
+  const i = withMapping((d) => (d.rows[1]!.codes![0]!.iso = "CREDX"));
+  assert.match(errs(i), /m\.yaml: row "71a": "CREDX" is not a code of Charge/);
+});
+
+test("mapping codes need a known code list", () => {
+  assert.match(
+    errs(withMapping((d) => (d.rows[1]!.codeList = undefined))),
+    /m\.yaml: row "71a": codeList "" is not a simple type with codes/,
+  );
+  assert.match(
+    errs(withMapping((d) => (d.rows[1]!.codeList = "Nope"))),
+    /codeList "Nope" is not a simple type/,
+  );
+});
+
+test("mapping source index must be in the sources list", () => {
+  const i = withMapping((d) => (d.rows[0]!.sources = [5]));
+  assert.match(errs(i), /m\.yaml: row "20": source 5 is not in the sources/);
+});
+
+test("mapping codeList without codes must still be a known simple type", () => {
+  const i = withMapping((d) => {
+    delete d.rows[1]!.codes;
+    d.rows[1]!.codeList = "Nope";
+  });
+  assert.match(errs(i), /row "71a": codeList "Nope" is not a simple type/);
+});
+
+test("mapping paths that resolve to the same element count as duplicates", () => {
+  const i = withMapping(
+    (d) => (d.additions[0]!.paths = ["FIToFICstmrCdtTrf/GrpHdr/MsgId"]),
+  );
+  assert.match(errs(i), /appears twice/);
+});
+
+test("every mapping source must be used", () => {
+  const i = withMapping((d) => (d.additions[0]!.sources = [0]));
+  assert.match(errs(i), /m\.yaml: source 1 "u" is used by no row or addition/);
+});

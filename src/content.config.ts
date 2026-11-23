@@ -4,6 +4,7 @@ import {
   AnnotationSchema,
   FlowSchema,
   LessonSchema,
+  MappingSchema,
   MessageSchema,
   SampleSchema,
 } from "./lib/content-schemas.ts";
@@ -35,6 +36,10 @@ export const collections = {
   flows: defineCollection({
     loader: yaml("src/content/flows"),
     schema: FlowSchema,
+  }),
+  mappings: defineCollection({
+    loader: yaml("src/content/mappings"),
+    schema: MappingSchema,
   }),
   samples: defineCollection({
     loader: yaml("src/content/samples"),
