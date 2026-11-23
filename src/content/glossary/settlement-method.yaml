@@ -1,0 +1,14 @@
+id: settlement-method
+term: Settlement method
+plain: >-
+  How the money moves between the sender and the receiver of this message. The group header must state it, using one of four codes.
+message: pacs.008.001.14
+elements:
+  - GrpHdr/SttlmInf/SttlmMtd
+related:
+  - interbank-settlement-amount
+  - interbank-settlement-date
+lesson: follow-the-flow
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

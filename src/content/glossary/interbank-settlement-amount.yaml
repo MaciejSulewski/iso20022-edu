@@ -1,0 +1,14 @@
+id: interbank-settlement-amount
+term: Interbank settlement amount
+plain: >-
+  How much money passes from one bank to the other for this payment, with its currency. Every payment must give it.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/IntrBkSttlmAmt
+related:
+  - interbank-settlement-date
+  - settlement-method
+lesson: what-is-pacs008
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

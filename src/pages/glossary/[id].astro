@@ -1,0 +1,104 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { resolvePath } from "../../lib/resolver";
+import { t } from "../../i18n/t";
+import type { Schema } from "../../../scripts/schema-model";
+
+export async function getStaticPaths() {
+  return (await getCollection("glossary")).map((term) => ({
+    params: { id: term.id },
+    props: { term },
+  }));
+}
+
+const { term } = Astro.props;
+const { plain, message, elements, related, lesson } = term.data;
+const base = import.meta.env.BASE_URL;
+const schemas = import.meta.glob("../../data/schema/*.json", {
+  import: "default",
+  eager: true,
+}) as unknown as Record<string, Schema>;
+const schema = schemas[`../../data/schema/${message}.json`];
+if (!schema) throw new Error(`Schema JSON missing for ${message}`);
+const defs = elements.map((path) => {
+  const r = resolvePath(schema, path);
+  if (!r?.definition)
+    throw new Error(`No definition for ${path} in term ${term.id}`);
+  return { path, isoName: r.isoName, definition: r.definition };
+});
+const relatedTerms = await Promise.all(
+  related.map(async (id) => {
+    const e = await getEntry("glossary", id);
+    if (!e) throw new Error(`Related term missing for ${term.id}: ${id}`);
+    return e;
+  }),
+);
+const lessonEntry = lesson ? await getEntry("lessons", lesson) : undefined;
+if (lesson && !lessonEntry)
+  throw new Error(`Lesson missing for term ${term.id}: ${lesson}`);
+---
+
+<Base title={`${term.data.term} · ${t("glossary.title")}`} description={plain}>
+  <article class="mx-auto max-w-2xl px-4">
+    <h1 class="text-3xl leading-tight font-bold">{term.data.term}</h1>
+    <p class="mt-5 max-w-[65ch] rounded border border-line border-l-4 border-l-accent bg-surface p-3 text-sm">
+      {t("glossary.draft")}
+    </p>
+    <p class="mt-5 max-w-[65ch] text-lg">{plain}</p>
+
+    <section class="mt-10" aria-labelledby="official">
+      <h2 id="official" class="text-xl font-semibold">
+        {t("glossary.official")}
+      </h2>
+      <p class="mt-2 max-w-[65ch] text-sm text-muted">
+        {t("glossary.official.note")}
+      </p>
+      <dl class="mt-4 space-y-4">
+        {defs.map((d) => (
+          <div class="border-l-2 border-muted pl-3">
+            <dt class="font-semibold break-words">{d.isoName}</dt>
+            <dd class="mt-1 text-sm">
+              <a
+                class="font-mono break-all"
+                href={`${base}messages/${message}/#${d.path}`}
+              >
+                {d.path}
+              </a>
+            </dd>
+            <dd class="mt-1 text-sm">{d.definition}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+
+    {relatedTerms.length > 0 && (
+      <section class="mt-10" aria-labelledby="related">
+        <h2 id="related" class="text-xl font-semibold">
+          {t("glossary.related")}
+        </h2>
+        <ul class="mt-3 space-y-1">
+          {relatedTerms.map((r) => (
+            <li>
+              <a href={`${base}glossary/${r.id}/`}>{r.data.term}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {lessonEntry && (
+      <p class="mt-10">
+        <a href={`${base}lessons/${lessonEntry.id}/`}>
+          {t("glossary.lesson")
+            .replace("{n}", String(lessonEntry.data.order))
+            .replace("{title}", lessonEntry.data.title)}
+        </a>
+      </p>
+    )}
+
+    <p class="mt-10 border-t border-line pt-4">
+      <a href={`${base}glossary/`}>{t("glossary.all")}</a>
+    </p>
+  </article>
+</Base>

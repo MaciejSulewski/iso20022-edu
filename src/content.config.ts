@@ -3,6 +3,7 @@ import { glob } from "astro/loaders";
 import {
   AnnotationSchema,
   FlowSchema,
+  GlossarySchema,
   LessonSchema,
   MappingSchema,
   MessageSchema,
@@ -40,6 +41,10 @@ export const collections = {
   mappings: defineCollection({
     loader: yaml("src/content/mappings"),
     schema: MappingSchema,
+  }),
+  glossary: defineCollection({
+    loader: yaml("src/content/glossary"),
+    schema: GlossarySchema,
   }),
   samples: defineCollection({
     loader: yaml("src/content/samples"),

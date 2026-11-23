@@ -536,3 +536,103 @@ test("every mapping source must be used", () => {
   const i = withMapping((d) => (d.additions[0]!.sources = [0]));
   assert.match(errs(i), /m\.yaml: source 1 "u" is used by no row or addition/);
 });
+
+const termFile = (n: string, term: string, el: string) => ({
+  name: `${n}.yaml`,
+  data: {
+    id: n,
+    term,
+    plain: "p",
+    message: id,
+    elements: [el],
+    related: [] as string[],
+    lesson: "l" as string | undefined,
+    lastReviewed: { date: "2026-11-23", by: "u" },
+  },
+});
+type TermFile = ReturnType<typeof termFile>;
+const withGlossary = (edit?: (a: TermFile, b: TermFile) => void) => {
+  const a = termFile("a", "Alpha", "GrpHdr/MsgId");
+  const b = termFile("b", "Beta", "CdtTrfTxInf/ChrgBr");
+  edit?.(a, b);
+  return {
+    ...base(),
+    lessons: [lessonFile("l.md", "lesson", 1)],
+    glossary: [a, b],
+  };
+};
+
+test("clean glossary passes and is counted", () => {
+  const r = checkContent(withGlossary());
+  assert.deepEqual(r.errors, []);
+  assert.equal(r.glossary, 2);
+});
+
+test("glossary term with bad data fails", () => {
+  assert.match(errs(withGlossary((a) => (a.data.elements = []))), /a\.yaml/);
+});
+
+test("glossary id must match file name", () => {
+  assert.match(
+    errs(withGlossary((a) => (a.data.id = "g"))),
+    /a\.yaml: id "g" does not match/,
+  );
+});
+
+test("glossary message must have a schema", () => {
+  assert.match(
+    errs(withGlossary((a) => (a.data.message = "pacs.009.001.10"))),
+    /a\.yaml: no schema for message "pacs.009.001.10"/,
+  );
+});
+
+test("glossary element that does not resolve fails", () => {
+  assert.match(
+    errs(withGlossary((a) => (a.data.elements = ["Nope"]))),
+    /a\.yaml: element "Nope" does not resolve/,
+  );
+});
+
+test("glossary related must exist, not be the term, and appear once", () => {
+  assert.match(
+    errs(withGlossary((a) => (a.data.related = ["zzz"]))),
+    /a\.yaml: related "zzz" is not a term id/,
+  );
+  assert.match(
+    errs(withGlossary((a) => (a.data.related = ["a"]))),
+    /a\.yaml: related "a" is the term itself/,
+  );
+  assert.match(
+    errs(withGlossary((a) => (a.data.related = ["b", "b"]))),
+    /a\.yaml: related "b" appears twice/,
+  );
+});
+
+test("glossary lesson must exist when given", () => {
+  assert.match(
+    errs(withGlossary((a) => (a.data.lesson = "nope"))),
+    /a\.yaml: lesson "nope" is not a lesson/,
+  );
+  assert.deepEqual(
+    checkContent(withGlossary((a) => (a.data.lesson = undefined))).errors,
+    [],
+  );
+});
+
+test("glossary terms must differ, ignoring case", () => {
+  assert.match(
+    errs(withGlossary((_, b) => (b.data.term = "ALPHA"))),
+    /b\.yaml: term "ALPHA" is already used by a\.yaml/,
+  );
+});
+
+test("glossary elements are claimed once, even through another spelling", () => {
+  assert.match(
+    errs(withGlossary((_, b) => (b.data.elements = ["GrpHdr/MsgId"]))),
+    /b\.yaml: element "GrpHdr\/MsgId" is already claimed by a\.yaml/,
+  );
+  const spelled = withGlossary(
+    (_, b) => (b.data.elements = ["FIToFICstmrCdtTrf/GrpHdr/MsgId"]),
+  );
+  assert.match(errs(spelled), /already claimed by a\.yaml/);
+});

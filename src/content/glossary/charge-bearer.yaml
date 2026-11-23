@@ -1,0 +1,14 @@
+id: charge-bearer
+term: Charge bearer
+plain: >-
+  Tells who covers the fees charged along the way: the payer, the payee, or both. The message must say which, using a short code.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/ChrgBr
+related:
+  - debtor
+  - creditor
+lesson: read-the-xml
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

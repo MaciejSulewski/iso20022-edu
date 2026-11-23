@@ -20,7 +20,8 @@ export type PanelLabels = Record<
   | "codes"
   | "codeExplained"
   | "examples"
-  | "notes",
+  | "notes"
+  | "glossary",
   string
 >;
 
@@ -86,12 +87,14 @@ export default function ElementPanel({
   node,
   labels,
   titleId,
+  glossary,
   onSelect,
 }: {
   id: string | null;
   node: XmlNode | undefined;
   labels: PanelLabels;
   titleId: string;
+  glossary?: { term: string; href: string } | undefined;
   onSelect: (id: string) => void;
 }) {
   const i = node?.info;
@@ -169,6 +172,14 @@ export default function ElementPanel({
                   <li key={e}>{e}</li>
                 ))}
               </ul>
+            </section>
+          )}
+          {glossary && (
+            <section class="mb-4">
+              <h3 class={h}>{labels.glossary}</h3>
+              <p class="text-sm">
+                <a href={glossary.href}>{glossary.term}</a>
+              </p>
             </section>
           )}
           {i.notes && (

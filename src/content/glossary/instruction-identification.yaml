@@ -1,0 +1,13 @@
+id: instruction-identification
+term: Instruction identification
+plain: >-
+  A reference that the sending bank gives one payment instruction, for use between that bank and the bank it is sending to. It is optional.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/PmtId/InstrId
+related:
+  - end-to-end-identification
+  - message-identification
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

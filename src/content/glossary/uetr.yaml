@@ -1,0 +1,13 @@
+id: uetr
+term: UETR
+plain: >-
+  A single code that stays with one payment from start to finish, so anyone along the way can point to that exact payment. A message may leave it out.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/PmtId/UETR
+related:
+  - end-to-end-identification
+lesson: follow-the-flow
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

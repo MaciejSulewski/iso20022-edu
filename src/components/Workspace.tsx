@@ -54,6 +54,7 @@ export default function Workspace({
   rootType,
   root,
   overlay,
+  glossary,
   labels,
   children,
 }: {
@@ -63,6 +64,7 @@ export default function Workspace({
   rootType: string;
   root: TreeChild[];
   overlay?: Overlay | undefined;
+  glossary?: Record<string, { term: string; href: string }>; // element path -> glossary term
   labels: Labels;
   children?: ComponentChildren; // the constraints list, rendered under the tree
 }) {
@@ -271,6 +273,7 @@ export default function Workspace({
               id={node ? selected : null}
               node={node}
               labels={labels.panel}
+              glossary={node ? glossary?.[node.path] : undefined}
               titleId={titleId}
               onSelect={select}
             />

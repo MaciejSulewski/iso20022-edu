@@ -1,0 +1,14 @@
+id: creditor-agent
+term: Creditor agent
+plain: >-
+  The bank that looks after the payee's account. The message always names it.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/CdtrAgt
+related:
+  - creditor
+  - debtor-agent
+lesson: what-is-pacs008
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

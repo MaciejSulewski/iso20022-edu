@@ -40,7 +40,7 @@ const label = (step: string) =>
       : "Open the workspace";
 const LESSON = `${url}lessons/${LESSONS[0]!.slug}/`;
 const TITLE = LESSONS[0]!.title;
-const PHRASE = "debtor agent";
+const PHRASE = "exchanging"; // a word only this lesson uses, so the glossary pages do not crowd it out
 
 const browser = await chromium.launch();
 let bad = 0;

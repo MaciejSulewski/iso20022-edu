@@ -1,0 +1,13 @@
+id: remittance-information
+term: Remittance information
+plain: >-
+  Details that let the payee match the payment to what it is for, such as an invoice. It can be free text or split into structured fields, and it is optional.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/RmtInf
+related:
+  - creditor
+lesson: from-mt103
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

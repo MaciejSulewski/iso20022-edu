@@ -176,5 +176,16 @@
   "mapping.sourceN": "Source {n}",
   "mapping.codes": "Charge codes",
   "mapping.becomes": "{mt} becomes {iso}",
-  "mapping.lesson": "Read lesson {n}: {title}"
+  "mapping.lesson": "Read lesson {n}: {title}",
+  "glossary.title": "Glossary",
+  "glossary.lead": "Plain-language meanings for the main elements of a pacs.008 payment message. Each term links to the official ISO definition and to the element in the workspace.",
+  "glossary.draft": "AI-drafted from the pacs.008.001.14 definitions, not yet reviewed by a person (T-093). Do not rely on it for real payments.",
+  "glossary.list": "Terms",
+  "glossary.link": "Read the glossary",
+  "glossary.all": "All glossary terms",
+  "glossary.official": "Official definition",
+  "glossary.official.note": "The text below is the ISO definition, read from the pacs.008.001.14 schema. The wording above is ours.",
+  "glossary.related": "Related terms",
+  "glossary.lesson": "Read lesson {n}: {title}",
+  "xml.panel.glossary": "Glossary"
 }

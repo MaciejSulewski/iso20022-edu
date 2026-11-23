@@ -1,0 +1,14 @@
+id: instructed-agent
+term: Instructed agent
+plain: >-
+  The bank this message is addressed to, the one that has to act on it. It can be named once for the whole message or for each payment.
+message: pacs.008.001.14
+elements:
+  - GrpHdr/InstdAgt
+related:
+  - instructing-agent
+  - message-identification
+lesson: follow-the-flow
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)
