@@ -1,29 +1,31 @@
-# Next session prompt: Phase 7 (mapping)
+# Next session prompt: Phase 8 (glossary and quiz)
 
 Paste the block below into a new Claude Code session. Replace this note when the work is done.
 
 ```text
-Continue the ISO 20022 learning site (repo: iso20022-edu). Start Phase 7 using
+Continue the ISO 20022 learning site (repo: iso20022-edu). Start Phase 8 using
 /superpowers:subagent-driven-development, same as the last sessions.
 
 Start: read CLAUDE.md, docs/Home.md, docs/plan/Ledger.md and the last session note
-docs/sessions/2026-11-23.md (all of it, including "Phase 6 run": calls, deferred minors).
+docs/sessions/2026-11-23.md (all of it, including "Phase 6 run" and "Phase 7 run": calls, deferred minors).
 Invoke superpowers:using-superpowers as CLAUDE.md says.
 
-State: Phase 6 is done. T-070 (PR #52) and T-071 (PR #53) are merged. The flow page is
-/flows/pacs.008-agent-chain/ (serial and cover variants, marker animation off under
-prefers-reduced-motion), linked from Start here step 4 and lesson 4. CI `build` is green on
-main. T-093 (accuracy review of lessons, overlays, samples and the flow) is mine and still
-open; all of that text is AI-drafted and unreviewed.
+State: Phases 6 and 7 are done. T-080 (PR #55) is merged: /mappings/mt103-pacs.008/ (MT 103
+field to pacs.008 element table from a bank explainer and a vendor table, neither official,
+shown as unreviewed), linked from Start here step 5 and lesson 5. CI `build` is green on main.
+T-081 (review of the mapping) and T-093 (accuracy review of lessons, overlays, samples, the
+flow) are mine and open; all of that text is AI-drafted and unreviewed.
 
-Phase 7 task for you: T-080 (MT103 to pacs.008 mapping table from public sources, own wording;
-done when every row path resolves in the schema). Lesson 5 (from-mt103) already says what
-public sources support and that it has no MT 103 field facts: do not add claims the sources
-you actually read do not support, record each source in docs/sources.md, and show the
-mapping as unreviewed until T-081 (mine). Decide whether it is complex (brainstorm, spec, plan
-per ADR-011) or simple; it is data plus a table page, so a short spec is likely enough. Use
-frontend-design:frontend-design for the UI. Skip #me tasks (T-081, T-093). Do not start
-Phase 8.
+Phase 8 tasks for you: T-090 (glossary for pacs.008 terms, linked from ElementPanel; done
+when related terms and messages resolve) and T-091 (pacs.008 quiz; done when scoring works in
+the browser and each answer has an explanation). The T-052 ledger note says T-090 wires glossary terms
+into the Ctrl+K palette (src/lib/palette.ts, ADR-015; Pagefind indexes pages on build), and
+lesson 6 (check-yourself) is the recap the quiz follows. Decide
+per task whether it is complex (new data format or island: brainstorm, spec, plan per
+ADR-011). Glossary terms and quiz answers are claims: base ISO 20022 only, public sources you
+actually read, recorded in docs/sources.md, own wording beside the official definition, shown
+as unreviewed. Use frontend-design:frontend-design for the UI. Skip #me tasks (T-081, T-093).
+Do not start Phase 9.
 
 Rules (same as before):
 - One branch and PR per task off an up-to-date main, Conventional Commits, small commits,
@@ -67,7 +69,9 @@ Facts:
   scripts/check-content.ts, page src/pages/flows/[id].astro, island
   src/components/FlowPlayer.tsx (ADR-017). Samples carry `order`, page
   src/pages/messages/[id]/[...sample].astro. Start-here tools: src/lib/lesson-tools.ts
-  (the mapping step has none yet).
+  (the mapping step links /mappings/mt103-pacs.008/; the quiz step has no tool yet).
+  Mappings: src/content/mappings/*.yaml, MappingSchema in src/lib/content-schemas.ts, rules
+  in scripts/check-content.ts, page src/pages/mappings/[id].astro (static, no island).
 - Tree data: static JSON under /tree/<id>/types/<Type>.json and /tree/<id>/index.json
   (src/pages/tree/[id]/), built from src/lib/schema-tree.ts.
 - Carry-over minors (chore PR when convenient): scripts/check-js-size.ts import-parser

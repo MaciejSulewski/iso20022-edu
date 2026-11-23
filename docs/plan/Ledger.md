@@ -11,14 +11,13 @@ Rules:
 (max 3 open tasks)
 
 ## Waiting on me
+- [ ] T-081 Review the mapping #me #phase/7
 - [ ] T-093 Review the lessons for accuracy #me #phase/5
 
 ## Next
 ### Phase 5: pacs.008 depth
 ### Phase 6: flow
 ### Phase 7: mapping
-- [ ] T-080 MT103 → pacs.008 mapping table from public sources, own wording. Done when: every row path resolves in the schema #agent #phase/7
-- [ ] T-081 Review the mapping #me #phase/7
 ### Phase 8: glossary and quiz
 - [ ] T-090 Glossary for pacs.008 terms, linked from ElementPanel. Done when: related terms and messages resolve #agent #phase/8
 - [ ] T-091 pacs.008 quiz. Done when: scoring works in the browser and each answer has an explanation #agent #phase/8
@@ -27,6 +26,7 @@ Rules:
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-080 MT103 → pacs.008 mapping table from public sources, own wording. Done when: every row path resolves in the schema #agent #phase/7 ✅ 2026-11-23 [PR #55](https://github.com/MaciejSulewski/iso20022-edu/pull/55) (page /mappings/mt103-pacs.008/: 14 MT-field rows and 11 elements with no MT field named, from a bank explainer and a vendor table, neither official; AI-drafted, unreviewed until T-081)
 - [x] T-070 FlowPlayer + pacs.008 agent-chain flow (serial and cover described). Done when: Next/Prev steps through every participant, and mobile shows a step list #agent #phase/6 ✅ 2026-11-22 [PR #52](https://github.com/MaciejSulewski/iso20022-edu/pull/52) (page /flows/pacs.008-agent-chain/, AI-drafted, cover is an outline from weak sources, unreviewed until T-093)
 - [x] T-071 Animate the flow diagram, respecting `prefers-reduced-motion`. Done when: motion stops with the setting on #agent #phase/6 ✅ 2026-11-23 [PR #53](https://github.com/MaciejSulewski/iso20022-edu/pull/53)
 - [x] T-060 Overlay by type for shared components, plus code explanations. Done when: shared types have one overlay entry used everywhere #agent #phase/5 ✅ 2026-11-22 [PR #47](https://github.com/MaciejSulewski/iso20022-edu/pull/47)
