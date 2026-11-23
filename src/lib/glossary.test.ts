@@ -31,10 +31,26 @@ test("an element with no term, or another message, is absent", () => {
 });
 
 test("sorts by term, ignoring case, without changing the input", () => {
-  const input = [{ term: "uetr" }, { term: "Creditor" }, { term: "Agent" }];
+  const input = [
+    { term: "Zeta" },
+    { term: "alpha" },
+    { term: "uetr" },
+    { term: "Creditor" },
+  ];
   assert.deepEqual(
     sortTerms(input).map((x) => x.term),
-    ["Agent", "Creditor", "uetr"],
+    ["alpha", "Creditor", "uetr", "Zeta"],
   );
-  assert.equal(input[0]!.term, "uetr");
+  assert.equal(input[0]!.term, "Zeta");
+});
+
+test("a path in two terms keeps the first in sorted order", () => {
+  const other: Term = {
+    ...uetr,
+    id: "a-first",
+    term: "Alpha",
+    elements: debtor.elements.slice(0, 1),
+  };
+  const m = termsByPath([debtor, other], "pacs.008.001.14");
+  assert.deepEqual(m["CdtTrfTxInf/Dbtr"], { id: "a-first", term: "Alpha" });
 });
