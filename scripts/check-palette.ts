@@ -428,6 +428,40 @@ try {
     m.errors.length === 0,
     `no console or page errors at 390 (${m.errors.join(" | ")})`,
   );
+
+  // 15. a glossary term is found as a page from the glossary page, and Enter opens its page
+  const TERM = "UETR";
+  const TERM_ID = "uetr";
+  const gl = await fresh(1280, 900, `${url}glossary/`);
+  await gl.getByRole("button", { name: "Search" }).click();
+  await input(gl).fill(TERM);
+  const hit = await settle(
+    gl,
+    `glossary page: ${TERM} lists a Pages row titled ${TERM}`,
+    view,
+    (s) =>
+      s.groups.includes("Pages") &&
+      s.options.some((o) => o.text.startsWith(TERM)),
+    DIALOG,
+  );
+  if (hit) {
+    // move to the row of the Pages group (the Elements group may hold a UETR row too)
+    const onPage = (sel: string) =>
+      document
+        .querySelector(`${sel} [role=option][aria-selected=true]`)
+        ?.closest("[role=group]")?.firstElementChild?.textContent === "Pages";
+    for (let k = 0; k < 40 && !(await gl.evaluate(onPage, DIALOG)); k++)
+      await gl.keyboard.press("ArrowDown");
+    await gl.keyboard.press("Enter");
+    await gl.waitForURL(`${url}glossary/${TERM_ID}/`, { timeout: 5000 }).then(
+      () => check(true, `Enter on the ${TERM} row lands on its glossary page`),
+      () =>
+        check(
+          false,
+          `Enter on the ${TERM} row lands on its glossary page (at ${gl.url()})`,
+        ),
+    );
+  }
 } finally {
   await browser.close();
   server.close();
