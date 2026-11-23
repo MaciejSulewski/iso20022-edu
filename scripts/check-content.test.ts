@@ -575,43 +575,43 @@ test("glossary term with bad data fails", () => {
 test("glossary id must match file name", () => {
   assert.match(
     errs(withGlossary((a) => (a.data.id = "g"))),
-    /a.yaml: id "g" does not match/,
+    /a\.yaml: id "g" does not match/,
   );
 });
 
 test("glossary message must have a schema", () => {
   assert.match(
     errs(withGlossary((a) => (a.data.message = "pacs.009.001.10"))),
-    /a.yaml: no schema for message "pacs.009.001.10"/,
+    /a\.yaml: no schema for message "pacs.009.001.10"/,
   );
 });
 
 test("glossary element that does not resolve fails", () => {
   assert.match(
     errs(withGlossary((a) => (a.data.elements = ["Nope"]))),
-    /a.yaml: element "Nope" does not resolve/,
+    /a\.yaml: element "Nope" does not resolve/,
   );
 });
 
 test("glossary related must exist, not be the term, and appear once", () => {
   assert.match(
     errs(withGlossary((a) => (a.data.related = ["zzz"]))),
-    /a.yaml: related "zzz" is not a term id/,
+    /a\.yaml: related "zzz" is not a term id/,
   );
   assert.match(
     errs(withGlossary((a) => (a.data.related = ["a"]))),
-    /a.yaml: related "a" is the term itself/,
+    /a\.yaml: related "a" is the term itself/,
   );
   assert.match(
     errs(withGlossary((a) => (a.data.related = ["b", "b"]))),
-    /a.yaml: related "b" appears twice/,
+    /a\.yaml: related "b" appears twice/,
   );
 });
 
 test("glossary lesson must exist when given", () => {
   assert.match(
     errs(withGlossary((a) => (a.data.lesson = "nope"))),
-    /a.yaml: lesson "nope" is not a lesson/,
+    /a\.yaml: lesson "nope" is not a lesson/,
   );
   assert.deepEqual(
     checkContent(withGlossary((a) => (a.data.lesson = undefined))).errors,
