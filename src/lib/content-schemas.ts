@@ -157,3 +157,25 @@ export const GlossarySchema = z.strictObject({
   lesson: z.string().optional(),
   lastReviewed: Reviewed,
 });
+
+export const QuizSchema = z.strictObject({
+  id: z.string().min(1),
+  message: z.string(),
+  title: z.string().min(1),
+  summary: z.string().min(1),
+  lesson: z.string(),
+  lastReviewed: Reviewed,
+  questions: z
+    .array(
+      z.strictObject({
+        id: z.string().min(1),
+        prompt: z.string().min(1),
+        options: z.array(z.string().min(1)).min(3).max(4),
+        answer: z.number().int().min(0),
+        explanation: z.string().min(1),
+        lesson: z.string().optional(),
+        elements: z.array(z.string()).default([]),
+      }),
+    )
+    .min(1),
+});

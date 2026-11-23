@@ -490,6 +490,56 @@ try {
       );
     }
   }
+
+  // 16. the quiz page is found in the Pages group, and Enter opens it
+  const QUIZ = "pacs.008 quiz";
+  const isQuiz = (r: { group: string; text: string }) =>
+    r.group === "Pages" && r.text.startsWith(QUIZ);
+  const qz = await fresh(1280, 900, `${url}glossary/`);
+  await qz.getByRole("button", { name: "Search" }).click();
+  await input(qz).fill("quiz");
+  const qhit = await settle(
+    qz,
+    `search "quiz": a row titled ${QUIZ} in the Pages group`,
+    rowsOf,
+    (s) => s.rows.some(isQuiz),
+    DIALOG,
+  );
+  if (qhit) {
+    let at = qhit;
+    for (
+      let k = 0;
+      k < qhit.rows.length &&
+      !isQuiz(at.rows[at.on] ?? { group: "", text: "" });
+      k++
+    ) {
+      const from = at.on;
+      await qz.keyboard.press("ArrowDown");
+      const next = await settle(
+        qz,
+        `ArrowDown moves the selection towards the ${QUIZ} row (from row ${from})`,
+        rowsOf,
+        (s) => s.on !== from,
+        DIALOG,
+      );
+      if (!next) break;
+      at = next;
+    }
+    if (!isQuiz(at.rows[at.on] ?? { group: "", text: "" })) {
+      check(false, `the selection reached the ${QUIZ} row in the Pages group`);
+      await qz.close();
+    } else {
+      await qz.keyboard.press("Enter");
+      await qz.waitForURL(`${url}quiz/pacs.008/`, { timeout: 5000 }).then(
+        () => check(true, `Enter on the ${QUIZ} row lands on the quiz page`),
+        () =>
+          check(
+            false,
+            `Enter on the ${QUIZ} row lands on the quiz page (at ${qz.url()})`,
+          ),
+      );
+    }
+  }
 } finally {
   await browser.close();
   server.close();

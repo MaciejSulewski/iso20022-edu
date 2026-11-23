@@ -21,9 +21,7 @@ lastReviewed:
 
 ## How to use this page
 
-Read each question and answer it in your head or on paper. Then read the answers further down. Nothing here is scored or saved. If an answer surprises you, the lesson named beside it explains it. The schema itself, open in the workspace, can settle any doubt.
-
-A scored quiz is planned. It is coming soon, and has no date.
+Read each question and answer it in your head or on paper. Then read the answers further down. Prefer a score? The same questions are a scored quiz, linked at the end of this lesson. If an answer surprises you, the lesson named beside it explains it. The schema itself, open in the workspace, can settle any doubt.
 
 ## Questions
 

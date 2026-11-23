@@ -1,0 +1,101 @@
+id: pacs.008
+message: pacs.008.001.14
+title: "pacs.008 quiz"
+summary: "Eight multiple-choice questions on lessons 1 to 5, scored when you press one button, with the reason behind every answer."
+lesson: check-yourself
+lastReviewed:
+  date: "2026-11-23"
+  by: "unreviewed (AI-drafted, pending T-093)"
+questions:
+  - id: purpose
+    prompt: "What is pacs.008 for?"
+    options:
+      - "It is the instruction a customer gives their own bank to make a payment."
+      - "It is the message a bank sends to the next bank to carry a customer's credit transfer onward."
+      - "It is a message used only inside one bank, never between banks."
+    answer: 1
+    explanation: "Lesson 1: pacs.008 is a message banks send to each other, so a payment can be passed along. The customer's own instruction is a different message family, pain."
+    lesson: what-is-pacs008
+  - id: agents
+    prompt: "In a payment from Ana to Ben, which bank is the debtor agent and which is the creditor agent?"
+    options:
+      - "Debtor agent: Ana's bank. Creditor agent: Ben's bank."
+      - "Debtor agent: Ben's bank. Creditor agent: Ana's bank."
+      - "Debtor agent: Ana's bank. Creditor agent: an intermediary bank between the two."
+    answer: 0
+    explanation: "Lessons 1 and 4: the debtor agent services the payer's account and the creditor agent services the payee's account. Ana pays, so her bank is the debtor agent. An intermediary agent is a different bank, placed between the two. Both agents are required in the message."
+    lesson: what-is-pacs008
+    elements:
+      - CdtTrfTxInf/DbtrAgt
+      - CdtTrfTxInf/CdtrAgt
+  - id: blocks
+    prompt: "A pacs.008 has two main blocks. Which statement is right?"
+    options:
+      - "GrpHdr can repeat, and CdtTrfTxInf appears once."
+      - "Both GrpHdr and CdtTrfTxInf repeat, once per payment."
+      - "GrpHdr appears once, and CdtTrfTxInf can repeat, one block per payment."
+    answer: 2
+    explanation: "Lessons 1 to 3: the group header appears once and holds what is shared by every payment. Each payment gets its own transaction block, and that block can repeat. The tree shows CdtTrfTxInf as [1..n]."
+    lesson: what-is-pacs008
+    elements:
+      - GrpHdr
+      - CdtTrfTxInf
+  - id: optional
+    prompt: "You see [0..1] next to an element. Can you leave it out?"
+    options:
+      - "No. It must appear exactly once."
+      - "Yes. The first number is the minimum, so 0 means it is optional, and it can appear at most once."
+      - "Yes, but if you include it, it can repeat any number of times."
+      - "No. The second number is the minimum, and here it is 1."
+    answer: 1
+    explanation: "Lesson 3: the two numbers are the fewest and the most times the element can appear inside its parent. The first number decides whether you can leave it out. 0 means optional, and the 1 after it means at most once."
+    lesson: explore-the-tree
+  - id: choice
+    prompt: "What does the ◆ symbol tell you about OrgId and PrvtId?"
+    options:
+      - "A message uses both of them, one after the other."
+      - "They can each repeat as often as needed."
+      - "They are the same element written in two ways."
+      - "They are alternatives in a choice: a message uses one of them, for an organisation or for a person."
+    answer: 3
+    explanation: "Lesson 3: ◆ marks a group of alternatives of which only one is used. OrgId is for an organisation and PrvtId is for a person. Each shows [1..1] because, once picked, it appears once."
+    lesson: explore-the-tree
+    elements:
+      - CdtTrfTxInf/Dbtr/Id/OrgId
+      - CdtTrfTxInf/Dbtr/Id/PrvtId
+  - id: references
+    prompt: "Which reference does the schema say stays the same from payer to payee, and which one is new in each message?"
+    options:
+      - "EndToEndId stays the same. MsgId is assigned afresh by each sender."
+      - "MsgId stays the same. EndToEndId is assigned afresh by each sender."
+      - "Both stay the same from start to end."
+    answer: 0
+    explanation: "Lesson 4: the party that started the payment sets EndToEndId, and the schema says it is passed on unchanged through the whole chain. The sender of each message assigns MsgId, so the next message in the chain gets a new one."
+    lesson: follow-the-flow
+    elements:
+      - CdtTrfTxInf/PmtId/EndToEndId
+      - GrpHdr/MsgId
+  - id: cover
+    prompt: "A message says SttlmMtd is COVE. What does that mean?"
+    options:
+      - "The bank receiving the message settles."
+      - "The sending bank, which forwards the payment, settles."
+      - "Settlement between the two banks of that message happens through a separate cover payment."
+      - "Settlement happens through a payment clearing system."
+    answer: 2
+    explanation: "Lesson 4 and the code list in the schema: COVE means settlement through a separate cover payment. The other three options are the other codes: INDA, INGA and CLRG."
+    lesson: follow-the-flow
+    elements:
+      - GrpHdr/SttlmInf/SttlmMtd
+  - id: remittance
+    prompt: "What is the difference between RmtInf/Ustrd and RmtInf/Strd?"
+    options:
+      - "Ustrd is split into named elements, and Strd is free text."
+      - "Ustrd is free text. Strd is split into named elements, such as the creditor's reference."
+      - "Ustrd is required, and Strd is optional."
+    answer: 1
+    explanation: "Lesson 5: both carry remittance information, the details a payee uses to match a payment to an invoice. Ustrd holds it as free text. Strd holds it as named elements, for example the creditor's reference in Strd/CdtrRefInf/Ref. In the schema both are optional."
+    lesson: from-mt103
+    elements:
+      - CdtTrfTxInf/RmtInf/Ustrd
+      - CdtTrfTxInf/RmtInf/Strd

@@ -7,6 +7,7 @@ import {
   LessonSchema,
   MappingSchema,
   MessageSchema,
+  QuizSchema,
   SampleSchema,
 } from "./lib/content-schemas.ts";
 
@@ -45,6 +46,10 @@ export const collections = {
   glossary: defineCollection({
     loader: yaml("src/content/glossary"),
     schema: GlossarySchema,
+  }),
+  quizzes: defineCollection({
+    loader: yaml("src/content/quizzes"),
+    schema: QuizSchema,
   }),
   samples: defineCollection({
     loader: yaml("src/content/samples"),

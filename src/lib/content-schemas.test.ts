@@ -6,6 +6,7 @@ import {
   GlossarySchema,
   LessonSchema,
   MessageSchema,
+  QuizSchema,
   SampleSchema,
 } from "./content-schemas.ts";
 
@@ -187,4 +188,44 @@ test("glossary term with an extra key fails", () => {
 
 test("glossary term needs at least one element", () => {
   assert.ok(!GlossarySchema.safeParse({ ...term(), elements: [] }).success);
+});
+
+const quiz = () => ({
+  id: "pacs.008",
+  message: "pacs.008.001.14",
+  title: "T",
+  summary: "S",
+  lesson: "check-yourself",
+  lastReviewed: { date: "2026-11-23", by: "me" },
+  questions: [
+    {
+      id: "q1",
+      prompt: "P",
+      options: ["a", "b", "c"],
+      answer: 1,
+      explanation: "E",
+    },
+  ],
+});
+
+test("good quiz passes and elements default to empty", () => {
+  const r = QuizSchema.safeParse(quiz());
+  assert.ok(r.success);
+  assert.deepEqual(r.data.questions[0]!.elements, []);
+});
+
+test("quiz with an extra key fails", () => {
+  assert.ok(!QuizSchema.safeParse({ ...quiz(), extra: 1 }).success);
+});
+
+test("quiz question with two options fails", () => {
+  const q = quiz();
+  q.questions[0]!.options = ["a", "b"];
+  assert.ok(!QuizSchema.safeParse(q).success);
+});
+
+test("quiz question with an empty explanation fails", () => {
+  const q = quiz();
+  q.questions[0]!.explanation = "";
+  assert.ok(!QuizSchema.safeParse(q).success);
 });

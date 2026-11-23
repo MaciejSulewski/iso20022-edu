@@ -44,14 +44,14 @@ iso20022-edu/
       flows/pacs008-agent-chain.yaml
       mappings/mt103-pacs008.yaml
       glossary/*.yaml                  # one term per file
-      quizzes/pacs008-basics.yaml
+      quizzes/pacs.008.yaml
       lessons/en/*.md
     i18n/ui.en.json, i18n/t.ts
     styles/global.css         # Tailwind import, design tokens (colours, type scale), dark mode
     lib/                      # typed schema resolver shared by islands and check-content.ts
     components/ AnnotatedXml, ElementPanel, SchemaTree, Workspace, CommandPalette, FlowPlayer, MappingTable, Quiz, GlossaryTerm   # .tsx islands + .astro shells
     components/ui/ Button, Badge, Tabs, Sheet, ThemeToggle
-    pages/ index, messages/[id] (the workspace: XML, tree and details panes; the tree has no page of its own), flows/[id], mappings/[id], glossary, quizzes/[id]
+    pages/ index, messages/[id] (the workspace: XML, tree and details panes; the tree has no page of its own), flows/[id], mappings/[id], glossary, quiz/[id]
   scripts/
     import-xsd.ts             # XSD → data/schema/<id>.json
     check-content.ts          # cross-reference and coverage checks
