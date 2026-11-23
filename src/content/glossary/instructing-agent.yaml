@@ -1,0 +1,14 @@
+id: instructing-agent
+term: Instructing agent
+plain: >-
+  The bank that sends this message on to the next party in the chain. It is optional in the group header.
+message: pacs.008.001.14
+elements:
+  - GrpHdr/InstgAgt
+related:
+  - instructed-agent
+  - message-identification
+lesson: follow-the-flow
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

@@ -1,0 +1,15 @@
+id: credit-transfer-transaction-information
+term: Credit transfer transaction information
+plain: >-
+  The block that describes one payment. It repeats, so one message can carry several payments, and each gets its own block.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf
+related:
+  - group-header
+  - debtor
+  - creditor
+lesson: read-the-xml
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

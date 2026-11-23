@@ -1,0 +1,14 @@
+id: instructed-agent
+term: Instructed agent
+plain: >-
+  The bank that receives this message from the party before it in the chain and is asked to carry it out. It is optional in the group header.
+message: pacs.008.001.14
+elements:
+  - GrpHdr/InstdAgt
+related:
+  - instructing-agent
+  - message-identification
+lesson: follow-the-flow
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

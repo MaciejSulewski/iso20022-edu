@@ -1,0 +1,14 @@
+id: debtor
+term: Debtor
+plain: >-
+  The payer: the party whose money is being sent. Every payment in the message names one.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/Dbtr
+related:
+  - debtor-agent
+  - creditor
+lesson: what-is-pacs008
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

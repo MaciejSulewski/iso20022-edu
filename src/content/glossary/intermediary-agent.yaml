@@ -1,0 +1,14 @@
+id: intermediary-agent
+term: Intermediary agent
+plain: >-
+  A bank that sits between the payer's bank and the payee's bank. This element is the first one after the debtor agent when there are several, and it can be left out.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/IntrmyAgt1
+related:
+  - debtor-agent
+  - creditor-agent
+lesson: follow-the-flow
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

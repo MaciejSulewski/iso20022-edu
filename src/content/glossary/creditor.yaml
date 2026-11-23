@@ -1,0 +1,14 @@
+id: creditor
+term: Creditor
+plain: >-
+  The payee: the party the money is owed to. Every payment in the message names one.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/Cdtr
+related:
+  - creditor-agent
+  - debtor
+lesson: what-is-pacs008
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

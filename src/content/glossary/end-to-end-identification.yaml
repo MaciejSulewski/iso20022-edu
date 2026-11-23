@@ -1,0 +1,15 @@
+id: end-to-end-identification
+term: End-to-end identification
+plain: >-
+  A reference set by whoever started the payment and handed on unchanged along the chain, so the first bank and the last bank see the same value.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/PmtId/EndToEndId
+related:
+  - uetr
+  - instruction-identification
+  - message-identification
+lesson: follow-the-flow
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

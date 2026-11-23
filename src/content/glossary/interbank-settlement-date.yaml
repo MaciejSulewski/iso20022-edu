@@ -1,0 +1,13 @@
+id: interbank-settlement-date
+term: Interbank settlement date
+plain: >-
+  The date on which the money leaves the paying bank and becomes available to the bank it is owed to. It is optional.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/IntrBkSttlmDt
+related:
+  - interbank-settlement-amount
+  - settlement-method
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

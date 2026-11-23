@@ -1,0 +1,14 @@
+id: charge-bearer
+term: Charge bearer
+plain: >-
+  Says which party pays the fees for processing the payment. The message must state it, and it is picked from a short list of codes.
+message: pacs.008.001.14
+elements:
+  - CdtTrfTxInf/ChrgBr
+related:
+  - debtor
+  - creditor
+lesson: read-the-xml
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)

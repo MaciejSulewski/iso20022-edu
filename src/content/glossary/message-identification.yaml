@@ -1,0 +1,14 @@
+id: message-identification
+term: Message identification
+plain: >-
+  A reference that the sending bank gives this one message, so the receiver can tell it apart from others. The next message in the chain gets a new one.
+message: pacs.008.001.14
+elements:
+  - GrpHdr/MsgId
+related:
+  - end-to-end-identification
+  - group-header
+lesson: follow-the-flow
+lastReviewed:
+  date: "2026-11-23"
+  by: unreviewed (AI-drafted, pending T-093)
