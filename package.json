@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test src/i18n/t.test.ts scripts/import-xsd.test.ts scripts/extract-erepository.test.ts src/lib/content-schemas.test.ts src/lib/resolver.test.ts scripts/check-content.test.ts src/lib/xml-tree.test.ts src/lib/xml-view.test.ts src/lib/schema-tree.test.ts src/lib/tree-view.test.ts src/lib/workspace.test.ts src/lib/palette.test.ts src/lib/flow.test.ts src/lib/glossary.test.ts",
+    "test": "node --test src/i18n/t.test.ts scripts/import-xsd.test.ts scripts/extract-erepository.test.ts src/lib/content-schemas.test.ts src/lib/resolver.test.ts scripts/check-content.test.ts src/lib/xml-tree.test.ts src/lib/xml-view.test.ts src/lib/schema-tree.test.ts src/lib/tree-view.test.ts src/lib/workspace.test.ts src/lib/palette.test.ts src/lib/flow.test.ts src/lib/glossary.test.ts src/lib/quiz.test.ts",
     "import-xsd": "node scripts/import-xsd.ts",
     "extract-erepository": "node scripts/extract-erepository.ts",
     "check:content": "node scripts/check-content.ts",
