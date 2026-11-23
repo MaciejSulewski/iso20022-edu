@@ -19,13 +19,13 @@ Rules:
 ### Phase 6: flow
 ### Phase 7: mapping
 ### Phase 8: glossary and quiz
-- [ ] T-090 Glossary for pacs.008 terms, linked from ElementPanel. Done when: related terms and messages resolve #agent #phase/8
-- [ ] T-091 pacs.008 quiz. Done when: scoring works in the browser and each answer has an explanation #agent #phase/8
 ### Phase 9: hardening
 - [ ] T-100 Final accessibility pass, mobile QA, Lighthouse check across all pages. Done when: scores are recorded in the session note #agent #phase/9
 - [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-091 pacs.008 quiz. Done when: scoring works in the browser and each answer has an explanation #agent #phase/8 ✅ 2026-11-24 [PR #58](https://github.com/MaciejSulewski/iso20022-edu/pull/58) (page /quiz/pacs.008/: the eight questions of lesson 6 as multiple choice with an explanation each; AI-drafted, unreviewed until T-093; [[ADR-019 Quiz as YAML content]])
+- [x] T-090 Glossary for pacs.008 terms, linked from ElementPanel. Done when: related terms and messages resolve #agent #phase/8 ✅ 2026-11-23 [PR #57](https://github.com/MaciejSulewski/iso20022-edu/pull/57) (18 terms at /glossary/, official definition read from the schema beside own wording, Glossary link in the Details pane, found by Ctrl+K through Pagefind; AI-drafted, unreviewed until T-093; [[ADR-018 Glossary as YAML content]])
 - [x] T-080 MT103 → pacs.008 mapping table from public sources, own wording. Done when: every row path resolves in the schema #agent #phase/7 ✅ 2026-11-23 [PR #55](https://github.com/MaciejSulewski/iso20022-edu/pull/55) (page /mappings/mt103-pacs.008/: 14 MT-field rows and 11 elements with no MT field named, from a bank explainer and a vendor table, neither official; AI-drafted, unreviewed until T-081)
 - [x] T-070 FlowPlayer + pacs.008 agent-chain flow (serial and cover described). Done when: Next/Prev steps through every participant, and mobile shows a step list #agent #phase/6 ✅ 2026-11-22 [PR #52](https://github.com/MaciejSulewski/iso20022-edu/pull/52) (page /flows/pacs.008-agent-chain/, AI-drafted, cover is an outline from weak sources, unreviewed until T-093)
 - [x] T-071 Animate the flow diagram, respecting `prefers-reduced-motion`. Done when: motion stops with the setting on #agent #phase/6 ✅ 2026-11-23 [PR #53](https://github.com/MaciejSulewski/iso20022-edu/pull/53)
@@ -95,3 +95,5 @@ Rules:
 - [[ADR-015 Palette on every page]]
 - [[ADR-016 Lessons as Markdown content]]
 - [[ADR-017 Flows as YAML content]]
+- [[ADR-018 Glossary as YAML content]]
+- [[ADR-019 Quiz as YAML content]]
