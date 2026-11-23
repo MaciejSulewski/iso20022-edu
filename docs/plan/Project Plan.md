@@ -43,7 +43,7 @@ iso20022-edu/
       samples/pacs.008-basic.xml (+ .yaml metadata)
       flows/pacs008-agent-chain.yaml
       mappings/mt103-pacs008.yaml
-      glossary.yaml
+      glossary/*.yaml                  # one term per file
       quizzes/pacs008-basics.yaml
       lessons/en/*.md
     i18n/ui.en.json, i18n/t.ts
