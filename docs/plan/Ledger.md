@@ -23,7 +23,6 @@ Rules:
 ### Phase 7: mapping
 ### Phase 8: glossary and quiz
 ### Phase 9: hardening
-- [ ] T-100 Final accessibility pass, mobile QA, Lighthouse check across all pages. Done when: scores are recorded in the session note. Constraints (Lighthouse memory, batches, widths): [[2026-11-24]] #agent #phase/9
 ### Stage 2: more messages
 Order: T-112 first, then one message per task with the `add-message` skill (each with a `#me` review task), then the multi-message flows. pacs.002.001.16 and pacs.004.001.15 XSDs are already in `schemas/`.
 - [ ] T-112 Multi-message foundations: a per-file schema map for `check:xml`, `check-content` without the single-schema rule, the resolver's root type per schema, no hard-coded message id on the landing page or in Start here, a `/messages/` index page. Complex: spec first ([[ADR-011 Process per task]]). Done when: a second generated schema (pacs.002.001.16) builds a workspace page with one synthetic sample and `npm run verify` passes Needs the eRepository check in T-113 first. #agent #stage/2
@@ -44,6 +43,7 @@ Order: T-112 first, then one message per task with the `add-message` skill (each
 - [ ] T-127 Changelog page (maintenance step 8) from a checked content file. Done when: `/changelog/` lists dated entries and [[maintenance]] step 8 points to it #agent #stage/2
 
 ## Done
+- [x] T-100 Final accessibility pass, mobile QA, Lighthouse check across all pages. Done when: scores are recorded in the session note #agent #phase/9 ✅ 2026-11-25 [PR #68](https://github.com/MaciejSulewski/iso20022-edu/pull/68) (Lighthouse on 11 pages, mobile and desktop: Performance 98 to 100, Accessibility and Best Practices 100, SEO 92 from the root robots.txt a project site cannot own; no overflow at 320, 390 or 768 px; fixed the doubled dot in the Start here numbers; scores in [[2026-11-25]])
 - [x] T-111 Stage 2 tasks in the ledger (T-112 to T-127), reviewed by the owner in the PR. Done when: `/next-phase` has Stage 2 tasks to pick after Phase 9 #agent #phase/9 ✅ 2026-11-24 [PR #66](https://github.com/MaciejSulewski/iso20022-edu/pull/66)
 - [x] T-109 Workflow rules: `CLAUDE.md` holds the session loop, merge rule, gates and check-writing rules; [[ADR-020 Delegated merging and session loop]]; ADR-011, Home, Ledger rules, CONTRIBUTING; `next-session-prompt.md` becomes a pointer; T-100 constraints kept in [[2026-11-24]]. Done when: no rule lives only in a pasted prompt #agent #phase/9 ✅ 2026-11-24 [PR #65](https://github.com/MaciejSulewski/iso20022-edu/pull/65)
 - [x] T-110 Project Plan and maintenance refresh: .14 ids, code map, no signals or typography plugin, answered questions closed, maintenance steps current. Done when: the Plan matches the repo #agent #phase/9 ✅ 2026-11-24 [PR #65](https://github.com/MaciejSulewski/iso20022-edu/pull/65)

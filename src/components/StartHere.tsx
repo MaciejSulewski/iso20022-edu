@@ -4,13 +4,12 @@ export type Step = {
   id: string;
   title: string;
   desc: string;
-  href?: string | undefined;
+  href: string;
   lessonHref?: string | undefined;
   lessonTitle?: string | undefined;
 };
 type Labels = {
   progress: string; // contains {done} and {total}
-  soon: string;
   done: string;
   open: string;
   lesson: string; // contains {title}
@@ -84,7 +83,8 @@ export default function StartHere({
               />
               <div class="min-w-0 flex-1">
                 <label for={`step-${s.id}`} class="block font-medium">
-                  <span class="mr-2 text-muted">{i + 1}.</span>
+                  {/* one text node: "{i + 1}." makes two, and hydration doubles the dot */}
+                  <span class="mr-2 text-muted">{`${i + 1}.`}</span>
                   <span class={checked ? "line-through" : ""}>{s.title}</span>
                   {checked && (
                     <span class="ml-2 text-sm text-muted">({labels.done})</span>
@@ -97,15 +97,9 @@ export default function StartHere({
                     {labels.lesson.replace("{title}", s.lessonTitle ?? "")}
                   </a>
                 )}
-                {s.href ? (
-                  <a href={s.href} class="mt-1 inline-block text-sm">
-                    {labels.open}
-                  </a>
-                ) : (
-                  <span class="mt-2 inline-block rounded-full border border-line bg-surface px-2 py-0.5 text-xs">
-                    {labels.soon}
-                  </span>
-                )}
+                <a href={s.href} class="mt-1 inline-block text-sm">
+                  {labels.open}
+                </a>
               </div>
             </li>
           );

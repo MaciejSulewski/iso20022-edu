@@ -1,4 +1,4 @@
-// Where each Start-here step's tool lives, so the home page and the lesson pages agree. A step with no entry has no tool yet.
+// Where each Start-here step's tool lives, so the home page and the lesson pages agree. A step with no entry, other than `lesson`, fails the home page build.
 export const WORKSPACE_ID = "pacs.008.001.14";
 const TOOLS: Record<string, string> = {
   xml: `messages/${WORKSPACE_ID}/`,
