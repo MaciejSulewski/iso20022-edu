@@ -10,4 +10,4 @@ date: 2026-11-21
 
 **Alternatives:** full flow for every task (slow), a short plan only (too thin for the islands).
 
-**Consequences:** Code is written with `ponytail` in `full` mode. UI work also uses `frontend-design`. See [[Project Plan]], [[ADR-010 UX direction]].
+**Consequences:** Implementer subagents write code with `ponytail` in `full` mode; the orchestrating session does not need it ([[ADR-020 Delegated merging and session loop]]). UI work also uses `frontend-design`. The steps are in the `next-phase` skill. See [[Project Plan]], [[ADR-010 UX direction]].

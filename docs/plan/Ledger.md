@@ -5,7 +5,9 @@ Rules:
 - IDs never change or get reused.
 - Done means `[x]` + `✅ YYYY-MM-DD` + a link to the PR or session note.
 - Blocked means `#blocked` + the reason.
-- Agents read this note at the start of every session and update it at the end. Details: [[Project Plan]].
+- A task is ticked on its own branch before its PR merges. A task that needs more PRs names each merged PR on its open line.
+- Every task that adds teaching text gets a matching `#me` review task.
+- `npm run check:ledger` checks these rules (`-- --prs` also checks merged task branches). Agents read this note at the start of every session (`/next-phase`) and update it at the end (`/session-wrap`). Details: [[Project Plan]].
 
 ## Now
 (max 3 open tasks)
@@ -99,3 +101,4 @@ Rules:
 - [[ADR-017 Flows as YAML content]]
 - [[ADR-018 Glossary as YAML content]]
 - [[ADR-019 Quiz as YAML content]]
+- [[ADR-020 Delegated merging and session loop]]

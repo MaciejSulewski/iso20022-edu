@@ -7,9 +7,9 @@ The project plan, task ledger and decisions live in the `docs/` folder (an Obsid
 ## Workflow
 
 - Work on a branch, one task per branch: `feat/…`, `fix/…` or `docs/…`.
-- Never commit straight to `main`. Open a pull request; the maintainer merges it.
+- Never commit straight to `main`. Open a pull request; the maintainer merges it. (Claude agents merge their own PRs under the rule in `CLAUDE.md` and ADR-020.)
 - Keep commits small and use Conventional Commits: `feat:`, `fix:`, `docs:`, `content:`, `chore:`.
-- Once the site exists, `npm run build` (it includes the content checks) must pass before you open a PR.
+- `npm run verify` (tests, lint, format, ledger, content and XML checks, build, JS size, accessibility and browser checks) must pass before you open a PR. The browser checks need Playwright's Chromium: `npx playwright install chromium`.
 
 ## Content rules
 
@@ -20,7 +20,7 @@ The project plan, task ledger and decisions live in the `docs/` folder (an Obsid
 
 ## Reporting a content error
 
-Open a GitHub issue. A "report a content error" template is planned (task T-015). Until then, say which page and element is wrong and what the correct text should be, with a public source.
+Open a GitHub issue with the "Report a content error" template: say which page and element is wrong and what the correct text should be, with a public source.
 
 ## Licences
 
