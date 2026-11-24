@@ -13,7 +13,7 @@ Steps marked "not built yet" name the ledger task that will build them ([[Ledger
 5. [ ] **Copy the overlay and samples** to the new id, then fix what `check-content.ts` flags (dead paths, unresolved elements). Also fix what `npm run check:xml` reports for the samples. For a message that is new to the site, follow the `add-message` skill (`.claude/skills/add-message/SKILL.md`) instead.
 6. [ ] **Write explanations** for new elements in your own wording, with the official ISO definition shown beside them.
 7. [ ] **Update metadata.** Set `sources.retrieved` and `lastReviewed` for the new version. Mark the old version `deprecated`, but keep it while it is still in use.
-8. [ ] **Add a changelog entry** on the site. Not built yet (T-127, changelog page).
+8. [ ] **Add a changelog entry** on the site: a new file `src/content/changelog/YYYY-MM-DD-slug.yaml` (`id` = the file name, `date`, a one-line `title`, a plain one-to-three-sentence `summary`, and the message ids it concerns in `messages`). It shows on `/changelog/`, newest first; `check-content` checks the id, the date and the message ids.
 9. [ ] **Run the checks before a PR.** `npm run verify` must pass (every gate: tests, lint, format, ledger, xmllint, build with check-content, JS size, accessibility, browser checks).
 
 ## Rules for every run

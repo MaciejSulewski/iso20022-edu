@@ -124,3 +124,4 @@ Order: T-112 first, then one message per task with the `add-message` skill (each
 - [[ADR-018 Glossary as YAML content]]
 - [[ADR-019 Quiz as YAML content]]
 - [[ADR-020 Delegated merging and session loop]]
+- [[ADR-021 Changelog as YAML content]]
