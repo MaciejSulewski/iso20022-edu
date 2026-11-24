@@ -48,6 +48,7 @@ Rules for Claude Code in this repository. Project description, design and status
 - Line endings are LF (`.gitattributes`). After an edit, check `git diff`; some tools silently skip edits to CRLF files.
 - Use the Write tool for scripts longer than a few lines, not a long heredoc, and for PR bodies, review comments and long commit messages (`gh pr create --body-file`, `gh pr comment --body-file`, `git commit -F`). Run long commands in the background.
 - The guard hook needs `node` on the hook shell's PATH. A "node: command not found" hook error means the guard is off: tell the user.
+- Edits to `.claude/settings.json` take effect in the running session. Never make a hook command fail closed on a missing interpreter (`|| exit 2`): it blocks every command until the file is fixed.
 
 ## Skills
 
