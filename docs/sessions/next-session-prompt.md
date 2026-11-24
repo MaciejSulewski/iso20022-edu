@@ -17,12 +17,19 @@ link it). CI `build` is green on main. T-081 (review of the mapping) and T-093 (
 of lessons, overlays, samples, the flow, the glossary and the quiz) are mine and open; all of
 that text is AI-drafted and unreviewed.
 
-Phase 9 tasks for you: T-100 (final accessibility pass, mobile QA, Lighthouse check across all
-pages; done when scores are recorded in the session note) and T-102 (schema diff script, old vs
-new generated JSON; done when it prints added, removed and changed elements). Decide per task
-whether it is complex (new script or data format: brainstorm, spec, plan per ADR-011). T-100 is
-a pass over existing pages: record what you measured and how (tool, pages, widths), fix what the
-pass finds in small PRs, and list what you did not check. The Start here "coming soon" branch
+T-102 (schema diff script) is merged: PR #60, `npm run schema-diff -- <old.json> <new.json>`,
+maintenance.md step 4 uses it; its ledger tick and review minors are recorded (PR #61).
+
+Phase 9 task for you: T-100 (final accessibility pass, mobile QA, Lighthouse check across all
+pages; done when scores are recorded in the session note). It is a pass over existing pages:
+record what you measured and how (tool, pages, widths), fix what the pass finds in small PRs,
+and list what you did not check. Already known: axe (check:a11y) covers all 34 built pages at
+1280 and 390 px, light and dark. The Lighthouse run (npx lighthouse 13.x, Playwright's
+Chromium via CHROME_PATH, mobile and desktop presets, the four categories, pages served by
+scripts/serve-dist.ts) was started once and killed by Claude Code because the machine ran out
+of memory; no scores exist yet. Do not restart it unless the user asks; when they do, run
+small batches, one Lighthouse at a time, writing results after each page. Mobile QA at 320,
+390 and 768 px is not started. The Start here "coming soon" branch
 (`home.start.soon`) is dead now that every step has a tool; remove it if you touch StartHere.
 Use frontend-design:frontend-design for any UI change. Skip #me tasks (T-081, T-093).
 
@@ -83,7 +90,10 @@ Facts:
   import-xsd warn without defs; extract-erepository edge cases; CI Playwright cache and job
   timeout; check:content runs twice in CI; Base.astro JSDoc props type; deploy.yml Node version
   vs .nvmrc; maintenance.md changelog step; Project Plan "Decisions made" for ADR-012 to 019;
-  the quiz form reloads the page if submitted before the island hydrates. PR #9 (Dependabot,
+  the quiz form reloads the page if submitted before the island hydrates; T-102 minors
+  (schema-diff: no warning when no root type is found, two xs:any siblings share a path,
+  some type attribute changes not reported, untested removed-code and base/pattern branches).
+  PR #9 (Dependabot,
   TypeScript 7): leave it unless build, lint and astro check pass on it.
 - Content rules: public sources only, base ISO 20022 only (no CBPR+), own wording beside
   the official definition, synthetic data only. Generated files are never hand-edited.
