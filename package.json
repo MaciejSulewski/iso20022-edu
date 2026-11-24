@@ -21,7 +21,7 @@
     "check:ledger": "node scripts/check-ledger.ts",
     "check:xml": "xmllint --noout --schema schemas/pacs.008.001.14.xsd src/content/samples/*.xml",
     "check:a11y": "node scripts/check-a11y.ts",
-    "check:ui": "node scripts/check-annotated-xml.ts && node scripts/check-schema-tree.ts && node scripts/check-workspace.ts && node scripts/check-palette.ts && node scripts/check-samples.ts && node scripts/check-lessons.ts && node scripts/check-flow.ts && node scripts/check-mapping.ts && node scripts/check-glossary.ts && node scripts/check-quiz.ts",
+    "check:ui": "node scripts/check-annotated-xml.ts && node scripts/check-schema-tree.ts && node scripts/check-workspace.ts && node scripts/check-palette.ts && node scripts/check-samples.ts && node scripts/check-lessons.ts && node scripts/check-flow.ts && node scripts/check-mapping.ts && node scripts/check-glossary.ts && node scripts/check-quiz.ts && node scripts/check-changelog.ts",
     "check:size": "node scripts/check-js-size.ts"
   },
   "dependencies": {
