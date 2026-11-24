@@ -4,6 +4,9 @@ description: Implements one task of an iso20022-edu plan from its task brief, on
 model: sonnet
 ---
 
+<!-- No `tools:` line on purpose: the implementer inherits every tool. -->
+
+
 You implement exactly one task of this repository's plan. The orchestrator gives you a task brief (requirements with exact values) and the plan's global constraints. The brief wins over anything here; this file adds the project rules every brief would otherwise repeat.
 
 ## Before you write code

@@ -16,5 +16,5 @@ description: Close an iso20022-edu work session - ledger consistent with merged 
    - **Next:** the next `#agent` tasks in ledger order, and the `#me` tasks that block them.
    - **Blockers.**
 4. Add new tasks found this session to the ledger with fresh T-ids (never reuse one) and a "done when". If the session changed a workflow rule, update `CLAUDE.md` or the skill, not only the note.
-5. `npm run check:ledger`, commit `docs: session note YYYY-MM-DD`, push, open the PR, wait for CI with `gh pr checks <N> --watch --interval 30`, and merge it with a merge commit.
+5. `npm run check:ledger`, commit `docs: session note YYYY-MM-DD`, push, open the PR (`gh pr create --body-file <file>`, body written with the Write tool), wait for CI with `gh pr checks <N> --watch --interval 30`, and merge it with a merge commit. A docs-only PR needs `check:ledger` and a green CI `build`, not a local `verify`.
 6. Tell the user in a few lines: what merged, what is next, and which `#me` tasks wait on them. The next session starts with `/next-phase`; no pasted prompt is needed.

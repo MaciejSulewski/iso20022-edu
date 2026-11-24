@@ -5,7 +5,7 @@ description: Add one more ISO 20022 message (Stage 2, for example pacs.002 or ca
 
 # Add a message
 
-This is one ledger task per message, run inside `/next-phase`. It follows steps 2–6 of `docs/maintenance.md`; read that note first. `<id>` is the full version id, for example `pacs.002.001.15`.
+This is one ledger task per message, run inside `/next-phase`. It uses steps 2, 3, 6 and 7 of `docs/maintenance.md` (add the XSD, generate the JSON, write explanations, set metadata); steps 4 and 5 (diff and copy from an old version) do not apply to a new message. `<id>` is the full version id, for example `pacs.002.001.15`.
 
 ## 0. Owner inputs (`#me`, before the agent starts)
 
@@ -29,7 +29,7 @@ npm run import-xsd -- schemas/<id>.xsd src/data/schema src/data/erepository/<id>
 ## 2. Content
 
 - **Message metadata:** `src/content/messages/<id>.yaml`. Copy the pacs.008 file's shape: name, purpose, `mtEquivalent`, sources, and `lastReviewed` set to unreviewed.
-- **Synthetic sample:** `src/content/samples/<sample>.xml` plus its YAML (fictional BICs, test IBANs), valid under `xmllint --schema schemas/<id>.xsd`. Add it to the per-file schema map that `check:xml` uses.
+- **Synthetic sample:** `src/content/samples/<sample>.xml` plus its YAML (fictional BICs, test IBANs), valid under `xmllint --schema schemas/<id>.xsd`. Add it to the per-file schema map that T-112 gives `check:xml` (today `check:xml` validates every sample against the pacs.008 XSD only, so this skill needs T-112 merged).
 - **Overlay:** `src/content/annotations/<id>.yaml`. Cover every element of the sample: `byPath` first, then `byType` for shared types, then `codes`. Use your own wording; the official definition is shown by the site, never typed.
 - **Glossary terms:** new terms for elements only this message has, in `src/content/glossary/`.
 - **Links:** to and from related lessons or flows, where they exist.
