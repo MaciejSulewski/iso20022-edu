@@ -15,7 +15,7 @@ Decisions made:
 
 Repo: `MaciejSulewski/iso20022-edu` on GitHub (Phase 0 is done). Plans and docs are managed in **Obsidian**, with `iso20022-edu/docs/` as the vault.
 
-**Process:** complex tasks get brainstorm, spec and plan first; simple ones go straight to build ([[ADR-011 Process per task]]). Tasks are tracked in [[Ledger]], each with a "done when" criterion. A session runs `/next-phase` and ends with `/session-wrap` ([[ADR-020 Delegated merging and session loop]]).
+**Process:** complex tasks get brainstorm, spec and plan first; simple ones get a short plan, then build ([[ADR-011 Process per task]]). Tasks are tracked in [[Ledger]], each with a "done when" criterion. A session runs `/next-phase` and ends with `/session-wrap` ([[ADR-020 Delegated merging and session loop]]).
 
 ## 1. Tech stack
 | Piece | Choice | Why |
@@ -23,7 +23,7 @@ Repo: `MaciejSulewski/iso20022-edu` on GitHub (Phase 0 is done). Plans and docs 
 | Site generator | **Astro** (`output: 'static'`) | Content collections with zod schemas make the build fail on broken content; built-in i18n routing for later. |
 | Language | **TypeScript, strict** (components, scripts, content config); `astro check` runs in the build | Typed schema and overlay shapes shared by the site and the content checks. See [[ADR-009 TypeScript and Tailwind]]. |
 | Styling | **Tailwind CSS v4** (`@tailwindcss/vite`), design tokens in CSS, `dark:` variant; lessons use own prose styles (no typography plugin) | Consistent look, light/dark with little code. |
-| Interactivity | **Preact islands** (`@astrojs/preact`, TSX), hydrated only where needed (`client:visible` / `client:load` / `client:idle`); the workspace is one island that owns the selection ([[ADR-014 One workspace island]]), no signals library | The XML viewer, tree and panel share one selection; vanilla scripts would not scale. About 4 KB runtime. |
+| Interactivity | **Preact islands** (`@astrojs/preact`, TSX), hydrated only where needed (`client:load` / `client:idle`); the workspace is one island that owns the selection ([[ADR-014 One workspace island]]), no signals library | The XML viewer, tree and panel share one selection; vanilla scripts would not scale. About 4 KB runtime. |
 | Search | **Pagefind** for lessons and glossary, plus a build-time element index for the Ctrl+K palette | Search is core to a 1000-element tree, not optional. |
 | Structure data | **Generated from the official XSD** by an import script | A full tree has hundreds of elements; hand-typing them is error-prone and must be redone every version. |
 | Explanations | **YAML overlay** written by hand, plus Markdown lessons | Plain-English teaching layer on top of the generated structure. |
@@ -49,19 +49,19 @@ iso20022-edu/
       mappings/*.yaml           # MT 103 -> pacs.008
       glossary/*.yaml           # one term per file, [[ADR-018 Glossary as YAML content]]
       quizzes/*.yaml            # [[ADR-019 Quiz as YAML content]]
-    lib/                        # pure, unit-tested: resolver, schema-tree, xml-tree, xml-view, tree-view, workspace,
-                                # palette, flow, glossary, quiz (score), lesson-tools (Start-here tools), content-schemas
+    lib/                        # unit-tested: resolver, schema-tree, xml-tree, xml-view, tree-view, workspace, palette,
+                                # flow, glossary, quiz (score), content-schemas; also lesson-tools (Start-here tools), reveal (DOM)
     components/                 # Preact islands: Workspace (owns selection, hash and details; ADR-014) with
                                 # AnnotatedXml, SchemaTree, ElementPanel; Palette (Ctrl+K on every page, ADR-015);
-                                # FlowPlayer; Quiz; StartHere. ui/: Button, Badge, Tabs, Sheet, ThemeToggle
+                                # FlowPlayer; Quiz; StartHere. ui/: Button, Badge (.astro), Tabs, Sheet, ThemeToggle
     i18n/ui.en.json, i18n/t.ts  # all UI text goes through t()
     layouts/Base.astro          # header, palette, footer with disclaimer and licences
     pages/                      # index (Start here), messages/[id]/[...sample] (the workspace), lessons/, flows/[id],
-                                # mappings/[id] (static), glossary/ (static), quiz/[id], 404,
+                                # mappings/[id] (static), glossary/ (static), quiz/[id], 404, dev/ui (primitives showcase),
                                 # tree/[id]/index.json and tree/[id]/types/[type].json (static tree data, no page)
     styles/global.css           # Tailwind import, design tokens, dark mode
   scripts/
-    import-xsd.ts, extract-erepository.ts, schema-diff.ts   # generation and the yearly diff
+    import-xsd.ts, extract-erepository.ts, schema-diff.ts, schema-model.ts   # generation, the yearly diff, the zod model
     check-content.ts            # cross-reference rules for every collection, coverage report (runs in build)
     check-ledger.ts             # ledger format; --prs checks merged task branches
     check-*.ts (UI)             # Playwright browser checks in check:ui; settled() in ui-wait.ts
@@ -171,7 +171,7 @@ Status: Phases 0 to 8 are done; Phase 9 is in progress (T-100). See [[Ledger]].
 - Polish locale.
 
 ## 6. Questions (all answered)
-1. **Exact version:** pacs.008.001.14 (T-030, T-104, [[sources]]). Keeping .08 as well is not planned.
+1. **Exact version:** pacs.008.001.14 (T-030, T-104, [[sources]]). Keeping .08 as well is not planned unless the owner asks.
 2. **XSD redistribution:** commit; terms read from the primary pages ([[ADR-013 Commit the XSDs]], T-104).
 3. **Repo and URL:** `maciejsulewski.github.io/iso20022-edu`, no custom domain, no analytics.
 
@@ -226,11 +226,11 @@ Initial tasks:
 
 ## Test and CI strategy
 - Every PR runs every gate in one CI job, `build` (lint, format, tests, ledger check, xmllint, build with check-content and `astro check`, JS size, axe, browser checks); T-026 makes it required. Locally `npm run verify` runs the same gates.
-- xmllint on samples (T-040), axe and a JS-size check (T-037) run in CI from Phase 1. Unit tests cover `import-xsd` (T-031) and the `lib/` resolver (T-038).
+- xmllint on samples (T-040), axe and a JS-size check (T-037) run in CI from Phase 1. Unit tests (`npm test`) cover every `lib/` module and the import, extract, diff, ledger and guard scripts.
 - Phase 9 is a final pass, not the first check.
 
-## Verification (when built)
-- `npm run build` passes (includes `astro check`). Breaking a path in a sample or overlay makes the build fail.
+## Verification
+- `npm run verify` passes (every gate; the build includes `astro check`). Breaking a path in a sample or overlay makes the build fail.
 - Lighthouse accessibility and performance are checked; dark mode and `prefers-reduced-motion` are tested.
 - The `import-xsd` test passes; CI xmllint validates samples.
 - `npm run preview`: click mandatory and optional elements in a desktop and a mobile viewport. Check the panel contents, keyboard navigation, deep links, and tree filter and search.

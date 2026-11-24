@@ -7,7 +7,8 @@ Rules:
 - Blocked means `#blocked` + the reason.
 - A task is ticked on its own branch before its PR merges. A task that needs more PRs names each merged PR on its open line.
 - Every task that adds teaching text gets a matching `#me` review task.
-- `npm run check:ledger` checks these rules (`-- --prs` also checks merged task branches). Agents read this note at the start of every session (`/next-phase`) and update it at the end (`/session-wrap`). Details: [[Project Plan]].
+- A cancelled task is ticked with `Cancelled YYYY-MM-DD` and a reason instead of `✅`.
+- `npm run check:ledger` checks the format, ids and placement; `-- --prs` also flags a merged task branch whose open task does not name the PR. Agents read this note at the start of every session (`/next-phase`) and update it at the end (`/session-wrap`). Details: [[Project Plan]].
 
 ## Now
 (max 3 open tasks)
@@ -22,9 +23,11 @@ Rules:
 ### Phase 7: mapping
 ### Phase 8: glossary and quiz
 ### Phase 9: hardening
-- [ ] T-100 Final accessibility pass, mobile QA, Lighthouse check across all pages. Done when: scores are recorded in the session note #agent #phase/9
+- [ ] T-100 Final accessibility pass, mobile QA, Lighthouse check across all pages. Done when: scores are recorded in the session note. Constraints (Lighthouse memory, batches, widths): [[2026-11-24]] #agent #phase/9
 
 ## Done
+- [x] T-109 Workflow rules: `CLAUDE.md` holds the session loop, merge rule, gates and check-writing rules; [[ADR-020 Delegated merging and session loop]]; ADR-011, Home, Ledger rules, CONTRIBUTING; `next-session-prompt.md` becomes a pointer; T-100 constraints kept in [[2026-11-24]]. Done when: no rule lives only in a pasted prompt #agent #phase/9 ✅ 2026-11-24 [PR #65](https://github.com/MaciejSulewski/iso20022-edu/pull/65)
+- [x] T-110 Project Plan and maintenance refresh: .14 ids, code map, no signals or typography plugin, answered questions closed, maintenance steps current. Done when: the Plan matches the repo #agent #phase/9 ✅ 2026-11-24 [PR #65](https://github.com/MaciejSulewski/iso20022-edu/pull/65)
 - [x] T-108 Project `.claude/` setup: settings with allow and deny rules, `guard.ts` PreToolUse hook (no push to main, force-push, branch deletion, discarding changes, sleep polling), agents `implementer`, `task-reviewer`, `content-reviewer`, skills `next-phase`, `session-wrap`, `add-message`. Done when: the guard tests pass and the skills and agents load in a session #agent #phase/9 ✅ 2026-11-24 [PR #64](https://github.com/MaciejSulewski/iso20022-edu/pull/64) (hook proven by tests; live check after an app restart)
 - [x] T-107 `npm run verify` (every gate in sequence) and `npm run check:ledger` (format, ids, placement; `-- --prs` flags merged task branches left open), CI ledger step, job timeout, Playwright cache. Done when: verify prints each gate's exit code and a missed tick fails `--prs` #agent #phase/9 ✅ 2026-11-24 [PR #63](https://github.com/MaciejSulewski/iso20022-edu/pull/63)
 - [x] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9 ✅ 2026-11-24 [PR #60](https://github.com/MaciejSulewski/iso20022-edu/pull/60) (`npm run schema-diff -- <old.json> <new.json>`; maintenance.md step 4 uses it; minors in [[2026-11-24]])

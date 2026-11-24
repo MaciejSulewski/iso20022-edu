@@ -28,7 +28,7 @@ Rules for Claude Code in this repository. Project description, design and status
 
 - Claude merges its own PRs (code and docs) with a merge commit when: the review has no open Critical/Important finding, CI `build` is green for the PR's head commit, and no `#me` task blocks it. Stacked PRs merge base first.
 - Wait on CI with `gh pr checks <n> --watch --interval 30` in the background. Never `sleep` to wait, never `gh event listen`.
-- Never without the user's OK: push to `main`, force-push, delete branches, change repo settings, commit the eRepository files, discard working-copy changes you did not make (ask first, even for line-ending-only ones). `.claude/hooks/guard.ts` blocks these.
+- Never without the user's OK: push to `main`, force-push, delete branches, change repo settings, commit the eRepository files, discard working-copy changes you did not make (ask first, even for line-ending-only ones). `.claude/hooks/guard.ts` blocks the git and gh ones (a backstop, not a sandbox).
 
 ## Gates
 
@@ -43,7 +43,7 @@ Rules for Claude Code in this repository. Project description, design and status
 
 ## Git and Windows
 
-- Branches `feat/…`, `fix/…`, `docs/…`; task branches are `<type>/t-NNN-slug`. Conventional Commits (`feat:`, `fix:`, `docs:`, `content:`, `chore:`), small commits, with the attribution trailer from the session's reminder.
+- Branches `feat/…`, `fix/…`, `docs/…`; task branches are `feat|fix|docs/t-NNN-slug`. Conventional Commits (`feat:`, `fix:`, `docs:`, `content:`, `chore:`), small commits, with the attribution trailer from the session's reminder.
 - One branch and PR per task off an up-to-date `main`. Stage specific files only, never `git add -A`.
 - Line endings are LF (`.gitattributes`). After an edit, check `git diff`; some tools silently skip edits to CRLF files.
 - Use the Write tool for scripts longer than a few lines, not a long heredoc, and for PR bodies, review comments and long commit messages (`gh pr create --body-file`, `gh pr comment --body-file`, `git commit -F`). Run long commands in the background.
