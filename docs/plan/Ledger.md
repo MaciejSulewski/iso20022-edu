@@ -24,8 +24,27 @@ Rules:
 ### Phase 8: glossary and quiz
 ### Phase 9: hardening
 - [ ] T-100 Final accessibility pass, mobile QA, Lighthouse check across all pages. Done when: scores are recorded in the session note. Constraints (Lighthouse memory, batches, widths): [[2026-11-24]] #agent #phase/9
+### Stage 2: more messages
+Order: T-112 first, then one message per task with the `add-message` skill (each with a `#me` review task), then the multi-message flows. pacs.002.001.16 and pacs.004.001.15 XSDs are already in `schemas/`.
+- [ ] T-112 Multi-message foundations: a per-file schema map for `check:xml`, `check-content` without the single-schema rule, the resolver's root type per schema, no hard-coded message id on the landing page or in Start here, a `/messages/` index page. Complex: spec first ([[ADR-011 Process per task]]). Done when: a second generated schema (pacs.002.001.16) builds a workspace page with one synthetic sample and `npm run verify` passes Needs the eRepository check in T-113 first. #agent #stage/2
+- [ ] T-113 Find the eRepository copy (git-ignored, about 113 MB) and confirm it has pacs.002.001.16 and pacs.004.001.15; download the camt and pain message sets (camt.056, camt.029, camt.053, camt.054, pain.001) in a browser, copy the XSDs unmodified into `schemas/` and record versions, URLs and dates in [[sources]] #me #stage/2
+- [ ] T-114 Add pacs.002 (FI to FI payment status report) with the `add-message` skill: a synthetic status report for the basic pacs.008 sample. Done when: its workspace page builds, check-content shows every sample element annotated and `npm run verify` passes #agent #stage/2
+- [ ] T-115 Review the pacs.002 content for accuracy #me #stage/2
+- [ ] T-116 Add pacs.004 (payment return) with the `add-message` skill: a synthetic return of the basic pacs.008 sample. Done when: as T-114 #agent #stage/2
+- [ ] T-117 Review the pacs.004 content for accuracy #me #stage/2
+- [ ] T-118 Add camt.056 (FI to FI payment cancellation request) and camt.029 (resolution of investigation) with the `add-message` skill, one synthetic pair. Done when: as T-114, for both messages #agent #stage/2
+- [ ] T-119 Review the camt.056 and camt.029 content for accuracy #me #stage/2
+- [ ] T-120 Add pain.001 (customer credit transfer initiation) with the `add-message` skill: the debtor's instruction that leads to the basic pacs.008 sample. Done when: as T-114 #agent #stage/2
+- [ ] T-121 Review the pain.001 content for accuracy #me #stage/2
+- [ ] T-122 Add camt.053 (statement) and camt.054 (debit/credit notification) with the `add-message` skill, entries for the basic pacs.008 sample. Done when: as T-114, for both messages #agent #stage/2
+- [ ] T-123 Review the camt.053 and camt.054 content for accuracy #me #stage/2
+- [ ] T-124 Multi-message flows as flow YAML: reject (pacs.002), return (pacs.004), cancellation (camt.056 and camt.029), initiation to statement (pain.001 to camt.053/054). Done when: each flow page steps through every message, links its workspace sample, and check-content resolves every message and path #agent #stage/2
+- [ ] T-125 Review the multi-message flows for accuracy #me #stage/2
+- [ ] T-126 Polish locale: `pl` UI strings, a language switch, English fallback for untranslated content. Complex: spec first. Done when: every UI string has a `pl` entry, one lesson is in Polish, and missing translations fall back to English with no build error #agent #stage/2
+- [ ] T-127 Changelog page (maintenance step 8) from a checked content file. Done when: `/changelog/` lists dated entries and [[maintenance]] step 8 points to it #agent #stage/2
 
 ## Done
+- [x] T-111 Stage 2 tasks in the ledger (T-112 to T-127), reviewed by the owner in the PR. Done when: `/next-phase` has Stage 2 tasks to pick after Phase 9 #agent #phase/9 ✅ 2026-11-24 [PR #66](https://github.com/MaciejSulewski/iso20022-edu/pull/66)
 - [x] T-109 Workflow rules: `CLAUDE.md` holds the session loop, merge rule, gates and check-writing rules; [[ADR-020 Delegated merging and session loop]]; ADR-011, Home, Ledger rules, CONTRIBUTING; `next-session-prompt.md` becomes a pointer; T-100 constraints kept in [[2026-11-24]]. Done when: no rule lives only in a pasted prompt #agent #phase/9 ✅ 2026-11-24 [PR #65](https://github.com/MaciejSulewski/iso20022-edu/pull/65)
 - [x] T-110 Project Plan and maintenance refresh: .14 ids, code map, no signals or typography plugin, answered questions closed, maintenance steps current. Done when: the Plan matches the repo #agent #phase/9 ✅ 2026-11-24 [PR #65](https://github.com/MaciejSulewski/iso20022-edu/pull/65)
 - [x] T-108 Project `.claude/` setup: settings with deny rules (its allow list was removed in PR #65), `guard.ts` PreToolUse hook (no push to main, force-push, branch deletion, discarding changes, sleep polling), agents `implementer`, `task-reviewer`, `content-reviewer`, skills `next-phase`, `session-wrap`, `add-message`. Done when: the guard tests pass and the skills and agents load in a session #agent #phase/9 ✅ 2026-11-24 [PR #64](https://github.com/MaciejSulewski/iso20022-edu/pull/64) (hook proven by tests; live check after an app restart)
