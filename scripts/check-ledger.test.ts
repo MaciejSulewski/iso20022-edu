@@ -1,20 +1,10 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { checkLedger, checkMergedPrs } from "./check-ledger.ts";
 
 const ledger = (now: string, done: string) =>
   `# Ledger\n## Now\n${now}\n## Next\n### Phase 9\n- [ ] T-100 Pass #agent #phase/9\n## Done\n${done}\n## Decisions\n- [[ADR-001 Astro]]\n`;
 const DONE = "- [x] T-001 Thing ✅ 2026-11-21 [PR #1](https://x/pull/1)";
-
-test("the real ledger passes", () => {
-  assert.deepEqual(
-    checkLedger(
-      readFileSync(new URL("../docs/plan/Ledger.md", import.meta.url), "utf8"),
-    ),
-    [],
-  );
-});
 
 test("a well-formed ledger passes", () => {
   assert.deepEqual(checkLedger(ledger("", DONE)), []);
@@ -29,6 +19,9 @@ test("each rule fails on its own break", () => {
     [DONE, "", /T-001: done but in "Now"/],
     ["- [ ] T-003 No owner", DONE, /T-003: open without #me or #agent/],
     ["- [ ] T3 typo #agent", DONE, /bad task line/],
+    ["- [ ]T-003 no space #agent", DONE, /bad task line/],
+    ["  - [ ] T-003 indented #agent", DONE, /bad task line/],
+    ["* [ ] T-003 star bullet #agent", DONE, /bad task line/],
     [
       [
         "- [ ] T-011 a #agent",

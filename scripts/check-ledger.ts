@@ -14,7 +14,8 @@ export function parseLedger(text: string): { tasks: Task[]; errors: string[] } {
   for (const line of text.split(/\r?\n/)) {
     const h = /^## (.+)/.exec(line);
     if (h) section = h[1]!.trim();
-    if (!/^- \[.?\] /.test(line)) continue; // checkboxes only, not "- [[ADR…]]" links
+    // Anything checkbox-shaped is a task (and must match TASK); "- [[ADR…]]" links are not.
+    if (!/^\s*[-*+]\s*\[[^[]?\]/.test(line)) continue;
     const m = TASK.exec(line);
     if (!m) {
       errors.push(`bad task line: ${line}`);
@@ -61,7 +62,7 @@ export function checkMergedPrs(text: string, prs: Pr[]): string[] {
   );
   const errors: string[] = [];
   for (const pr of prs) {
-    const m = /\/t-(\d{3})\b/.exec(pr.headRefName);
+    const m = /\/t-(\d{3})\b/i.exec(pr.headRefName);
     const line = m && open.get(`T-${m[1]}`);
     if (line && !new RegExp(`(#|pull/)${pr.number}\\b`).test(line))
       errors.push(
@@ -85,6 +86,7 @@ if (import.meta.main) {
         "list",
         "--state",
         "merged",
+        // shortcut: the newest 500 merged PRs only; raise it when the repo passes that.
         "--limit",
         "500",
         "--json",

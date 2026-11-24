@@ -10,17 +10,29 @@ const gates = [
   "run lint",
   "run format:check",
   "run check:ledger",
+  "run check:xml",
   "run build",
   "run check:size",
   "run check:a11y",
   "run check:ui",
 ];
+const NEEDS_DIST = ["run check:size", "run check:a11y", "run check:ui"];
 // xmllint is a system tool (CI installs it); skip it, loudly, where it is missing.
 const hasXmllint = spawnSync("xmllint --version", { shell: true }).status === 0;
-if (hasXmllint) gates.splice(4, 0, "run check:xml");
 
 let failed = false;
+let buildFailed = false;
 for (const g of gates) {
+  const skip =
+    g === "run check:xml" && !hasXmllint
+      ? "xmllint not installed; CI runs it"
+      : buildFailed && NEEDS_DIST.includes(g)
+        ? "build failed; dist/ is stale"
+        : "";
+  if (skip) {
+    console.log(`skip npm ${g.padEnd(18)} (${skip})`);
+    continue;
+  }
   const log = join(tmpdir(), `verify-${g.replace(/\W+/g, "-")}.log`);
   const fd = openSync(log, "w");
   const t0 = Date.now();
@@ -31,11 +43,10 @@ for (const g of gates) {
   closeSync(fd);
   const fails = readFileSync(log, "utf8").match(/^FAIL/gm)?.length ?? 0;
   failed ||= status !== 0;
+  if (g === "run build") buildFailed = status !== 0;
   const row = `${status === 0 ? "ok  " : "FAIL"} npm ${g.padEnd(18)} exit=${status} FAIL-lines=${fails} ${((Date.now() - t0) / 1000).toFixed(0)}s  ${log}`;
   console.log(row);
 }
-if (!hasXmllint)
-  console.log("skip npm run check:xml (xmllint not installed; CI runs it)");
 if (failed) {
   console.error("verify: at least one gate failed.");
   process.exit(1);
