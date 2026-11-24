@@ -16,8 +16,7 @@ const gates = [
   "run check:ui",
 ];
 // xmllint is a system tool (CI installs it); skip it, loudly, where it is missing.
-const hasXmllint =
-  spawnSync("xmllint", ["--version"], { shell: true }).status === 0;
+const hasXmllint = spawnSync("xmllint --version", { shell: true }).status === 0;
 if (hasXmllint) gates.splice(4, 0, "run check:xml");
 
 let failed = false;
