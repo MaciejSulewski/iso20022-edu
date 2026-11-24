@@ -4,6 +4,7 @@ import { parse as parseYaml } from "yaml";
 import type { Schema } from "./schema-model.ts";
 import {
   AnnotationSchema,
+  ChangelogSchema,
   FlowSchema,
   GlossarySchema,
   LessonSchema,
@@ -29,6 +30,7 @@ export type Input = {
   mappings?: File[];
   glossary?: File[];
   quizzes?: File[];
+  changelog?: File[];
   /** Turn "a step has no lesson" from a report into an error (on once all six lessons exist). */
   requireAllSteps?: boolean;
 };
@@ -43,6 +45,7 @@ export function checkContent({
   mappings = [],
   glossary = [],
   quizzes = [],
+  changelog = [],
   requireAllSteps = false,
 }: Input) {
   const errors: string[] = [];
@@ -397,6 +400,19 @@ export function checkContent({
       );
   }
 
+  for (const f of changelog) {
+    const c = parsed(f, ChangelogSchema);
+    if (!c) continue;
+    idMatches(f, c.id);
+    if (c.date !== c.id.slice(0, 10))
+      errors.push(
+        `${f.name}: date "${c.date}" does not match the id's date "${c.id.slice(0, 10)}"`,
+      );
+    for (const m of c.messages)
+      if (!ids.has(m))
+        errors.push(`${f.name}: message "${m}" is not a known message id`);
+  }
+
   const annotated = [...paths].filter((p) => {
     const r = resolvePath(schema, p);
     return r && (annotatedPaths.has(r.path) || annotatedTypes.has(r.typeName));
@@ -409,6 +425,7 @@ export function checkContent({
     mappings: mappings.length,
     glossary: glossary.length,
     quizzes: quizzes.length,
+    changelog: changelog.length,
   };
 }
 
@@ -479,6 +496,7 @@ if (import.meta.main) {
     mappings: mappingCount,
     glossary: glossaryCount,
     quizzes: quizCount,
+    changelog: changelogCount,
   } = checkContent({
     schema,
     messages: load("messages"),
@@ -489,6 +507,7 @@ if (import.meta.main) {
     mappings: load("mappings"),
     glossary: load("glossary"),
     quizzes: load("quizzes"),
+    changelog: load("changelog"),
     requireAllSteps: true,
   });
   console.log(
@@ -498,6 +517,7 @@ if (import.meta.main) {
   console.log(`Mappings: ${mappingCount}`);
   console.log(`Glossary: ${glossaryCount}`);
   console.log(`Quizzes: ${quizCount}`);
+  console.log(`Changelog: ${changelogCount}`);
   console.log(`Lessons: ${lessonInfo.count} of ${STEPS.length} steps`);
   const byType = new Set(
     load("annotations").flatMap((f) =>

@@ -37,6 +37,7 @@ npm run import-xsd -- schemas/<id>.xsd src/data/schema src/data/erepository/<id>
 
 ## 3. Checks and review
 
+- **Changelog entry:** add `src/content/changelog/YYYY-MM-DD-slug.yaml` (step 8 of `docs/maintenance.md`) with `messages: [<id>]`, so `/changelog/` names the new message.
 - `npm run check:content` must be clean (coverage report: every sample element annotated).
 - Run `npm run verify` on the branch head.
 - Reviews run as usual: `task-reviewer`, and `content-reviewer` for every text file.

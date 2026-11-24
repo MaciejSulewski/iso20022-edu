@@ -1,0 +1,9 @@
+id: 2026-11-22-workspace-and-lessons
+date: "2026-11-22"
+title: The pacs.008 workspace, lessons and the agent-chain flow
+summary: >-
+  The pacs.008.001.14 workspace: an annotated synthetic message, the full schema tree and a details pane, with a second sample (an intermediary agent and structured remittance) and Ctrl+K search to jump to any element.
+  The Start here path on the home page now links a lesson at each of its six steps.
+  The agent-chain flow steps through every participant in the serial method, with an outline of the cover method.
+messages:
+  - pacs.008.001.14

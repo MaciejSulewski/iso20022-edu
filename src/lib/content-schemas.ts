@@ -179,3 +179,11 @@ export const QuizSchema = z.strictObject({
     )
     .min(1),
 });
+
+export const ChangelogSchema = z.strictObject({
+  id: z.string().regex(/^\d{4}-\d{2}-\d{2}-[a-z0-9-]+$/, "YYYY-MM-DD-slug"),
+  date: day,
+  title: z.string().min(1),
+  summary: z.string().min(1),
+  messages: z.array(z.string()).default([]),
+});

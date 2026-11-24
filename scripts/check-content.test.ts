@@ -748,3 +748,49 @@ test("quiz right answers must not all sit at one index", () => {
   });
   assert.deepEqual(checkContent(two).errors, []);
 });
+
+const withChangelog = (edit?: (d: Record<string, unknown>) => void) => {
+  const data: Record<string, unknown> = {
+    id: "2026-11-24-quiz",
+    date: "2026-11-24",
+    title: "T",
+    summary: "S.",
+    messages: [id],
+  };
+  edit?.(data);
+  return { ...base(), changelog: [{ name: "2026-11-24-quiz.yaml", data }] };
+};
+
+test("clean changelog entry passes and is counted", () => {
+  const r = checkContent(withChangelog());
+  assert.deepEqual(r.errors, []);
+  assert.equal(r.changelog, 1);
+});
+
+test("changelog entry with bad data fails", () => {
+  assert.match(
+    errs(withChangelog((d) => (d.title = ""))),
+    /2026-11-24-quiz\.yaml/,
+  );
+});
+
+test("changelog id must match file name", () => {
+  assert.match(
+    errs(withChangelog((d) => (d.id = "2026-11-24-other"))),
+    /2026-11-24-quiz\.yaml: id "2026-11-24-other" does not match/,
+  );
+});
+
+test("changelog date must equal the id's date", () => {
+  assert.match(
+    errs(withChangelog((d) => (d.date = "2026-11-23"))),
+    /2026-11-24-quiz\.yaml: date "2026-11-23" does not match the id's date "2026-11-24"/,
+  );
+});
+
+test("changelog messages must be known message ids", () => {
+  assert.match(
+    errs(withChangelog((d) => (d.messages = ["pacs.999"]))),
+    /2026-11-24-quiz\.yaml: message "pacs.999" is not a known message id/,
+  );
+});

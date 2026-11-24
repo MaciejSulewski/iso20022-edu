@@ -40,9 +40,9 @@ Order: T-112 first, then one message per task with the `add-message` skill (each
 - [ ] T-124 Multi-message flows as flow YAML: reject (pacs.002), return (pacs.004), cancellation (camt.056 and camt.029), initiation to statement (pain.001 to camt.053/054). Done when: each flow page steps through every message, links its workspace sample, and check-content resolves every message and path #agent #stage/2
 - [ ] T-125 Review the multi-message flows for accuracy #me #stage/2
 - [ ] T-126 Polish locale: `pl` UI strings, a language switch, English fallback for untranslated content. Complex: spec first. Done when: every UI string has a `pl` entry, one lesson is in Polish, and missing translations fall back to English with no build error #agent #stage/2
-- [ ] T-127 Changelog page (maintenance step 8) from a checked content file. Done when: `/changelog/` lists dated entries and [[maintenance]] step 8 points to it #agent #stage/2
 
 ## Done
+- [x] T-127 Changelog page (maintenance step 8) from a checked content file. Done when: `/changelog/` lists dated entries and [[maintenance]] step 8 points to it #agent #stage/2 ✅ 2026-11-25 [PR #69](https://github.com/MaciejSulewski/iso20022-edu/pull/69) (one YAML file per entry in `src/content/changelog/`, four seed entries from the ledger, footer link on every page, `check-changelog.ts`; [[ADR-021 Changelog as YAML content]])
 - [x] T-100 Final accessibility pass, mobile QA, Lighthouse check across all pages. Done when: scores are recorded in the session note #agent #phase/9 ✅ 2026-11-25 [PR #68](https://github.com/MaciejSulewski/iso20022-edu/pull/68) (Lighthouse on 11 pages, mobile and desktop: Performance 98 to 100, Accessibility and Best Practices 100, SEO 92 from the root robots.txt a project site cannot own; no overflow at 320, 390 or 768 px; fixed the doubled dot in the Start here numbers; scores in [[2026-11-25]])
 - [x] T-111 Stage 2 tasks in the ledger (T-112 to T-127), reviewed by the owner in the PR. Done when: `/next-phase` has Stage 2 tasks to pick after Phase 9 #agent #phase/9 ✅ 2026-11-24 [PR #66](https://github.com/MaciejSulewski/iso20022-edu/pull/66)
 - [x] T-109 Workflow rules: `CLAUDE.md` holds the session loop, merge rule, gates and check-writing rules; [[ADR-020 Delegated merging and session loop]]; ADR-011, Home, Ledger rules, CONTRIBUTING; `next-session-prompt.md` becomes a pointer; T-100 constraints kept in [[2026-11-24]]. Done when: no rule lives only in a pasted prompt #agent #phase/9 ✅ 2026-11-24 [PR #65](https://github.com/MaciejSulewski/iso20022-edu/pull/65)
@@ -124,3 +124,4 @@ Order: T-112 first, then one message per task with the `add-message` skill (each
 - [[ADR-018 Glossary as YAML content]]
 - [[ADR-019 Quiz as YAML content]]
 - [[ADR-020 Delegated merging and session loop]]
+- [[ADR-021 Changelog as YAML content]]

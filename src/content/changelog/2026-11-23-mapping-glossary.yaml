@@ -1,0 +1,9 @@
+id: 2026-11-23-mapping-glossary
+date: "2026-11-23"
+title: MT 103 mapping table and glossary
+summary: >-
+  The MT 103 to pacs.008 mapping table shows which MT field becomes which pacs.008 element, and which elements have no MT field.
+  The glossary explains 18 pacs.008 terms and is linked from the details pane in the workspace.
+  The agent-chain flow now animates, and stays still when your system asks for reduced motion.
+messages:
+  - pacs.008.001.14
