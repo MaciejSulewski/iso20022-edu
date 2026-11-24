@@ -58,7 +58,7 @@ Retrieved 2026-11-21. Plain statement of limits: every iso20022.org page above a
 - **Confirmed by the project owner in a browser (2026-11-21): the latest version is pacs.008.001.14.** (Earlier note: found via a search snippet, catalogue "last updated 19 March 2026"; older snapshots showed .13.)
 - Namespace pattern: `urn:iso:std:iso:20022:tech:xsd:pacs.008.001.NN`, so `urn:iso:std:iso:20022:tech:xsd:pacs.008.001.14`.
 - XSD download: there is no single link for pacs.008.001.14. The project owner found one zip with all pacs messages: https://www.iso20022.org/message-set/1250/download (the importer needs `pacs.008.001.14.xsd` extracted from it). An automated GET of this URL returned HTTP 403 from the site's CDN (checked 2026-11-21), the same as the other pages, so a plain script or CI job may not be able to download it. Not worked around.
-- Keep .08? Search results show national and CBPR+-style usage guidelines for .08 (and .10, .06), so it is widely used in practice. Suggestion: build the importer for any version id, import .14 first, and add .08 only if cheap. The project owner decides ([[Project Plan]] section 6).
+- Keep .08? Search results show national and CBPR+-style usage guidelines for .08 (and .10, .06), so it is widely used in practice. Suggestion: build the importer for any version id, import .14 first, and add .08 only if cheap. The project owner decides ([[Project Plan]] section 6); not planned so far.
 
 **Second-hand input from the project owner (2026-11-21)**
 

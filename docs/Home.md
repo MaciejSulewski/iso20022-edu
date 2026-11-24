@@ -9,4 +9,4 @@ A static, interactive site that teaches ISO 20022 (pacs.008 first) to new bank s
 - Decisions: `decisions/` (ADR notes)
 - Session logs: `sessions/`
 
-**For Claude sessions:** read this note and [[Ledger]] first. At the end of a session, update [[Ledger]] and write `sessions/YYYY-MM-DD.md` (done / next / blockers).
+**For Claude sessions:** run `/next-phase` (it reads this note, [[Ledger]] and the newest session note) and end with `/session-wrap`. Rules: `CLAUDE.md` and [[ADR-020 Delegated merging and session loop]].
