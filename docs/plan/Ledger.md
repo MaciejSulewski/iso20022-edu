@@ -21,9 +21,9 @@ Rules:
 ### Phase 8: glossary and quiz
 ### Phase 9: hardening
 - [ ] T-100 Final accessibility pass, mobile QA, Lighthouse check across all pages. Done when: scores are recorded in the session note #agent #phase/9
-- [ ] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9
 
 ## Done
+- [x] T-102 Schema diff script (old vs new generated JSON). Done when: it prints added, removed and changed elements #agent #phase/9 ✅ 2026-11-24 [PR #60](https://github.com/MaciejSulewski/iso20022-edu/pull/60) (`npm run schema-diff -- <old.json> <new.json>`; maintenance.md step 4 uses it; minors in [[2026-11-24]])
 - [x] T-091 pacs.008 quiz. Done when: scoring works in the browser and each answer has an explanation #agent #phase/8 ✅ 2026-11-24 [PR #58](https://github.com/MaciejSulewski/iso20022-edu/pull/58) (page /quiz/pacs.008/: the eight questions of lesson 6 as multiple choice with an explanation each; AI-drafted, unreviewed until T-093; [[ADR-019 Quiz as YAML content]])
 - [x] T-090 Glossary for pacs.008 terms, linked from ElementPanel. Done when: related terms and messages resolve #agent #phase/8 ✅ 2026-11-23 [PR #57](https://github.com/MaciejSulewski/iso20022-edu/pull/57) (18 terms at /glossary/, official definition read from the schema beside own wording, Glossary link in the Details pane, found by Ctrl+K through Pagefind; AI-drafted, unreviewed until T-093; [[ADR-018 Glossary as YAML content]])
 - [x] T-080 MT103 → pacs.008 mapping table from public sources, own wording. Done when: every row path resolves in the schema #agent #phase/7 ✅ 2026-11-23 [PR #55](https://github.com/MaciejSulewski/iso20022-edu/pull/55) (page /mappings/mt103-pacs.008/: 14 MT-field rows and 11 elements with no MT field named, from a bank explainer and a vendor table, neither official; AI-drafted, unreviewed until T-081)
