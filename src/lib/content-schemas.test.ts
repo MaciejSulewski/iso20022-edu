@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   AnnotationSchema,
+  ChangelogSchema,
   FlowSchema,
   GlossarySchema,
   LessonSchema,
@@ -228,4 +229,27 @@ test("quiz question with an empty explanation fails", () => {
   const q = quiz();
   q.questions[0]!.explanation = "";
   assert.ok(!QuizSchema.safeParse(q).success);
+});
+
+const entry = () => ({
+  id: "2026-11-24-quiz",
+  date: "2026-11-24",
+  title: "T",
+  summary: "S.",
+});
+
+test("good changelog entry passes and messages default to empty", () => {
+  const r = ChangelogSchema.safeParse(entry());
+  assert.ok(r.success);
+  assert.deepEqual(r.data.messages, []);
+});
+
+test("changelog entry with an extra key fails", () => {
+  assert.ok(!ChangelogSchema.safeParse({ ...entry(), extra: 1 }).success);
+});
+
+test("changelog entry with a bad date fails", () => {
+  assert.ok(
+    !ChangelogSchema.safeParse({ ...entry(), date: "24.11.2026" }).success,
+  );
 });
