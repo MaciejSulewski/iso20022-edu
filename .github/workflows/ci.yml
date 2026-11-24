@@ -11,6 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -21,11 +22,16 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm test
+      - run: npm run check:ledger
       - run: sudo apt-get install -y libxml2-utils
       - run: npm run check:xml
-      - run: npm run check:content
+      # build runs check:content first
       - run: npm run build
       - run: npm run check:size
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - run: npx playwright install --with-deps chromium
       - run: npm run check:a11y
       - run: npm run check:ui
