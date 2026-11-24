@@ -121,6 +121,21 @@ try {
       LESSONS.map((l) => `${BASE}lessons/${l.slug}/`).join(),
   );
 
+  // 1d. after hydration the step numbers read "1." to "6." (a split text node once doubled the dot)
+  await settle(
+    home,
+    "Start here: after hydration each step number is its position and one dot",
+    () => ({
+      hydrated: !document.querySelector("astro-island[ssr]"),
+      numbers: [
+        ...document.querySelectorAll("ol label > span:first-child"),
+      ].map((s) => s.textContent),
+    }),
+    (s) =>
+      s.hydrated &&
+      s.numbers.join() === LESSONS.map((_, i) => `${i + 1}.`).join(),
+  );
+
   for (const l of LESSONS) {
     const lessonUrl = `${url}lessons/${l.slug}/`;
     // 2. the lesson page

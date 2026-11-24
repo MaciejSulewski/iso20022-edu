@@ -31,7 +31,6 @@
   "home.start.title": "Start here",
   "home.start.intro": "Six steps, in order. Tick each one when you finish it. Your progress stays in this browser.",
   "home.start.progress": "{done} of {total} steps done",
-  "home.start.soon": "Interactive step coming soon",
   "home.start.done": "Done",
   "home.start.open": "Open step",
   "home.start.lesson": "Read the lesson: {title}",
